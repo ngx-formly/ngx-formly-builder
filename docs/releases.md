@@ -44,6 +44,11 @@ Do not blindly accept an automatically proposed major bump for a `0.x` dependent
 5. Run the workflow again on that commit with `publish` checked. Pending changesets are rejected.
    Build/package checks, clean tarball installation, consumer type-check/build, Studio tests and
    desktop/mobile consumer browser tests run before any publish operation.
+6. Confirm the version commit has a successful production deployment in
+   [Netlify](https://app.netlify.com/projects/ngx-formly-builder/deploys), then open the
+   [demo](https://builder.formly.dev/) and refresh the [editor](https://builder.formly.dev/form-editor).
+   Netlify automatically builds and publishes `main` when the version PR merges. If that deployment
+   fails, fix or retry it before announcing the release.
 
 Source package `publishConfig.directory` points to its ng-packagr output. Never run `npm publish`
 from a library source directory. `release:validate` checks built names, versions, peers, bundles
