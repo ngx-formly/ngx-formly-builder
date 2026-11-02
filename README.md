@@ -3,6 +3,14 @@
 A visual form builder for ngx-formly that brings community efforts together. Build Angular forms
 with drag-and-drop editing, custom components, live previews, and Formly JSON export.
 
+## Live demo
+
+Try the builder at [builder.formly.dev](https://builder.formly.dev/).
+
+Netlify automatically deploys successful builds of `main`, including the version commits used for
+new package releases. The demo can include changes ahead of the latest npm release. See the
+[release checklist](docs/releases.md#authoring-and-reviewing-a-release) for deployment verification.
+
 ## Project status
 
 The repository is the shared foundation for an official ngx-formly builder. It currently provides
@@ -23,11 +31,10 @@ and schema workflows from the other community builders.
 
 The application and documentation use **ngx-formly Builder**. `Studio` remains the reference
 application's source-folder name, and `Studio Material` remains a UI profile name.
-The configured application URL is [formlystudio.com](https://formlystudio.com/), and package
-homepages point to [docs.formlystudio.com](https://docs.formlystudio.com/). These existing origins
-remain in use until maintainers choose and deploy replacement domains; the new name does not
-imply a domain move. Canonical/social metadata, crawler files and documentation links retain
-those origins. The repository is [ngx-formly/ngx-formly-builder](https://github.com/ngx-formly/ngx-formly-builder).
+The demo is hosted at [builder.formly.dev](https://builder.formly.dev/). Canonical/social metadata
+and crawler files still reference [formlystudio.com](https://formlystudio.com/), while package
+homepages and documentation links use [docs.formlystudio.com](https://docs.formlystudio.com/).
+The repository is [ngx-formly/ngx-formly-builder](https://github.com/ngx-formly/ngx-formly-builder).
 
 When domains change, update both deployments, redirects, canonical/social URLs, sitemaps, crawler
 files, the docs build's `site` setting and header links together. Local browser storage is tied
