@@ -20,6 +20,8 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'ngx-formly Builder Docs',
+      logo: { src: './src/assets/formly-logo.svg' },
+      favicon: '/favicon.ico',
       description:
         'Documentation for ngx-formly Builder, an open-source ngx-formly editor framework, and its Studio demo application.',
       social: [],
