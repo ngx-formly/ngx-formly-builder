@@ -16,12 +16,21 @@ import { ThemeToggle } from './theme-toggle';
   template: `
     <div class="flex min-h-0 flex-1 items-center justify-between gap-2 px-4 py-1">
       <div class="flex min-w-0 items-center">
-        <h1 class="truncate text-xl font-bold">
+        <h1 class="min-w-0 text-xl font-bold">
           <a
             routerLink="/"
+            class="flex items-center gap-2"
             aria-label="Go to ngx-formly Builder home page"
-            >ngx-formly Builder</a
           >
+            <img
+              src="formly-logo.svg"
+              alt=""
+              width="28"
+              height="30"
+              class="shrink-0"
+            />
+            <span class="truncate">ngx-formly Builder</span>
+          </a>
         </h1>
       </div>
       <div class="flex min-w-0 shrink items-center justify-end gap-1">
