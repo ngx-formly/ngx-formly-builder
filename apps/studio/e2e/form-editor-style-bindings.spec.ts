@@ -32,7 +32,7 @@ for (const viewport of [
     await expect(badge).toContainText('supportRequest');
     await expect(badge).toHaveCSS('display', 'inline-flex');
     await expect(badge).toHaveCSS('border-radius', '16px');
-    await expect(badge).toHaveCSS('background-color', 'rgb(241, 245, 249)');
+    await expect(badge).toHaveCSS('background-color', 'rgb(243, 239, 246)');
 
     if (viewport.width < 1024) {
       await page.locator('.p-drawer-close-button').click();
