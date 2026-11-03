@@ -8,8 +8,7 @@ import { ActionButton } from './action-button';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ActionButton],
   host: {
-    class:
-      'block h-full overflow-auto bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--p-primary-color)_12%,transparent),transparent_32rem)]',
+    class: 'block h-full overflow-auto',
   },
   template: `
     <main
@@ -22,7 +21,7 @@ import { ActionButton } from './action-button';
         <h1 class="mb-6 max-w-2xl text-4xl font-semibold tracking-tight text-color md:text-6xl">
           Build ngx-formly forms visually.
         </h1>
-        <p class="text-color-secondary max-w-xl text-lg leading-8">
+        <p class="max-w-xl text-lg leading-8 text-muted-color">
           ngx-formly Builder is a visual authoring tool for ngx-formly, the JSON-powered dynamic
           forms library for Angular. Create, preview, and export Formly field configurations with
           templates to help you get started.
@@ -35,7 +34,7 @@ import { ActionButton } from './action-button';
         >
           Learn about ngx-formly
         </a>
-        <p class="text-color-secondary mt-5 max-w-xl text-sm">
+        <p class="mt-5 max-w-xl text-sm text-muted-color">
           {{ persistenceDescription }}
         </p>
       </section>

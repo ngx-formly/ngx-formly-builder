@@ -21,12 +21,19 @@
 
 html {
   font-size: 14px;
-  scrollbar-color: var(--p-surface-300) var(--p-content-background);
+  scrollbar-color: var(--p-text-muted-color) var(--p-content-background);
 }
 
 body {
   font-family: Ubuntu, sans-serif;
   font-size: 1rem;
+  color: var(--p-text-color);
+  background: var(--p-content-background);
+}
+
+::selection {
+  color: var(--p-primary-contrast-color);
+  background: var(--p-primary-color);
 }
 
 html,

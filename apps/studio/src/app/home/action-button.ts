@@ -24,7 +24,7 @@ import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
           class="text-base"
           >{{ label() }}</span
         >
-        <span class="text-color-secondary font-normal">{{ description() }}</span>
+        <span class="font-normal">{{ description() }}</span>
       </span>
     </button>
   `,

@@ -12,4 +12,32 @@ html {
       density: -1,
     )
   );
+
+  @include mat.theme-overrides(
+    (
+      primary: var(--p-primary-color),
+      on-primary: var(--p-primary-contrast-color),
+      primary-container: var(--p-highlight-background),
+      on-primary-container: var(--p-highlight-color),
+      secondary: var(--p-primary-color),
+      on-secondary: var(--p-primary-contrast-color),
+      secondary-container: var(--p-highlight-background),
+      on-secondary-container: var(--p-highlight-color),
+      tertiary: var(--p-primary-color),
+      on-tertiary: var(--p-primary-contrast-color),
+      tertiary-container: var(--p-highlight-background),
+      on-tertiary-container: var(--p-highlight-color),
+      surface: var(--p-content-background),
+      surface-variant: var(--p-content-hover-background),
+      surface-container-lowest: var(--p-content-background),
+      surface-container-low: var(--p-content-background),
+      surface-container: var(--p-content-hover-background),
+      surface-container-high: var(--p-content-hover-background),
+      surface-container-highest: var(--p-content-hover-background),
+      on-surface: var(--p-text-color),
+      on-surface-variant: var(--p-text-muted-color),
+      outline: var(--p-form-field-border-color),
+      outline-variant: var(--p-content-border-color),
+    )
+  );
 }
