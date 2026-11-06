@@ -25,6 +25,9 @@ pnpm dev
 `pnpm dev` starts Studio on port 4200 and docs on port 4321. Use `pnpm start` or
 `pnpm start:docs` to run just one app. Library edits are watched by Studio.
 
+Use `pnpm dev:portless` for both apps with named local HTTPS URLs and automatically assigned ports.
+See the [development setup](README.md#development) for URLs and first-run proxy setup.
+
 Use `pnpm install --frozen-lockfile` to reproduce CI installs. Commit `pnpm-lock.yaml` when
 dependencies change. The package-consumer fixture is intentionally outside the pnpm workspace.
 

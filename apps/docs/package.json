@@ -12,6 +12,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
+    "dev:portless": "portless run --name builder-docs.ngx-formly pnpm run dev --ignore-lock",
     "build": "astro build",
     "check": "astro check",
     "preview": "astro preview --host 0.0.0.0"

@@ -58,6 +58,14 @@ pnpm dev
 Use `pnpm start` for Studio alone or `pnpm start:docs` for docs alone. Studio watches the
 libraries through the source paths in `tsconfig.json`; no separate library watchers are needed.
 
+Run `pnpm dev:portless` to start both apps through [Portless](https://portless.sh/), which assigns
+free ports and provides named URLs at `https://builder-studio.ngx-formly.localhost` and
+`https://builder-docs.ngx-formly.localhost`. On first use, Portless may request administrator access
+to start its HTTPS proxy and trust its local certificate. Follow the URLs printed in the terminal
+if you use a custom proxy configuration or a Git worktree.
+Studio stores forms per browser origin, so export forms from `http://localhost:4200` before
+switching URLs, then import them at the new URL.
+
 The pnpm workspace includes `apps/*`, `libs/*`, and `libs/ui/*`, with one root lockfile.
 The package-consumer fixture stays outside the workspace so it tests packed libraries in isolation.
 
