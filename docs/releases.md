@@ -30,15 +30,15 @@ Do not blindly accept an automatically proposed major bump for a `0.x` dependent
 
 ## Authoring and reviewing a release
 
-1. Run `npm run changeset` with a package change. Select only affected public packages and write
+1. Run `pnpm run changeset` with a package change. Select only affected public packages and write
    the user-visible change and migration steps. Docs-only changes outside packages need no entry.
-2. Inspect `npm run release:status` and `npm run release:dry-run`. The latter creates a temporary
+2. Inspect `pnpm run release:status` and `pnpm run release:dry-run`. The latter creates a temporary
    manifest-only workspace, proposes one state patch and asserts that no dependent is released.
    It changes no source files or registry state. With `--consumer`, it also packs a temporary
    state patch alongside the unchanged packages and builds a clean consumer.
 3. Run the **Release packages** workflow on `main` with `publish` unchecked. After validation,
-   Changesets opens/updates a version PR. `npm run release:version` updates source manifests,
-   package changelogs and `package-lock.json`; it never publishes.
+   Changesets opens/updates a version PR. `pnpm run release:version` updates source manifests,
+   package changelogs and `pnpm-lock.yaml`; it never publishes.
 4. Review version numbers, changelogs, internal peers and the lockfile in that PR. Merge only when
    the package/API migration is accepted. Rerun CI on the resulting version commit.
 5. Run the workflow again on that commit with `publish` checked. Pending changesets are rejected.
@@ -69,9 +69,9 @@ packages. Registry access and actual publication are not exercised by the local 
 
 ## Prereleases
 
-Use `npm run changeset -- pre enter next`, commit `.changeset/pre.json`, then add changesets and
+Use `pnpm run changeset pre enter next`, commit `.changeset/pre.json`, then add changesets and
 prepare/review versions through the same workflow. Publish under `next`, never `latest`. To exit,
-run `npm run changeset -- pre exit` and prepare a reviewed stable version PR. Do not hand-edit
+run `pnpm run changeset pre exit` and prepare a reviewed stable version PR. Do not hand-edit
 prerelease suffixes or delete the prerelease state file.
 
 A stable peer range does not accept a prerelease automatically. Changesets may include dependent
@@ -81,13 +81,12 @@ of unrelated packages. Do not introduce prereleases into an already-supported st
 
 ## Tooling and validation
 
-This workflow uses the repository's current npm 11.19.0 workspaces and Node 24. The pnpm proposal
-in #4 is separate. If that migration is accepted, update the lockfile refresh command, workflow
-cache/install steps and dry-run fixture together before releasing.
+This workflow uses pnpm 10.25.0 workspaces and Node 24. `release:version` refreshes
+`pnpm-lock.yaml`, CI uses frozen installs, and the dry-run fixture uses the same workspace layout.
 
 ```sh
-npm run release:dry-run
-npm run release:validate
+pnpm run release:dry-run
+pnpm run release:validate
 ```
 
 For example, the compatible state patch fixture reports `builder-state: 0.0.1 -> 0.0.2` and no

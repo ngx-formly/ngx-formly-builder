@@ -8,36 +8,28 @@
     "url": "https://github.com/ngx-formly/ngx-formly-builder.git"
   },
   "homepage": "https://formlystudio.com/",
-  "workspaces": [
-    "apps/docs",
-    "libs/state",
-    "libs/core",
-    "libs/ui/material",
-    "libs/ui/builder-material"
-  ],
   "scripts": {
     "prepare": "husky",
     "ng": "ng",
-    "start": "ng serve studio --host 0.0.0.0",
-    "start:docs": "npm run dev --workspace @ngx-formly/builder-docs",
-    "build": "npm run build:builder-material && npm run check:packages && npm run build:studio && npm run build:docs",
+    "dev": "pnpm --recursive --parallel run dev",
+    "start": "pnpm --filter @ngx-formly/builder-studio run dev",
+    "start:docs": "pnpm --filter @ngx-formly/builder-docs run dev",
+    "build": "pnpm run build:builder-material && pnpm run check:packages && pnpm run build:studio && pnpm run build:docs",
     "build:studio": "ng build studio",
     "build:state": "ng build state",
-    "prebuild:core": "npm run build:state",
-    "build:core": "ng build core",
+    "build:core": "pnpm run build:state && ng build core",
     "build:material": "ng build material",
-    "prebuild:builder-material": "npm run build:core && npm run build:material",
-    "build:builder-material": "ng build builder-material",
-    "build:docs": "npm run build --workspace @ngx-formly/builder-docs",
-    "check:docs": "npm run check --workspace @ngx-formly/builder-docs",
+    "build:builder-material": "pnpm run build:core && pnpm run build:material && ng build builder-material",
+    "build:docs": "pnpm --filter @ngx-formly/builder-docs run build",
+    "check:docs": "pnpm --filter @ngx-formly/builder-docs run check",
     "check:packages": "node scripts/check-package-contracts.mjs && node scripts/check-packed-consumer.mjs",
-    "check:api": "npm run build:builder-material && node scripts/check-api.mjs",
-    "update:api": "npm run build:builder-material && node scripts/check-api.mjs --update",
+    "check:api": "pnpm run build:builder-material && node scripts/check-api.mjs",
+    "update:api": "pnpm run build:builder-material && node scripts/check-api.mjs --update",
     "test:api": "node --test scripts/check-api.test.mjs",
     "check:packages:e2e": "node scripts/check-packed-consumer.mjs --browser",
-    "preview:docs": "npm run preview --workspace @ngx-formly/builder-docs",
+    "preview:docs": "pnpm --filter @ngx-formly/builder-docs run preview",
     "test:e2e": "playwright test --config apps/studio/playwright.config.ts",
-    "test": "npm run test:studio && npm run test:state && npm run test:core && npm run test:material && npm run test:builder-material",
+    "test": "pnpm run test:studio && pnpm run test:state && pnpm run test:core && pnpm run test:material && pnpm run test:builder-material",
     "test:studio": "ng test studio --watch=false",
     "test:state": "ng test state --watch=false",
     "test:core": "ng test core --watch=false",
@@ -46,14 +38,14 @@
     "lint": "ng lint studio && ng lint state && ng lint core && ng lint material && ng lint builder-material",
     "changeset": "changeset",
     "release:status": "changeset status",
-    "release:version": "changeset version && npm install --package-lock-only --ignore-scripts",
+    "release:version": "changeset version && pnpm install --lockfile-only --ignore-scripts",
     "release:dry-run": "node scripts/release-dry-run.mjs",
-    "release:validate": "npm run build:builder-material && npm run check:packages && node scripts/check-release-artifacts.mjs && npm run release:dry-run -- --consumer",
-    "release:publish": "npm run release:validate && changeset publish",
-    "test:release": "node --test scripts/check-release-artifacts.test.mjs && npm run release:dry-run"
+    "release:validate": "pnpm run build:builder-material && pnpm run check:packages && node scripts/check-release-artifacts.mjs && pnpm run release:dry-run --consumer",
+    "release:publish": "pnpm run release:validate && changeset publish",
+    "test:release": "node --test scripts/check-release-artifacts.test.mjs && pnpm run release:dry-run"
   },
   "private": true,
-  "packageManager": "npm@11.19.0",
+  "packageManager": "pnpm@10.25.0",
   "dependencies": {
     "@angular/animations": "^22.2.3",
     "@angular/cdk": "^22.2.4",
@@ -127,15 +119,5 @@
   },
   "engines": {
     "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
-  },
-  "overrides": {
-    "primeng": {
-      "@angular/cdk": "$@angular/cdk",
-      "@angular/common": "$@angular/common",
-      "@angular/core": "$@angular/core",
-      "@angular/forms": "$@angular/forms",
-      "@angular/platform-browser": "$@angular/platform-browser",
-      "@angular/router": "$@angular/router"
-    }
   }
 }

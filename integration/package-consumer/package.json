@@ -13,7 +13,9 @@
     "@angular/core": "^22.2.3",
     "@angular/forms": "^22.2.3",
     "@angular/platform-browser": "^22.2.3",
-    "@angular/router": "^22.2.3"
+    "@angular/router": "^22.2.3",
+    "@primeuix/themes": "^2.0.3",
+    "primeng": "^21.1.10"
   },
   "devDependencies": {
     "@angular/build": "^22.2.3",
@@ -24,14 +26,14 @@
     "postcss": "^8.5.6",
     "typescript": "~6.0.3"
   },
-  "overrides": {
-    "primeng": {
-      "@angular/cdk": "$@angular/cdk",
-      "@angular/common": "$@angular/common",
-      "@angular/core": "$@angular/core",
-      "@angular/forms": "$@angular/forms",
-      "@angular/platform-browser": "$@angular/platform-browser",
-      "@angular/router": "$@angular/router"
+  "pnpm": {
+    "overrides": {
+      "primeng>@angular/cdk": "$@angular/cdk",
+      "primeng>@angular/common": "$@angular/common",
+      "primeng>@angular/core": "$@angular/core",
+      "primeng>@angular/forms": "$@angular/forms",
+      "primeng>@angular/platform-browser": "$@angular/platform-browser",
+      "primeng>@angular/router": "$@angular/router"
     }
   }
 }

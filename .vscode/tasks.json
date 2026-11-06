@@ -3,8 +3,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "start",
+      "type": "shell",
+      "command": "pnpm run start",
+      "label": "start",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -21,8 +22,8 @@
       }
     },
     {
-      "type": "npm",
-      "script": "start:docs",
+      "type": "shell",
+      "command": "pnpm run start:docs",
       "label": "start:docs",
       "isBackground": true,
       "problemMatcher": {
@@ -39,61 +40,64 @@
       }
     },
     {
-      "type": "npm",
-      "script": "lint",
+      "type": "shell",
+      "command": "pnpm run lint",
       "label": "lint",
       "group": "build",
       "problemMatcher": []
     },
     {
-      "type": "npm",
-      "script": "test",
+      "type": "shell",
+      "command": "pnpm run test",
       "label": "test",
       "group": "test",
       "problemMatcher": []
     },
     {
-      "type": "npm",
-      "script": "build",
+      "type": "shell",
+      "command": "pnpm run build",
       "label": "build",
       "group": "build",
       "problemMatcher": []
     },
     {
-      "type": "npm",
-      "script": "build:studio",
+      "type": "shell",
+      "command": "pnpm run build:studio",
+      "label": "build:studio",
       "group": "build",
       "problemMatcher": "$tsc"
     },
     {
-      "type": "npm",
-      "script": "build:core",
+      "type": "shell",
+      "command": "pnpm run build:core",
+      "label": "build:core",
       "group": "build",
       "problemMatcher": "$tsc"
     },
     {
-      "type": "npm",
-      "script": "build:material",
+      "type": "shell",
+      "command": "pnpm run build:material",
+      "label": "build:material",
       "group": "build",
       "problemMatcher": "$tsc"
     },
     {
-      "type": "npm",
-      "script": "build:docs",
+      "type": "shell",
+      "command": "pnpm run build:docs",
       "label": "build:docs",
       "group": "build",
       "problemMatcher": []
     },
     {
-      "type": "npm",
-      "script": "check:docs",
+      "type": "shell",
+      "command": "pnpm run check:docs",
       "label": "check:docs",
       "group": "build",
       "problemMatcher": []
     },
     {
-      "type": "npm",
-      "script": "preview:docs",
+      "type": "shell",
+      "command": "pnpm run preview:docs",
       "label": "preview:docs",
       "dependsOn": "build:docs",
       "isBackground": true,
@@ -111,20 +115,23 @@
       }
     },
     {
-      "type": "npm",
-      "script": "test:studio",
+      "type": "shell",
+      "command": "pnpm run test:studio",
+      "label": "test:studio",
       "group": "test",
       "problemMatcher": []
     },
     {
-      "type": "npm",
-      "script": "test:core",
+      "type": "shell",
+      "command": "pnpm run test:core",
+      "label": "test:core",
       "group": "test",
       "problemMatcher": []
     },
     {
-      "type": "npm",
-      "script": "test:material",
+      "type": "shell",
+      "command": "pnpm run test:material",
+      "label": "test:material",
       "group": "test",
       "problemMatcher": []
     }

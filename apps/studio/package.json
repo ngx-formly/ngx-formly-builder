@@ -1,0 +1,14 @@
+{
+  "name": "@ngx-formly/builder-studio",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --dir ../.. exec ng serve studio --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@ngx-formly/builder": "workspace:*",
+    "@ngx-formly/builder-state": "workspace:*",
+    "@ngx-formly/builder-material": "workspace:*",
+    "@ngx-formly/builder-material-fields": "workspace:*"
+  }
+}

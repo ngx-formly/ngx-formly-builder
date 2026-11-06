@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 
 set -eu
-npm run lint
-npm test
+pnpm run lint
+pnpm test

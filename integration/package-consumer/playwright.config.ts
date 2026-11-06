@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 const consumerRoot = process.env['FORMLY_CONSUMER_ROOT'];
 if (!consumerRoot) {
-  throw new Error('Run through npm run check:packages:e2e to test the packed libraries.');
+  throw new Error('Run through pnpm run check:packages:e2e to test the packed libraries.');
 }
 
 export default defineConfig({
@@ -16,7 +16,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm start',
+    command: 'pnpm start',
     cwd: consumerRoot,
     url: 'http://127.0.0.1:4314',
     reuseExistingServer: false,

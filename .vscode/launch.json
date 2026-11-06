@@ -3,17 +3,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Studio (npm start)",
+      "name": "Studio (pnpm start)",
       "type": "chrome",
       "request": "launch",
-      "preLaunchTask": "npm: start",
+      "preLaunchTask": "start",
       "url": "http://localhost:4200/"
     },
     {
-      "name": "Vitest (npm test)",
+      "name": "Vitest (pnpm test)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm test",
+      "command": "pnpm test",
       "cwd": "${workspaceFolder}"
     }
   ]

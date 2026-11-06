@@ -5,7 +5,7 @@ Investigation for [#13](https://github.com/ngx-formly/ngx-formly-builder/issues/
 
 ## Reproduction
 
-Run `npm ci` and `npm start`, then open `/form-editor` with the browser console visible.
+Run `pnpm install --frozen-lockfile` and `pnpm start`, then open `/form-editor` with the browser console visible.
 Opening the editor emits:
 
 ```text
@@ -43,8 +43,8 @@ their own service and notification component.
 ## Regression checks
 
 ```sh
-npm run test:core -- --include=libs/core/src/lib/shared/chip-style-fix.spec.ts
-npm run test:e2e -- form-editor-style-bindings
+pnpm run test:core --include=libs/core/src/lib/shared/chip-style-fix.spec.ts
+pnpm run test:e2e form-editor-style-bindings
 ```
 
 The browser check listens for `NG0318` before navigation, creates a Material form, and opens its

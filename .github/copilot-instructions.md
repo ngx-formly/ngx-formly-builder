@@ -13,7 +13,7 @@ The user is an experienced senior software engineer. Provide concise, high-signa
 
 Source code, tests, and current documentation in `apps/docs/src/content/docs/` define supported behavior. Start at `README.md` and `apps/docs/src/content/docs/developers/index.mdx`.
 
-This is an Angular CLI workspace with npm workspaces. The application workspaces are private; the
+This is an Angular CLI workspace with pnpm workspaces. The application workspaces are private; the
 library workspaces define provisional publishable package contracts:
 
 - `apps/studio`: Browser-local Angular editor application and shell.
@@ -33,11 +33,12 @@ shell. Core must not depend on UI integrations or application code.
 
 ## Workspace Commands
 
-Run commands from the repository root with npm:
+Run commands from the repository root with pnpm:
 
-- Studio: `npm start`, `npm run build:studio`.
-- Focused unit suites: `npm run test:studio`, `npm run test:state`, `npm run test:core`, `npm run test:material`, `npm run test:builder-material`.
-- Package contracts: `npm run check:packages` after building the library packages.
+- All apps: `pnpm dev` starts Studio and docs together.
+- Studio: `pnpm start`, `pnpm run build:studio`.
+- Focused unit suites: `pnpm run test:studio`, `pnpm run test:state`, `pnpm run test:core`, `pnpm run test:material`, `pnpm run test:builder-material`.
+- Package contracts: `pnpm run check:packages` after building the library packages.
 - Check `package.json` before suggesting other commands; archived commands are not supported setup instructions.
 
 ## TypeScript And Angular Standards
@@ -74,8 +75,8 @@ Run commands from the repository root with npm:
 
 ## Verification Discipline
 
-- After code changes, run affected Vitest files with `npm exec -- vitest run <path>` or the relevant unit suite before concluding. Test observable behavior, lifecycle transitions, and state transformations, not implementation trivia.
-- Ensure changes compile cleanly and preserve production build integrity with `npm run build:studio`.
+- After code changes, run affected Vitest files with `pnpm exec vitest run <path>` or the relevant unit suite before concluding. Test observable behavior, lifecycle transitions, and state transformations, not implementation trivia.
+- Ensure changes compile cleanly and preserve production build integrity with `pnpm run build:studio`.
 - For visual or interaction changes, verify in the VS Code browser. Prefer reusing an already-open page; open a new page only when reuse is not possible or isolated state is needed.
-- Playwright browser tests are opt-in via `npm run test:e2e`, using `apps/studio/playwright.config.ts`; install Chromium with `npx playwright install chromium` if needed. The suite includes an interaction timing smoke test.
-- When changing workflows, CI install steps, Docker build inputs, or workflow fixtures, run the relevant local validation commands: `npm run lint`, `npm test`, `npm run check:docs`, and `npm run build`.
+- Playwright browser tests are opt-in via `pnpm run test:e2e`, using `apps/studio/playwright.config.ts`; install Chromium with `pnpm exec playwright install chromium` if needed. The suite includes an interaction timing smoke test.
+- When changing workflows, CI install steps, Docker build inputs, or workflow fixtures, run the relevant local validation commands: `pnpm run lint`, `pnpm test`, `pnpm run check:docs`, and `pnpm run build`.
