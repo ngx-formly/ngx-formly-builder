@@ -1,0 +1,21 @@
+packages:
+  - apps/*
+  - libs/*
+  - libs/ui/*
+
+linkWorkspacePackages: true
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild
+  - lmdb
+  - msgpackr-extract
+
+# PrimeNG 21 is used with the workspace's Angular 22 version.
+overrides:
+  'primeng>@angular/cdk': '$@angular/cdk'
+  'primeng>@angular/common': '$@angular/common'
+  'primeng>@angular/core': '$@angular/core'
+  'primeng>@angular/forms': '$@angular/forms'
+  'primeng>@angular/platform-browser': '$@angular/platform-browser'
+  'primeng>@angular/router': '$@angular/router'

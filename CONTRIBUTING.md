@@ -15,12 +15,18 @@ service without discussing the compatibility cost.
 
 ## Local setup
 
-Use Node.js 24.15 or newer within the Node.js 24 release line and npm 11.19.0.
+Use Node.js 24.15 or newer within the Node.js 24 release line and pnpm 10.25.0.
 
 ```sh
-npm ci
-npm start
+pnpm install
+pnpm dev
 ```
+
+`pnpm dev` starts Studio on port 4200 and docs on port 4321. Use `pnpm start` or
+`pnpm start:docs` to run just one app. Library edits are watched by Studio.
+
+Use `pnpm install --frozen-lockfile` to reproduce CI installs. Commit `pnpm-lock.yaml` when
+dependencies change. The package-consumer fixture is intentionally outside the pnpm workspace.
 
 ## Validation
 
@@ -28,19 +34,19 @@ Run the checks relevant to your change and, before requesting review, run the co
 set:
 
 ```sh
-npm run lint
-npm test
-npm run check:docs
-npm run build
+pnpm run lint
+pnpm test
+pnpm run check:docs
+pnpm run build
 ```
 
 Install Playwright Chromium once before running browser tests:
 
 ```sh
-npx playwright install chromium
-npm run test:e2e
-npm run build:builder-material
-npm run check:packages:e2e
+pnpm exec playwright install chromium
+pnpm run test:e2e
+pnpm run build:builder-material
+pnpm run check:packages:e2e
 ```
 
 The production build includes package-contract validation. It checks built bundle imports against

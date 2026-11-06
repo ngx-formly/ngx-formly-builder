@@ -55,7 +55,7 @@ export function snapshotPackage(directory) {
     }
   }
   visit();
-  return `# ${manifest.name}\n\nGenerated declarations for review. Update with \`npm run update:api\`.\n\n## Package exports\n\n\`\`\`json\n${JSON.stringify(manifest.exports, null, 2)}\n\`\`\`\n\n## Declarations\n\n\`\`\`ts\n${declarations.join('\n\n')}\n\`\`\`\n`;
+  return `# ${manifest.name}\n\nGenerated declarations for review. Update with \`pnpm run update:api\`.\n\n## Package exports\n\n\`\`\`json\n${JSON.stringify(manifest.exports, null, 2)}\n\`\`\`\n\n## Declarations\n\n\`\`\`ts\n${declarations.join('\n\n')}\n\`\`\`\n`;
 }
 
 export function checkSnapshot(path, actual, update = false) {
@@ -63,7 +63,7 @@ export function checkSnapshot(path, actual, update = false) {
     writeFileSync(path, actual);
   } else if (!existsSync(path) || readFileSync(path, 'utf8') !== actual) {
     throw new Error(
-      `Public API changed: ${path}. Review the declaration diff and release impact before running npm run update:api.`,
+      `Public API changed: ${path}. Review the declaration diff and release impact before running pnpm run update:api.`,
     );
   }
 }

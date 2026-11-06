@@ -7,9 +7,9 @@ export. They are intentionally broader than the packaged-consumer fixture.
 
 ## Gate and stabilization decision
 
-`npm run check:api` builds all packages and compares their declarations and package export maps
+`pnpm run check:api` builds all packages and compares their declarations and package export maps
 with the checked-in reports. It detects a removed export or changed signature even when no fixture
-uses it. Run `npm run test:api` to verify the comparison tool itself.
+uses it. Run `pnpm run test:api` to verify the comparison tool itself.
 
 CI always tests the tool. The compatibility gate runs only when the repository Actions variable
 `BUILDER_API_COMPATIBILITY` equals `true`; it is disabled until maintainers explicitly enable it.
@@ -23,7 +23,7 @@ implied here. Update the baseline before enabling the gate if other package chan
 
 ## Intentional changes
 
-1. Build and run `npm run check:api`. Review the source/API change and its effect on hosts and
+1. Build and run `pnpm run check:api`. Review the source/API change and its effect on hosts and
    downstream adapters. An additive export also changes the report; the check is conservative.
 2. For a removal or incompatible signature, deprecate the old contract first where practical.
    Use `@deprecated` with the replacement and planned removal version. Keep the alias or adapter
@@ -32,7 +32,7 @@ implied here. Update the baseline before enabling the gate if other package chan
    proposed #9 policy, an incompatible `0.x` change increments the minor; after 1.0 it increments
    the major. Update internal peer ranges explicitly. An API report update alone never authorizes
    a breaking release or makes downstream callers compatible.
-4. Run `npm run update:api`, inspect every changed report in the same PR, then rerun `check:api`,
+4. Run `pnpm run update:api`, inspect every changed report in the same PR, then rerun `check:api`,
    package contracts and the clean tarball consumer. Require maintainer review of report updates.
    Never regenerate reports automatically in CI or skip the gate just to make a PR green.
 

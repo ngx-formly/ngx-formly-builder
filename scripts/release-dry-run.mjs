@@ -10,12 +10,9 @@ const packages = ['libs/state', 'libs/core', 'libs/ui/material', 'libs/ui/builde
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 try {
   mkdirSync(join(fixture, '.changeset'));
-  writeFileSync(join(fixture, 'package-lock.json'), '{}');
+  cpSync(join(root, 'pnpm-workspace.yaml'), join(fixture, 'pnpm-workspace.yaml'));
   cpSync(join(root, '.changeset/config.json'), join(fixture, '.changeset/config.json'));
-  writeFileSync(
-    join(fixture, 'package.json'),
-    JSON.stringify({ name: 'release-fixture', private: true, workspaces: packages }),
-  );
+  cpSync(join(root, 'package.json'), join(fixture, 'package.json'));
   for (const directory of packages) {
     mkdirSync(join(fixture, directory), { recursive: true });
     cpSync(join(root, directory, 'package.json'), join(fixture, directory, 'package.json'));

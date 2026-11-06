@@ -1,6 +1,6 @@
 # @ngx-formly/builder
 
-Generated declarations for review. Update with `npm run update:api`.
+Generated declarations for review. Update with `pnpm run update:api`.
 
 ## Package exports
 

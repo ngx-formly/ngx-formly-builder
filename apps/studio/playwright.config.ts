@@ -21,7 +21,7 @@ export default defineConfig({
   ],
   use: { baseURL, headless: true, trace: 'on-first-retry' },
   webServer: {
-    command: 'npm start',
+    command: 'pnpm start',
     url: baseURL,
     reuseExistingServer: true,
     timeout: 180000,

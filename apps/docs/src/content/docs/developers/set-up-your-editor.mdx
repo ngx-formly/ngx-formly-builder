@@ -9,14 +9,16 @@ editor, not create a new Angular application.
 
 ## Run Studio locally
 
-Use Node.js 24.15 or newer within the Node.js 24 release line and npm 11.19.0. From a terminal:
+Use Node.js 24.15 or newer within the Node.js 24 release line and pnpm 10.25.0. From a terminal:
 
 ```bash
 git clone https://github.com/ngx-formly/ngx-formly-builder.git
 cd ngx-formly-builder
-npm ci
-npm start
+pnpm install
+pnpm dev
 ```
+
+`pnpm dev` also starts the docs at `http://localhost:4321`. Use `pnpm start` to run only Studio.
 
 Open `http://localhost:4200`, enter the Form Editor, and create a form using Material. Add a field
 and check Preview before making changes. This gives you a working baseline for your setup.

@@ -6,9 +6,14 @@ import { fileURLToPath } from 'node:url';
 
 const workspaceRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const fixtureSource = join(workspaceRoot, 'integration/package-consumer');
-const packageDirectories = ['state', 'core', 'material', 'builder-material'];
+const packageDirectories = [
+  'libs/state',
+  'libs/core',
+  'libs/ui/material',
+  'libs/ui/builder-material',
+];
 const nodeCommand = process.execPath;
-const npmCli = process.env['npm_execpath'];
+const pnpmCli = process.env['npm_execpath'];
 const fixtureRoot = mkdtempSync(join(tmpdir(), 'formly-editor-consumer-'));
 const tarballDirectory = join(fixtureRoot, 'packages');
 
@@ -21,11 +26,11 @@ function run(command, args, options = {}) {
   });
 }
 
-function runNpm(args, options = {}) {
-  if (!npmCli) {
-    throw new Error('npm_execpath is unavailable; run this check through npm run check:packages');
+function runPnpm(args, options = {}) {
+  if (!pnpmCli) {
+    throw new Error('npm_execpath is unavailable; run this check through pnpm run check:packages');
   }
-  return run(nodeCommand, [npmCli, ...args], options);
+  return run(nodeCommand, [pnpmCli, ...args], options);
 }
 
 try {
@@ -44,21 +49,28 @@ try {
   const fixtureManifest = JSON.parse(readFileSync(join(fixtureSource, 'package.json'), 'utf8'));
 
   for (const directory of packageDirectories) {
-    const packagePath = join(workspaceRoot, 'dist', directory);
-    const packOutput = runNpm(
-      ['pack', packagePath, '--json', '--pack-destination', tarballDirectory],
+    const packagePath = join(workspaceRoot, 'dist', basename(directory));
+    const packOutput = runPnpm(
+      [
+        '--dir',
+        join(workspaceRoot, directory),
+        'pack',
+        '--json',
+        '--pack-destination',
+        tarballDirectory,
+      ],
       { capture: true },
     );
-    const [{ filename }] = JSON.parse(packOutput);
+    const { filename } = JSON.parse(packOutput);
     const packageManifest = JSON.parse(readFileSync(join(packagePath, 'package.json'), 'utf8'));
     fixtureManifest.dependencies[packageManifest.name] = `file:./packages/${basename(filename)}`;
   }
 
   writeFileSync(join(fixtureRoot, 'package.json'), `${JSON.stringify(fixtureManifest, null, 2)}\n`);
 
-  runNpm(['install', '--ignore-scripts', '--no-package-lock']);
-  runNpm(['exec', '--', 'tsc', '--noEmit', '-p', 'tsconfig.json']);
-  runNpm(['run', 'build']);
+  runPnpm(['install', '--ignore-scripts', '--lockfile=false']);
+  runPnpm(['exec', 'tsc', '--noEmit', '-p', 'tsconfig.json']);
+  runPnpm(['run', 'build']);
   run(nodeCommand, [
     '--input-type=module',
     '--eval',

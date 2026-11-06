@@ -1,6 +1,6 @@
 # @ngx-formly/builder-state
 
-Generated declarations for review. Update with `npm run update:api`.
+Generated declarations for review. Update with `pnpm run update:api`.
 
 ## Package exports
 
@@ -276,6 +276,7 @@ interface EngineLibrary {
 interface BuilderEngineConfig {
     editorType: string;
     libraries: EngineLibrary[];
+    /** Defaults to true. */
     autoSave?: boolean;
     autoSaveDelay?: number;
     formStore?: Type<FormStoreService>;

@@ -43,21 +43,28 @@ preserves all `formly-studio-*` storage keys and the project's author and proven
 
 ## Development
 
-Use Node.js 24.15 or newer within the Node.js 24 release line and npm 11.19.0.
+Use Node.js 24.15 or newer within the Node.js 24 release line and pnpm 10.25.0.
 The builder uses Angular 22 and Formly 11.
 PrimeNG 21 and PrimeUIX themes 2 retain their MIT licenses. Because PrimeNG 21 declares Angular 21
-peers, Angular 22 consumers currently need the scoped npm overrides shown in the package-consumer
+peers, Angular 22 consumers currently need the scoped pnpm overrides shown in the package-consumer
 fixture. Removing this compatibility requirement is a prerequisite for a stable public release.
 
 ```sh
-npm ci
-npm start
+pnpm install
+pnpm dev
 ```
 
-Run `npm test`, `npm run lint`, `npm run check:docs`, and `npm run build` to validate changes. The
+`pnpm dev` starts Studio at `http://localhost:4200` and docs at `http://localhost:4321`.
+Use `pnpm start` for Studio alone or `pnpm start:docs` for docs alone. Studio watches the
+libraries through the source paths in `tsconfig.json`; no separate library watchers are needed.
+
+The pnpm workspace includes `apps/*`, `libs/*`, and `libs/ui/*`, with one root lockfile.
+The package-consumer fixture stays outside the workspace so it tests packed libraries in isolation.
+
+Run `pnpm test`, `pnpm run lint`, `pnpm run check:docs`, and `pnpm run build` to validate changes. The
 build also verifies that every external library import is declared by its published package, packs
 the libraries, and builds a clean Angular consumer from those tarballs. After installing Playwright
-Chromium, run `npm run check:packages:e2e` to check the packaged editor in a browser.
+Chromium, run `pnpm run check:packages:e2e` to check the packaged editor in a browser.
 
 ## Repository layout
 
@@ -80,8 +87,9 @@ Chromium, run `npm run check:packages:e2e` to check the packaged editor in a bro
 The builder name maps to the existing editor shell in `libs/core`; source directories, build
 targets, and package boundaries stay the same. It is separate from `@ngx-formly/core`, the Formly
 runtime dependency. The reusable Material fields use `@ngx-formly/builder-material-fields` to
-distinguish them from the existing `@ngx-formly/material` adapter. The private docs and consumer
-workspaces use `@ngx-formly/builder-docs` and `@ngx-formly/builder-package-consumer`.
+distinguish them from the existing `@ngx-formly/material` adapter. The private app
+workspaces use `@ngx-formly/builder-studio` and `@ngx-formly/builder-docs`. The isolated consumer
+fixture is `@ngx-formly/builder-package-consumer`.
 
 Existing consumers must use the package names above in their dependencies and TypeScript imports,
 and import the stylesheet from `@ngx-formly/builder/styles.css`. Rebuild and install matching
