@@ -20,8 +20,13 @@ pnpm dev
 
 `pnpm dev` also starts the docs at `http://localhost:4321`. Use `pnpm start` to run only Studio.
 
-Open `http://localhost:4200`, enter the Form Editor, and create a form using Material. Add a field
-and check Preview before making changes. This gives you a working baseline for your setup.
+Alternatively, run `pnpm dev:portless` to start Studio at `https://builder-studio.ngx-formly.localhost`
+and docs at `https://builder-docs.ngx-formly.localhost` with automatically assigned ports.
+Portless may request administrator access to set up its local HTTPS proxy on first use.
+Use the printed URLs if you have a custom proxy configuration or use a Git worktree.
+
+Open Studio at the URL for your chosen command, enter the Form Editor, and create a form using Material.
+Add a field and check Preview before making changes. This gives you a working baseline for your setup.
 
 Forms are stored in the browser's local storage.
 Export work you want to keep before clearing browser data or changing the local origin.

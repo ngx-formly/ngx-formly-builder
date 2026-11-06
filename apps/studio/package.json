@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --dir ../.. exec ng serve studio --host 0.0.0.0"
+    "dev": "pnpm --dir ../.. exec ng serve studio --host 0.0.0.0",
+    "dev:portless": "pnpm --dir ../.. exec portless run --name builder-studio.ngx-formly ng serve studio --host 0.0.0.0"
   },
   "dependencies": {
     "@ngx-formly/builder": "workspace:*",
