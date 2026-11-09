@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { get } from 'lodash-es';
-import { Select, SelectPassThrough } from 'primeng/select';
+import { Select } from 'primeng/select';
 import { CoreFieldService } from '../../config/core-field.service';
 import { CoreFormService } from '../../editor/core-form.service';
 import { FieldPropertyWrapper } from '../../properties/property-wrapper';
@@ -29,10 +29,7 @@ import {
       <p-select
         class="w-full"
         checkmark
-        [virtualScroll]="true"
-        [virtualScrollItemSize]="38"
         [inputId]="selectId"
-        [pt]="selectPT"
         [options]="option().variants"
         [ngModel]="selectedVariant()"
         (onChange)="selectVariant($event.value)"
@@ -67,13 +64,6 @@ export class StylingOption {
   readonly selectedVariant = computed(() =>
     findVariant(this.classValue(), this.option(), this.breakpoint(), this.breakpointAffix),
   );
-
-  selectPT: SelectPassThrough = {
-    option: {
-      style: { height: '36px' }, // Using px to match virtual scroll item height
-    },
-  };
-  itemSize = 38; // 36px height + 2px gap
 
   selectVariant(variant: string): void {
     if (variant && !this.option().variants.includes(variant)) {
