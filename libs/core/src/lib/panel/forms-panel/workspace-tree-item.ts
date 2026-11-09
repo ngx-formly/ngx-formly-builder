@@ -26,8 +26,8 @@ import { TreeItem } from '../../shared/tree-item';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ButtonDirective, ButtonIcon, Tooltip, TreeItem, Menu, NameEditPopover],
   template: `
-    @if (node(); as item) {
-      @if (item.type === 'folder') {
+    @if (node(); as workspaceNode) {
+      @if (workspaceNode.type === 'folder') {
         <div class="flex flex-col">
           <core-tree-item
             #folderTreeItem
@@ -41,7 +41,7 @@ import { TreeItem } from '../../shared/tree-item';
             <i class="material-symbols-outlined text-primary">
               {{ isExpanded() ? 'folder_open' : 'folder' }}
             </i>
-            <span class="truncate font-medium">{{ item.name }}</span>
+            <span class="truncate font-medium">{{ workspaceNode.name }}</span>
 
             <ng-container actions>
               <button
@@ -112,7 +112,7 @@ import { TreeItem } from '../../shared/tree-item';
             }
           </ul>
         </div>
-      } @else if (item.type === 'form') {
+      } @else if (workspaceNode.type === 'form') {
         <core-tree-item
           #formTreeItem
           [level]="level()"
@@ -123,13 +123,13 @@ import { TreeItem } from '../../shared/tree-item';
           <button
             type="button"
             class="flex min-w-0 flex-col gap-0.5 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            [attr.aria-label]="'Open form ' + item.name"
+            [attr.aria-label]="'Open form ' + workspaceNode.name"
             [attr.aria-pressed]="isActiveForm()"
             [disabled]="hasFormStorageRecoveryIssue()"
           >
             <span class="flex items-center gap-1.5">
               <i class="material-symbols-outlined text-content-secondary"> description </i>
-              <span class="truncate">{{ item.name }}</span>
+              <span class="truncate">{{ workspaceNode.name }}</span>
             </span>
             <span class="ml-8 flex items-center gap-1.5 text-sm text-muted-color">
               @if (uiConfigLabel()) {
@@ -170,7 +170,25 @@ import { TreeItem } from '../../shared/tree-item';
           [popup]="true"
           (onShow)="formNameMenuVisible.set(true)"
           (onHide)="formNameMenuVisible.set(false)"
-        />
+        >
+          <ng-template
+            #item
+            let-item
+          >
+            <div
+              class="flex cursor-pointer items-center gap-2 px-3 py-1"
+              [class.text-button-text-danger]="item.warn"
+            >
+              <i
+                class="material-symbols-outlined"
+                aria-hidden="true"
+              >
+                {{ item.matIcon }}
+              </i>
+              {{ item.label }}
+            </div>
+          </ng-template>
+        </p-menu>
 
         <core-name-edit-popover
           #formNamePopover
@@ -221,12 +239,13 @@ export class WorkspaceTreeItem {
   formMenuItems: MenuItem[] = [
     {
       label: 'Edit Name',
+      matIcon: 'edit',
       command: () => {
         this.formNameEditValue.set(this.node()?.name ?? '');
         this.formNamePopover()?.show(this.formTreeItemRef()?.nativeElement);
       },
     },
-    { label: 'Delete', command: () => this.deleteNode() },
+    { label: 'Delete', matIcon: 'delete', warn: true, command: () => this.deleteNode() },
   ];
 
   readonly isMouseInside = signal(false);
