@@ -49,4 +49,21 @@ describe('ValidationMessageInput', () => {
       path: ['validation', 'messages', 'required'],
     });
   });
+
+  it('preserves multiline messages entered in the textarea', async () => {
+    const changed = vi.fn();
+    fixture.componentInstance.targetChanged.subscribe(changed);
+    await fixture.whenStable();
+    const textarea: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
+    expect(textarea.value).toBe('Required field');
+
+    textarea.value = 'Please provide a value.\nThis field is required.';
+    textarea.dispatchEvent(new Event('input'));
+
+    expect(changed).toHaveBeenCalledWith({
+      type: PropertyChangeType.VALUE,
+      path: ['validation', 'messages', 'required'],
+      value: textarea.value,
+    });
+  });
 });

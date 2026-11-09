@@ -34,20 +34,26 @@ import type { FieldValidationConfig } from '../../properties/validation-messages
     @if (config().rules.length) {
       <p-panel header="Rules">
         @for (rule of config().rules; track rule.name) {
-          <core-field-property
-            [property]="rule.property"
-            [path]="propertyPath(rule.property)"
-            [target]="target()"
-            (targetChanged)="onRuleChanged($event, rule.name)"
-          />
-          @if (hasPropertyValue(rule.property)) {
-            <core-validation-message-input
-              [validatorLabel]="rule.property.label"
-              [validatorName]="rule.name"
+          <div
+            class="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-end gap-2 [&_.field-property-control]:min-w-0!"
+          >
+            <core-field-property
+              class="min-w-0"
+              [property]="rule.property"
+              [path]="propertyPath(rule.property)"
               [target]="target()"
-              (targetChanged)="targetChanged.emit($event)"
+              (targetChanged)="onRuleChanged($event, rule.name)"
             />
-          }
+            @if (hasPropertyValue(rule.property)) {
+              <core-validation-message-input
+                class="min-w-0"
+                [validatorLabel]="rule.property.label"
+                [validatorName]="rule.name"
+                [target]="target()"
+                (targetChanged)="targetChanged.emit($event)"
+              />
+            }
+          </div>
         }
       </p-panel>
     }
