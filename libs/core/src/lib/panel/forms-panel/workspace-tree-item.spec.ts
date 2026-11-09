@@ -1,4 +1,5 @@
 import { CoreFormService } from '../../editor/core-form.service';
+import { PanelService } from '../../editor/panel.service';
 import { NO_ERRORS_SCHEMA, provideZonelessChangeDetection, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -104,6 +105,7 @@ describe('WorkspaceTreeItem', () => {
       providers: [
         provideZonelessChangeDetection(),
         MouseInsideService,
+        PanelService,
         {
           provide: CoreFormService,
           useValue: {
@@ -126,6 +128,18 @@ describe('WorkspaceTreeItem', () => {
         },
       ],
     }).compileComponents();
+  });
+
+  it('opens Fields when selecting the active form again without reloading it', () => {
+    activeFormId.set('form-child');
+    fixture = TestBed.createComponent(WorkspaceTreeItem);
+    fixture.componentRef.setInput('nodeId', 'form-child');
+    fixture.detectChanges();
+
+    fixture.componentInstance.selectForm(new MouseEvent('click'));
+
+    expect(TestBed.inject(PanelService).activeLHSPanel()).toBe('fields');
+    expect(setActiveForm).not.toHaveBeenCalled();
   });
 
   describe('folder node', () => {

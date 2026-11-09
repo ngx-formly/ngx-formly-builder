@@ -529,7 +529,7 @@ interface DragOverData {
 }
 type FieldDropPosition = 'center' | 'left' | 'right';
 type FormDisplayMode = 'form' | 'json' | 'preview';
-declare class PanelService {
+export declare class PanelService {
     protected readonly activePanelSrc: import("@angular/core").WritableSignal<LHSPanelType | RHSPanelType>;
     readonly activePanel: import("@angular/core").Signal<LHSPanelType | RHSPanelType>;
     protected readonly activeLHSPanelSrc: import("@angular/core").WritableSignal<LHSPanelType>;
@@ -621,8 +621,69 @@ declare class FieldsPanel {
     static ɵfac: i0.ɵɵFactoryDeclaration<FieldsPanel, never>;
     static ɵcmp: i0.ɵɵComponentDeclaration<FieldsPanel, "core-fields-panel", never, {}, {}, never, never, true, never>;
 }
+declare const PREVIEW_DEVICE_WIDTHS: {
+    readonly auto: null;
+    readonly sm: 640;
+    readonly md: 768;
+    readonly lg: 1024;
+    readonly xl: 1280;
+};
+type PreviewDevicePreset = 'custom' | keyof typeof PREVIEW_DEVICE_WIDTHS;
+declare class PreviewViewportService {
+    private readonly presetSrc;
+    private readonly customWidthSrc;
+    readonly preset: import("@angular/core").Signal<PreviewDevicePreset>;
+    readonly customWidth: import("@angular/core").Signal<number>;
+    readonly targetWidth: import("@angular/core").Signal<null | number>;
+    selectPreset(preset: PreviewDevicePreset): void;
+    setCustomWidth(width: number): void;
+    static ɵfac: i0.ɵɵFactoryDeclaration<PreviewViewportService, never>;
+    static ɵprov: i0.ɵɵInjectableDeclaration<any>;
+}
+declare class FormPreviewContent {
+    readonly formFields: import("@angular/core").InputSignal<FormlyFieldConfig<import("@ngx-formly/core").FormlyFieldProps & {
+        [additionalProperties: string]: any;
+    }>[]>;
+    protected readonly viewport: PreviewViewportService;
+    private readonly applicationRef;
+    private readonly environmentInjector;
+    private readonly destroyRef;
+    private readonly document;
+    private readonly rendererFactory;
+    private readonly canvas;
+    private readonly previewFrame;
+    private rendererRef;
+    private frameInjector;
+    private resizeObserver;
+    private styleObserver;
+    private readonly frameStyles;
+    protected readonly canvasWidth: import("@angular/core").WritableSignal<number>;
+    protected readonly canvasHeight: import("@angular/core").WritableSignal<number>;
+    readonly scale: import("@angular/core").Signal<number>;
+    protected readonly scaledWidth: import("@angular/core").Signal<string>;
+    protected readonly frameWidth: import("@angular/core").Signal<string>;
+    protected readonly frameHeight: import("@angular/core").Signal<number>;
+    constructor();
+    protected initializeFrame(): Promise<void>;
+    private createFrameRendererFactory;
+    private observeCanvas;
+    private observeStyles;
+    private syncFrameAppearance;
+    private syncFrameStyles;
+    private destroyRenderer;
+    private destroyFrame;
+    static ɵfac: i0.ɵɵFactoryDeclaration<FormPreviewContent, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<FormPreviewContent, "core-form-preview-content", never, {
+        "formFields": {
+            "alias": "formFields";
+            "required": false;
+            "isSignal": true;
+        };
+    }, {}, never, never, true, never>;
+}
 declare class FormPanel {
     protected formService: CoreFormService;
+    protected readonly previewContent: import("@angular/core").Signal<FormPreviewContent | undefined>;
     activeFormId: import("@angular/core").Signal<string | undefined>;
     activeFormFieldsJSON: import("@angular/core").Signal<string>;
     activeFormDisplayMode: import("@angular/core").Signal<"form" | "json" | "preview">;

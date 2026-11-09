@@ -85,18 +85,18 @@ export class HomePage {
     'No account required. Your forms stay in this browser.';
 
   async createForm(): Promise<void> {
-    if (await this.router.navigateByUrl('/form-editor')) {
+    if (await this.router.navigateByUrl('/workspaces')) {
       this.createFormDialogService.open();
     }
   }
 
   async importForm(): Promise<void> {
-    if (await this.router.navigateByUrl('/form-editor')) {
+    if (await this.router.navigateByUrl('/workspaces')) {
       this.importDialogService.open();
     }
   }
 
   openEditor(): void {
-    void this.router.navigateByUrl('/form-editor');
+    void this.router.navigateByUrl('/workspaces');
   }
 }

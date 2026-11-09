@@ -60,6 +60,7 @@ export { CoreFieldService } from './lib/config/core-field.service';
 export { CoreLibraryService } from './lib/config/core-library.service';
 export { BuilderFieldStateService } from './lib/editor/builder-field-state.service';
 export { CoreFormService } from './lib/editor/core-form.service';
+export { PanelService } from './lib/editor/panel.service';
 export { CreateFormDialogService } from './lib/panel/forms-panel/create-form-dialog.service';
 export { ImportDialogService } from './lib/panel/forms-panel/import-dialog.service';
 export { MarkdownDialogService } from './lib/properties/markdown/markdown-dialog.service';

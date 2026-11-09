@@ -3,50 +3,26 @@ import { PanelService } from '../editor/panel.service';
 import { RHSPanelType } from '../editor/types';
 import { FieldEditPanel, ModelEditPanel, PanelOptionConfig, StylingPanel } from '../panel';
 import { ValidationPanel } from '../panel/validation-panel/validation-panel';
-import { PanelPopAnimator } from '../shared';
 import { PanelOptionList } from './panel-option-list';
 
 @Component({
   selector: 'core-rhs-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    FieldEditPanel,
-    ValidationPanel,
-    StylingPanel,
-    ModelEditPanel,
-    PanelPopAnimator,
-    PanelOptionList,
-  ],
+  imports: [FieldEditPanel, ValidationPanel, StylingPanel, ModelEditPanel, PanelOptionList],
   host: { class: 'flex h-full min-h-0 min-w-0 shrink-0' },
   template: `
     @switch (activePanel()) {
       @case ('field-edit') {
-        <core-field-edit-panel
-          class="panel"
-          corePanelPopAnimator
-          panelType="field-edit"
-        />
+        <core-field-edit-panel class="panel" />
       }
       @case ('styling') {
-        <core-styling-panel
-          class="panel"
-          corePanelPopAnimator
-          panelType="styling"
-        />
+        <core-styling-panel class="panel" />
       }
       @case ('validation') {
-        <core-validation-panel
-          class="panel"
-          corePanelPopAnimator
-          panelType="validation"
-        />
+        <core-validation-panel class="panel" />
       }
       @case ('model') {
-        <core-model-edit-panel
-          class="panel"
-          corePanelPopAnimator
-          panelType="model"
-        />
+        <core-model-edit-panel class="panel" />
       }
     }
     <core-panel-option-list

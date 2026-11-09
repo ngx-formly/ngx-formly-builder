@@ -1,4 +1,5 @@
 import { CoreFormService } from '../../editor/core-form.service';
+import { PanelService } from '../../editor/panel.service';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -203,6 +204,7 @@ import { TreeItem } from '../../shared/tree-item';
   `,
 })
 export class WorkspaceTreeItem {
+  private readonly panels = inject(PanelService);
   readonly nodeId = input.required<string>();
   readonly level = input(0, { transform: numberAttribute });
   readonly isFiltering = input(false, { transform: booleanAttribute });
@@ -320,8 +322,12 @@ export class WorkspaceTreeItem {
 
     event.preventDefault();
     const n = this.node();
-    if (n && n.type === 'form' && !this.isActiveForm()) {
-      this.formService.setActiveForm(n.id);
+    if (n && n.type === 'form') {
+      if (this.isActiveForm()) {
+        this.panels.setActiveLHSPanel('fields');
+      } else {
+        this.formService.setActiveForm(n.id);
+      }
     }
   }
 

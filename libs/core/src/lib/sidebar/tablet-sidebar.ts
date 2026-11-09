@@ -11,7 +11,6 @@ import {
   StylingPanel,
 } from '../panel';
 import { ValidationPanel } from '../panel/validation-panel/validation-panel';
-import { PanelPopAnimator } from '../shared';
 import { PanelOptionList } from './panel-option-list';
 
 export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
@@ -34,7 +33,6 @@ export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
     FormsPanel,
     ModelEditPanel,
     PanelOptionList,
-    PanelPopAnimator,
     StylingPanel,
     ValidationPanel,
   ],
@@ -49,53 +47,25 @@ export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
     <div class="min-h-0 min-w-0 grow">
       @switch (activePanel()) {
         @case ('forms') {
-          <core-forms-panel
-            class="panel"
-            corePanelPopAnimator
-            panelType="forms"
-          />
+          <core-forms-panel class="panel" />
         }
         @case ('fields') {
-          <core-fields-panel
-            class="panel"
-            corePanelPopAnimator
-            panelType="fields"
-          />
+          <core-fields-panel class="panel" />
         }
         @case ('add-field') {
-          <core-add-field-panel
-            class="panel"
-            corePanelPopAnimator
-            panelType="add-field"
-          />
+          <core-add-field-panel class="panel" />
         }
         @case ('field-edit') {
-          <core-field-edit-panel
-            class="panel"
-            corePanelPopAnimator
-            panelType="field-edit"
-          />
+          <core-field-edit-panel class="panel" />
         }
         @case ('styling') {
-          <core-styling-panel
-            class="panel"
-            corePanelPopAnimator
-            panelType="styling"
-          />
+          <core-styling-panel class="panel" />
         }
         @case ('validation') {
-          <core-validation-panel
-            class="panel"
-            corePanelPopAnimator
-            panelType="validation"
-          />
+          <core-validation-panel class="panel" />
         }
         @case ('model') {
-          <core-model-edit-panel
-            class="panel"
-            corePanelPopAnimator
-            panelType="model"
-          />
+          <core-model-edit-panel class="panel" />
         }
       }
     </div>

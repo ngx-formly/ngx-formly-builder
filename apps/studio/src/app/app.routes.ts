@@ -8,9 +8,10 @@ export const routes: Routes = [
     loadComponent: () => import('./home/home-page').then((m) => m.HomePage),
   },
   {
-    path: 'form-editor',
+    path: 'workspaces',
     loadChildren: () =>
       import('./form-editor/form-editor.routes').then((module) => module.formEditorRoutes),
   },
-  { path: '**', redirectTo: 'form-editor' },
+  { path: 'form-editor', pathMatch: 'full', redirectTo: 'workspaces' },
+  { path: '**', redirectTo: 'workspaces' },
 ];

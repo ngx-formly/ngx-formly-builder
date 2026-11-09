@@ -28,6 +28,7 @@ test.describe('Form Editor tablet composition', () => {
   });
 
   test('switches the unified panel body while keeping the canvas visible', async ({ page }) => {
+    await createContactForm(page);
     await page.getByRole('button', { name: 'Open Fields panel' }).click();
     await expect(page.locator('core-fields-panel')).toBeVisible();
     await expect(page.locator('core-forms-panel')).toHaveCount(0);
@@ -39,6 +40,7 @@ test.describe('Form Editor tablet composition', () => {
   });
 
   test('reaches each unified panel workflow', async ({ page }) => {
+    await createContactForm(page);
     const panelNavigation = page.locator('core-tablet-sidebar');
     const panels = [
       ['Workspace', 'core-forms-panel'],

@@ -6,7 +6,7 @@ const routes = [
     title: 'ngx-formly Builder | Visual Angular Form Builder',
   },
   {
-    path: '/form-editor',
+    path: '/workspaces',
     title: 'Form Editor | ngx-formly Builder',
   },
 ] as const;

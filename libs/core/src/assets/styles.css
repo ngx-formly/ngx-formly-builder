@@ -104,29 +104,10 @@
       @apply flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4;
     }
   }
-
-  .animate-panel-pop {
-    animation-name: core-panel-pop;
-    animation-duration: 0.15s;
-    animation-iteration-count: 1;
-  }
 }
 
 @media (hover: none), (pointer: coarse) {
   .touch-actions-visible {
     opacity: 1;
-  }
-}
-
-/* Panel pop animation */
-@keyframes core-panel-pop {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
   }
 }
