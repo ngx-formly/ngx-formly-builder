@@ -5,7 +5,9 @@ import { generateTypeOptionSchema, generateTypeOptionSchemaMap } from './schema'
 
 export const defaultTypeOption = {
   name: '',
-  displayName: 'Generic',
+  displayName: 'Unknown Field',
+  description:
+    'Start with an empty field for custom configuration or expressions that update field and model values.',
   materialSymbol: 'question_mark',
   disableKeyGeneration: true,
   defaultConfig: {},

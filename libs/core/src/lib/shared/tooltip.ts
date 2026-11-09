@@ -6,7 +6,7 @@ import { Tooltip as PrimeNGTooltip } from 'primeng/tooltip';
   hostDirectives: [
     {
       directive: PrimeNGTooltip,
-      inputs: ['pTooltip: coreTooltip', 'tooltipPosition', 'showDelay'],
+      inputs: ['pTooltip: coreTooltip', 'tooltipPosition', 'tooltipEvent', 'showDelay'],
     },
   ],
 })

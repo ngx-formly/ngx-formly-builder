@@ -30,6 +30,8 @@ export interface FieldTypeOption {
   name: string;
   /** Human friendly name shown in the palette. */
   displayName: string;
+  /** Optional help shown in the palette tooltip. */
+  description?: string;
   /** Optional prefix used when generating field keys. */
   keyGenerationPrefix?: string;
   /** When true prevents automatic key generation. */

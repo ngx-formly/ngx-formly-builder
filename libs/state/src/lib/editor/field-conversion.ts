@@ -5,7 +5,7 @@ import { EditorField, FieldInfo } from '../model/types';
 import { EngineFieldType } from './types';
 const defaultTypeOption: EngineFieldType = {
   name: '',
-  displayName: 'Generic',
+  displayName: 'Unknown Field',
   disableKeyGeneration: true,
   defaultConfig: {},
 };
