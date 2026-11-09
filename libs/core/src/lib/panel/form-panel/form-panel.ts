@@ -1,6 +1,6 @@
 import { CoreFormService } from '../../editor/core-form.service';
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ButtonDirective } from 'primeng/button';
@@ -13,6 +13,7 @@ import { JSONFormatValidator } from '../../json-content/json-format-validator';
 import { JSONSchemaValidator } from '../../json-content/json-schema-validator';
 import { FormBuilderContent } from './form-builder-content';
 import { FormPreviewContent } from './form-preview-content';
+import { PreviewDeviceToolbar } from './preview-device-toolbar';
 import { FormToolbarComponent } from './toolbar';
 
 @Component({
@@ -32,6 +33,7 @@ import { FormToolbarComponent } from './toolbar';
     JSONFormatValidator,
     JSONSchemaValidator,
     FormPreviewContent,
+    PreviewDeviceToolbar,
   ],
   host: {
     class: 'flex flex-col h-full',
@@ -92,7 +94,14 @@ import { FormToolbarComponent } from './toolbar';
       </div>
     }
     @if (activeFormId()) {
-      <core-form-toolbar class="shrink-0" />
+      <core-form-toolbar class="shrink-0">
+        @if (activeFormDisplayMode() === 'preview') {
+          <core-preview-device-toolbar
+            class="md:mr-auto"
+            [scale]="previewContent()?.scale() ?? 1"
+          />
+        }
+      </core-form-toolbar>
 
       <p-tabs
         class="min-h-0 grow overflow-hidden"
@@ -136,6 +145,7 @@ import { FormToolbarComponent } from './toolbar';
 })
 export class FormPanel {
   protected formService = inject(CoreFormService);
+  protected readonly previewContent = viewChild(FormPreviewContent);
 
   activeFormId = this.formService.activeFormId;
   activeFormFieldsJSON = this.formService.activeFormFieldsJSON;

@@ -30,16 +30,13 @@ import {
 } from '@angular/core';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { FormPreviewRenderer } from './form-preview-renderer';
-import { PreviewDeviceToolbar } from './preview-device-toolbar';
 import { PreviewViewportService } from './preview-viewport.service';
 
 @Component({
   selector: 'core-form-preview-content',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PreviewDeviceToolbar],
   host: { class: 'flex h-full w-full min-h-0 flex-col overflow-hidden' },
   template: `
-    <core-preview-device-toolbar [scale]="scale()" />
     <div
       #canvas
       class="min-h-0 grow overflow-hidden px-4 pb-4"
@@ -80,7 +77,7 @@ export class FormPreviewContent {
 
   protected readonly canvasWidth = signal(0);
   protected readonly canvasHeight = signal(0);
-  protected readonly scale = computed(() => {
+  readonly scale = computed(() => {
     const targetWidth = this.viewport.targetWidth();
     if (targetWidth === null) {
       return 1;

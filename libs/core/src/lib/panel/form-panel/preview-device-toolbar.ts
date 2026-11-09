@@ -11,10 +11,12 @@ import { PreviewDevicePreset, PreviewViewportService } from './preview-viewport.
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, ButtonDirective, ButtonIcon, InputNumber, SelectButton, Tooltip],
   host: {
-    class: 'flex flex-wrap items-center min-h-(--sub-panel-header-height) shrink-0 px-4 gap-2',
+    class:
+      'flex flex-wrap items-center justify-center min-h-(--sub-panel-header-height) shrink-0 gap-2',
   },
   template: `
     <p-selectbutton
+      class="max-w-full flex-wrap justify-center"
       aria-label="Preview device width"
       optionLabel="label"
       optionValue="value"
@@ -57,7 +59,7 @@ import { PreviewDevicePreset, PreviewViewportService } from './preview-viewport.
       </span>
     }
     <span
-      class="ml-auto text-sm whitespace-nowrap text-muted-color"
+      class="text-sm whitespace-nowrap text-muted-color"
       aria-live="polite"
     >
       {{ viewport.targetWidth() ? viewport.targetWidth() + 'px' : 'Auto' }} · {{ scalePercent() }}%

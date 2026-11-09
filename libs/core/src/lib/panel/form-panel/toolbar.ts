@@ -36,7 +36,9 @@ import { NameEditPopover } from '../../shared/name-edit-popover';
     class: 'flex min-h-(--panel-header-height) items-start px-4 py-2 md:items-center',
   },
   template: `
-    <div class="flex min-w-0 grow flex-col gap-2 md:flex-row md:items-center md:justify-between">
+    <div
+      class="flex min-w-0 grow flex-col gap-x-4 gap-y-2 md:flex-row md:flex-wrap md:items-center md:justify-between"
+    >
       <div class="min-w-0">
         <div
           #formNameTarget
@@ -77,7 +79,8 @@ import { NameEditPopover } from '../../shared/name-edit-popover';
           (visibleChange)="formNamePopoverVisible.set($event)"
         />
       </div>
-      <div class="flex min-w-0 flex-wrap items-center gap-2 md:justify-end md:gap-4">
+      <ng-content />
+      <div class="flex min-w-0 flex-wrap items-center gap-2 md:ml-auto md:justify-end md:gap-4">
         <p-selectbutton
           optionLabel="label"
           optionValue="value"
