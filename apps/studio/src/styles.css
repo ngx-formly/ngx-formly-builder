@@ -31,6 +31,13 @@ body {
   background: var(--p-content-background);
 }
 
+app-form-editor core-form-panel:has(> core-empty-no-form),
+app-form-editor core-form-panel p-tabpanel[value='form'] {
+  background-color: var(--p-content-background);
+  background-image: radial-gradient(circle, rgba(248, 113, 113, 0.2) 0.75px, transparent 1px);
+  background-size: 16px 16px;
+}
+
 ::selection {
   color: var(--p-primary-contrast-color);
   background: var(--p-primary-color);
