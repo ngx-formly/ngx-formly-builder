@@ -62,11 +62,13 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
     >
       @if (addOptions().length) {
         <span class="inline-flex">
+          <!-- shortcut: PrimeNG popup hover requires dirty; remove when upstream enables it on show. -->
           <p-tiered-menu
             #addTieredMenu
             appendTo="body"
             [model]="addOptions()"
             [popup]="true"
+            (onShow)="addTieredMenu.dirty = true"
           />
           <button
             pButton
@@ -93,6 +95,7 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
             appendTo="body"
             [model]="replaceOptions()"
             [popup]="true"
+            (onShow)="replaceOptionsMenu.dirty = true"
           />
           <button
             pButton

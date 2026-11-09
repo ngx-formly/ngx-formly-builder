@@ -113,7 +113,7 @@ test('Form Editor authoring: adds a group and a nested field', async ({ page }) 
     .last()
     .getByRole('button', { name: 'Add Field' })
     .click();
-  await page.getByRole('menuitem', { name: 'Form Controls' }).click();
+  await page.getByRole('menuitem', { name: 'Form Controls' }).hover();
   await page.getByRole('menuitem', { name: 'Input' }).click();
 
   await expect(formContent).toContainText('Group');

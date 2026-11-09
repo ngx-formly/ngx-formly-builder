@@ -76,12 +76,13 @@ import { ChipStyleFix } from '../../shared/chip-style-fix';
       <ng-container actions>
         @if (menuOptions().length) {
           <span class="inline-flex">
+            <!-- shortcut: PrimeNG popup hover requires dirty; remove when upstream enables it on show. -->
             <p-tiered-menu
               #optionsMenu
               appendTo="body"
               [model]="menuOptions()"
               [popup]="true"
-              (onShow)="optionsMenuVisible.set(true)"
+              (onShow)="optionsMenu.dirty = true; optionsMenuVisible.set(true)"
               (onHide)="optionsMenuVisible.set(false)"
             >
               <ng-template
