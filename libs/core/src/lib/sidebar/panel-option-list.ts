@@ -20,6 +20,14 @@ import { PanelOption } from './panel-option';
     <ul>
       @for (option of options(); track option.value) {
         <li>
+          @if (!$first && option.value === 'field-edit') {
+            <div
+              class="px-3 py-2"
+              aria-hidden="true"
+            >
+              <p-divider />
+            </div>
+          }
           <core-panel-option
             [matIcon]="option.matIcon"
             [label]="option.label"
