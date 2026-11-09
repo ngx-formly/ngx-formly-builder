@@ -28,7 +28,7 @@ for (const viewport of [
     const dialog = page.getByRole('dialog', { name: 'Create Form' });
     await expect(dialog).toBeVisible();
     await dialog.getByLabel('Name', { exact: true }).fill('Packaged form');
-    await dialog.getByRole('button', { name: 'Create Form' }).click();
+    await dialog.getByRole('button', { name: 'Start with a blank form', exact: true }).click();
     await expect(dialog).not.toBeVisible();
     await expect(page.locator('core-form-panel')).toContainText('Packaged form');
     await expect(page.locator('body')).toHaveJSProperty('scrollWidth', viewport.width);

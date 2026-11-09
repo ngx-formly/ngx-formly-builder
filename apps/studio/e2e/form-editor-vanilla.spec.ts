@@ -27,10 +27,13 @@ for (const viewport of [
       expect(blankCard!.y + blankCard!.height).toBeLessThan(quickStart!.y);
     }
     const blank = dialog.getByRole('button', { name: 'Start with a blank form', exact: true });
+    const importFile = dialog.getByRole('button', { name: 'Import form file', exact: true });
     const starter = dialog.getByRole('button', { name: 'Starter Form', exact: true });
     const expense = dialog.getByRole('button', { name: 'Expense Report', exact: true });
     await blank.focus();
     await blank.press('Tab');
+    await expect(importFile).toBeFocused();
+    await importFile.press('Tab');
     await expect(starter).toBeFocused();
     await starter.press('Tab');
     await expect(expense).toBeFocused();
@@ -40,7 +43,7 @@ for (const viewport of [
     await expect(dialog.getByRole('button', { name: 'Create Form' })).toHaveCount(0);
     await expect(
       dialog.getByRole('group', { name: 'Starting point' }).getByRole('button'),
-    ).toHaveCount(5);
+    ).toHaveCount(6);
     await expect(dialog.getByRole('button', { name: /Showcase|Basics/ })).toHaveCount(0);
 
     await library.click();
