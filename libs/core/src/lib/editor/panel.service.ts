@@ -10,6 +10,8 @@ export class PanelService {
   protected readonly activeLHSPanelSrc = signal<LHSPanelType>('forms');
   readonly activeLHSPanel = this.activeLHSPanelSrc.asReadonly();
 
+  readonly activeAddFieldTab = signal<'fields' | 'presets'>('fields');
+
   protected readonly activeRHSPanelSrc = signal<RHSPanelType>('field-edit');
   readonly activeRHSPanel = this.activeRHSPanelSrc.asReadonly();
 

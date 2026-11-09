@@ -10,7 +10,16 @@ export const formEditorRoutes: Routes = [
     children: [
       { path: '', pathMatch: 'full', data: { panel: 'forms' }, children: [] },
       { path: ':workspaceId/fields', data: { panel: 'fields' }, children: [] },
-      { path: ':workspaceId/field', data: { panel: 'add-field' }, children: [] },
+      {
+        path: ':workspaceId/field',
+        data: { panel: 'add-field', addFieldTab: 'fields' },
+        children: [],
+      },
+      {
+        path: ':workspaceId/preset',
+        data: { panel: 'add-field', addFieldTab: 'presets' },
+        children: [],
+      },
     ],
   },
 ];

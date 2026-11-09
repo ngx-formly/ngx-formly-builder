@@ -29,7 +29,7 @@ import { PanelOptionList } from './panel-option-list';
       position="right"
       [options]="panelOptions"
       [value]="activePanel()"
-      (valueChange)="setActivePanel($event)"
+      (selected)="setActivePanel($event)"
     />
   `,
 })

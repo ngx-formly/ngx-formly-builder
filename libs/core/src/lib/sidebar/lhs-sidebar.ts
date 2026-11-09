@@ -16,7 +16,7 @@ import { PanelOptionList } from './panel-option-list';
       position="left"
       [options]="panelOptions"
       [value]="activePanel()"
-      (valueChange)="setActivePanel($event)"
+      (selected)="setActivePanel($event)"
     />
     @switch (activePanel()) {
       @case ('fields') {

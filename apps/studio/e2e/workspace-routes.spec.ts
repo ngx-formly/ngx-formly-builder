@@ -28,7 +28,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 for (const width of [1536, 1024, 390]) {
-  test(`navigates Workspace, Fields and Add Field with history at ${width}px`, async ({ page }) => {
+  test(`navigates workspace panels and tabs with history at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/workspaces');
     if (width < 1024) {
@@ -53,18 +53,88 @@ for (const width of [1536, 1024, 390]) {
     await expect(page).toHaveURL(/\/workspaces\/first\/field$/);
     await expect(page.locator('core-add-field-panel')).toBeVisible();
 
-    await page.reload();
+    const fieldTab = page.getByRole('tab', { name: 'Field' });
+    const presetTab = page.getByRole('tab', { name: 'Preset' });
+    await presetTab.click();
+    await expect(page).toHaveURL(/\/workspaces\/first\/preset$/);
+    await expect(presetTab).toHaveAttribute('aria-selected', 'true');
+
+    await page.goBack();
     await expect(page).toHaveURL(/\/workspaces\/first\/field$/);
+    await expect(fieldTab).toHaveAttribute('aria-selected', 'true');
+    await page.goForward();
+    await expect(page).toHaveURL(/\/workspaces\/first\/preset$/);
+    await expect(presetTab).toHaveAttribute('aria-selected', 'true');
+
+    await page.reload();
+    await expect(page).toHaveURL(/\/workspaces\/first\/preset$/);
     await expect(page.locator('core-add-field-panel')).toBeVisible();
+    await expect(presetTab).toHaveAttribute('aria-selected', 'true');
     await expect(
       page.locator('core-form-builder-content').getByRole('textbox', { name: 'Name', exact: true }),
     ).toHaveValue('Saved value');
+
+    await fieldTab.click();
+    await expect(page).toHaveURL(/\/workspaces\/first\/field$/);
+    await expect(fieldTab).toHaveAttribute('aria-selected', 'true');
 
     await navigation.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
     await expect(page).toHaveURL(/\/workspaces$/);
     await page.getByRole('button', { name: 'Open form First form', exact: true }).click();
     await expect(page).toHaveURL(/\/workspaces\/first\/fields$/);
     await expect(page.locator('core-fields-panel')).toBeVisible();
+  });
+
+  test(`syncs right panel query parameters with history at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/workspaces/first/preset');
+    const navigation = width < 1024 ? page.getByRole('complementary') : page.getByRole('main');
+
+    for (const [label, field, selector] of [
+      ['Field Edit', 'edit', 'core-field-edit-panel'],
+      ['Validation', 'validation', 'core-validation-panel'],
+      ['Styling', 'styling', 'core-styling-panel'],
+      ['Model', 'model', 'core-model-edit-panel'],
+    ]) {
+      await navigation.getByRole('button', { name: `Open ${label} panel`, exact: true }).click();
+      await expect(page).toHaveURL(`/workspaces/first/preset?field=${field}`);
+      await expect(page.locator(selector)).toBeVisible();
+    }
+
+    await page.goBack();
+    await expect(page).toHaveURL('/workspaces/first/preset?field=styling');
+    await expect(page.locator('core-styling-panel')).toBeVisible();
+    await page.goForward();
+    await expect(page).toHaveURL('/workspaces/first/preset?field=model');
+    await expect(page.locator('core-model-edit-panel')).toBeVisible();
+
+    await page.reload();
+    await expect(page).toHaveURL('/workspaces/first/preset?field=model');
+    await expect(page.locator('core-model-edit-panel')).toBeVisible();
+
+    await navigation.getByRole('button', { name: 'Open Add Field panel', exact: true }).click();
+    await expect(page).toHaveURL('/workspaces/first/preset?field=model');
+    await expect(page.getByRole('tab', { name: 'Preset' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await page.getByRole('tab', { name: 'Field' }).click();
+    await expect(page).toHaveURL('/workspaces/first/field?field=model');
+    await expect(page.locator('core-add-field-panel')).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL('/workspaces/first/preset?field=model');
+    await expect(page.locator('core-model-edit-panel')).toBeVisible();
+
+    await page.goto('/workspaces/second/fields?field=validation');
+    await expect(page).toHaveURL('/workspaces/second/fields?field=validation');
+    await expect(page.locator('core-validation-panel')).toBeVisible();
+
+    await navigation.getByRole('button', { name: 'Open Add Field panel', exact: true }).click();
+    await expect(page).toHaveURL('/workspaces/second/field?field=validation');
+    await expect(page.locator('core-add-field-panel')).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL('/workspaces/second/fields?field=validation');
+    await expect(page.locator('core-validation-panel')).toBeVisible();
   });
 }
 

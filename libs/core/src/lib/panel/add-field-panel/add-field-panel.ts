@@ -1,6 +1,6 @@
 import { CoreFormService } from '../../editor/core-form.service';
 import { CoreFieldService } from '../../config/core-field.service';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { EmptyNoForm } from '../../empty';
 import { AddFieldService } from './add-field.service';
@@ -8,6 +8,7 @@ import { ActiveFieldChip } from '../../shared/active-field-chip';
 import { PanelHeader } from '../../shared/panel-header';
 import { FieldsTabContent } from './fields-tab-content';
 import { PresetsTabContent } from './presets-tab-content';
+import { PanelService } from '../../editor/panel.service';
 
 @Component({
   selector: 'core-add-field-panel',
@@ -86,5 +87,5 @@ export class AddFieldPanel {
   activeField = this.formService.activeField;
   fieldCategoryPresets = this.fieldService.fieldCategoryPresets;
 
-  readonly activeTab = signal<'fields' | 'presets'>('fields');
+  readonly activeTab = inject(PanelService).activeAddFieldTab;
 }

@@ -534,6 +534,7 @@ export declare class PanelService {
     readonly activePanel: import("@angular/core").Signal<LHSPanelType | RHSPanelType>;
     protected readonly activeLHSPanelSrc: import("@angular/core").WritableSignal<LHSPanelType>;
     readonly activeLHSPanel: import("@angular/core").Signal<LHSPanelType>;
+    readonly activeAddFieldTab: import("@angular/core").WritableSignal<"fields" | "presets">;
     protected readonly activeRHSPanelSrc: import("@angular/core").WritableSignal<RHSPanelType>;
     readonly activeRHSPanel: import("@angular/core").Signal<RHSPanelType>;
     protected highlightPanelSrc$: Subject<LHSPanelType | RHSPanelType>;

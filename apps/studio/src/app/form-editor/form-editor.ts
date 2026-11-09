@@ -27,11 +27,18 @@ export class FormEditorApp {
         filter((event) => event instanceof NavigationEnd),
         takeUntilDestroyed(),
       )
-      .subscribe(() => this.restoreRoute());
+      .subscribe(() => {
+        // Panel clicks already set focus; restoring their URL would reopen the right panel.
+        if (this.router.currentNavigation()?.extras.info !== 'panel-selection') {
+          this.restoreRoute();
+        }
+      });
 
     effect(() => {
       const workspaceId = this.forms.activeFormId();
       const panel = this.panels.activeLHSPanel();
+      const activePanel = this.panels.activePanel();
+      const addFieldTab = this.panels.activeAddFieldTab();
       const pending = this.pendingRoute();
       if (this.router.currentNavigation()) return;
 
@@ -39,6 +46,7 @@ export class FormEditorApp {
         if (workspaceId === pending.workspaceId) {
           this.pendingRoute.set(null);
           this.panels.setActiveLHSPanel(pending.panel);
+          this.restoreFieldPanel();
         } else if (
           this.forms.formLoadError()?.formId === pending.workspaceId ||
           this.forms.saveStatus() === 'error'
@@ -55,20 +63,31 @@ export class FormEditorApp {
         return;
       }
 
+      const field =
+        activePanel === 'field-edit'
+          ? 'edit'
+          : activePanel === 'validation' || activePanel === 'styling' || activePanel === 'model'
+            ? activePanel
+            : this.fieldQuery();
       const url = this.router.createUrlTree(
         panel === 'forms' || !workspaceId
           ? ['/workspaces']
-          : ['/workspaces', workspaceId, panel === 'fields' ? 'fields' : 'field'],
+          : [
+              '/workspaces',
+              workspaceId,
+              panel === 'fields' ? 'fields' : addFieldTab === 'presets' ? 'preset' : 'field',
+            ],
+        { queryParams: { field }, queryParamsHandling: 'merge', preserveFragment: true },
       );
       if (
         !this.router.isActive(url, {
           paths: 'exact',
-          queryParams: 'ignored',
+          queryParams: 'exact',
           matrixParams: 'ignored',
           fragment: 'ignored',
         })
       ) {
-        void this.router.navigateByUrl(url);
+        void this.router.navigateByUrl(url, { info: 'panel-selection' });
       }
     });
   }
@@ -77,13 +96,33 @@ export class FormEditorApp {
     const route = this.route.snapshot.firstChild;
     const panel = route?.data['panel'] as 'forms' | 'fields' | 'add-field';
     const workspaceId = route?.paramMap.get('workspaceId');
+    if (panel === 'add-field') {
+      this.panels.activeAddFieldTab.set(route!.data['addFieldTab']);
+    }
     this.pendingRoute.set(null);
     if (workspaceId && workspaceId !== this.forms.activeFormId()) {
       this.pendingRoute.set({ workspaceId, panel });
       this.forms.setActiveForm(workspaceId);
     }
-    if (workspaceId || this.panels.activeLHSPanel() !== panel) {
+    if (workspaceId || this.panels.activePanel() !== panel) {
       this.panels.setActiveLHSPanel(panel);
     }
+    this.restoreFieldPanel();
+  }
+
+  private restoreFieldPanel(): void {
+    const field = this.fieldQuery();
+    if (field === 'edit') {
+      this.panels.setActiveRHSPanel('field-edit');
+    } else if (field === 'validation' || field === 'styling' || field === 'model') {
+      this.panels.setActiveRHSPanel(field);
+    }
+  }
+
+  private fieldQuery() {
+    const field = this.route.snapshot.queryParamMap.get('field');
+    return field === 'edit' || field === 'validation' || field === 'styling' || field === 'model'
+      ? field
+      : null;
   }
 }
