@@ -142,6 +142,37 @@ describe('WorkspaceTreeItem', () => {
     expect(setActiveForm).not.toHaveBeenCalled();
   });
 
+  it('selects folders and nested forms without opening them or toggling expansion', () => {
+    fixture = TestBed.createComponent(WorkspaceTreeItem);
+    fixture.componentRef.setInput('nodeId', 'folder-1');
+    const selectionChanged = vi.fn();
+    fixture.componentInstance.nodeSelectionToggled.subscribe(selectionChanged);
+    fixture.detectChanges();
+
+    const folderButton: HTMLButtonElement = fixture.nativeElement.querySelector(
+      'button[aria-label="Select folder Marketing Folder"]',
+    );
+    const childButton: HTMLButtonElement = fixture.nativeElement.querySelector(
+      'button[aria-label="Select form Child Form"]',
+    );
+    folderButton.click();
+    childButton.click();
+    expect(selectionChanged.mock.calls).toEqual([['folder-1'], ['form-child']]);
+    expect(setActiveForm).not.toHaveBeenCalled();
+    expect(toggleFolderExpansion).not.toHaveBeenCalled();
+
+    fixture.componentRef.setInput('selectedNodeIds', ['folder-1', 'form-child']);
+    fixture.detectChanges();
+    expect(folderButton.getAttribute('aria-pressed')).toBe('true');
+    expect(childButton.getAttribute('aria-pressed')).toBe('true');
+    expect(childButton.classList.contains('opacity-100')).toBe(true);
+
+    hasStorageRecoveryIssues.set(true);
+    fixture.detectChanges();
+    expect(folderButton.disabled).toBe(true);
+    expect(childButton.disabled).toBe(true);
+  });
+
   describe('folder node', () => {
     it('renders folder item and toggles expansion on click', () => {
       fixture = TestBed.createComponent(WorkspaceTreeItem);

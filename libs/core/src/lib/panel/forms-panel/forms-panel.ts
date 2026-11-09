@@ -1,6 +1,13 @@
 import { CoreFormService } from '../../editor/core-form.service';
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { ButtonGroup } from 'primeng/buttongroup';
 import { Empty } from '../../empty/empty';
@@ -11,6 +18,7 @@ import { Filter } from '../../shared/filter';
 import { PanelHeader } from '../../shared/panel-header';
 import { Tooltip } from '../../shared/tooltip';
 import { WorkspaceTreeItem } from './workspace-tree-item';
+import type { WorkspaceNode } from '../../model/types';
 
 @Component({
   selector: 'core-forms-panel',
@@ -32,65 +40,97 @@ import { WorkspaceTreeItem } from './workspace-tree-item';
   },
   template: `
     <core-panel-header
+      class="[--panel-header-height:auto]"
       header="Workspace"
       subHeader="Create and manage forms"
-    >
-      <span
-        actions
-        class="inline-flex items-center gap-2"
+    />
+    <div class="flex items-center gap-2 px-4 pb-2">
+      <p-buttongroup
+        class="min-w-0 [&>span]:flex"
+        aria-label="Workspace actions"
       >
-        <p-buttongroup aria-label="Workspace actions">
-          <button
-            pButton
-            severity="secondary"
-            aria-label="New folder"
-            coreTooltip="New folder"
-            tooltipPosition="top"
-            [disabled]="hasStorageRecoveryIssues()"
-            (click)="addNewFolder()"
+        <button
+          pButton
+          severity="secondary"
+          aria-label="New folder"
+          coreTooltip="New folder"
+          tooltipPosition="top"
+          [disabled]="hasStorageRecoveryIssues()"
+          (click)="addNewFolder()"
+        >
+          <i
+            pButtonIcon
+            class="material-symbols-outlined"
           >
-            <i
-              pButtonIcon
-              class="material-symbols-outlined"
-            >
-              create_new_folder
-            </i>
-          </button>
-          <button
-            pButton
-            severity="secondary"
-            aria-label="Import Form"
-            coreTooltip="Import Form"
-            tooltipPosition="top"
-            [disabled]="hasStorageRecoveryIssues()"
-            (click)="openImportDialog()"
+            create_new_folder
+          </i>
+        </button>
+        <button
+          pButton
+          severity="secondary"
+          aria-label="Import Form"
+          coreTooltip="Import Form"
+          tooltipPosition="top"
+          [disabled]="hasStorageRecoveryIssues()"
+          (click)="openImportDialog()"
+        >
+          <i
+            pButtonIcon
+            class="material-symbols-outlined"
           >
-            <i
-              pButtonIcon
-              class="material-symbols-outlined"
-            >
-              upload
-            </i>
-          </button>
-          <button
-            pButton
-            aria-label="Create Form"
-            coreTooltip="Create Form"
-            tooltipPosition="top"
-            [disabled]="hasStorageRecoveryIssues()"
-            (click)="addNewForm()"
+            upload
+          </i>
+        </button>
+        <button
+          pButton
+          class="min-w-0"
+          aria-label="Create Form"
+          coreTooltip="Create Form"
+          tooltipPosition="top"
+          [disabled]="hasStorageRecoveryIssues()"
+          (click)="addNewForm()"
+        >
+          <i
+            pButtonIcon
+            class="material-symbols-outlined"
           >
-            <i
-              pButtonIcon
-              class="material-symbols-outlined"
-            >
-              add
-            </i>
-            <span pButtonLabel>Create Form</span>
-          </button>
-        </p-buttongroup>
-      </span>
-    </core-panel-header>
+            add
+          </i>
+          <span
+            pButtonLabel
+            class="truncate"
+            >Create Form</span
+          >
+        </button>
+      </p-buttongroup>
+      @if (selectedNodeIds().length) {
+        <button
+          pButton
+          type="button"
+          class="ml-auto shrink-0 px-2"
+          severity="danger"
+          text
+          coreTooltip="Delete selected items"
+          tooltipPosition="top"
+          [attr.aria-label]="'Delete selected items (' + selectedNodeIds().length + ')'"
+          [disabled]="hasStorageRecoveryIssues()"
+          (click)="deleteSelectedNodes()"
+        >
+          <i
+            pButtonIcon
+            class="material-symbols-outlined"
+            aria-hidden="true"
+          >
+            delete
+          </i>
+          <span
+            pButtonLabel
+            class="tabular-nums"
+            >{{ selectedNodeIds().length }}</span
+          >
+        </button>
+      }
+    </div>
 
     @if (hasStorageRecoveryIssues()) {
       <div
@@ -148,6 +188,8 @@ import { WorkspaceTreeItem } from './workspace-tree-item';
                   [nodeId]="nodeId"
                   [isFiltering]="isFiltering()"
                   [filteredVisibleNodeIds]="filteredVisibleNodeIds()"
+                  [selectedNodeIds]="selectedNodeIds()"
+                  (nodeSelectionToggled)="toggleNodeSelection($event)"
                 />
               </li>
             }
@@ -183,6 +225,11 @@ export class FormsPanel {
   hierarchyRootNodeIds = this.formService.hierarchyRootNodeIds;
   hierarchyNodeMap = this.formService.hierarchyNodeMap;
   hasStorageRecoveryIssues = this.formService.hasStorageRecoveryIssues;
+
+  readonly selectedNodeIds = linkedSignal<Record<string, WorkspaceNode>, string[]>({
+    source: this.hierarchyNodeMap,
+    computation: (nodes, previous) => previous?.value.filter((id) => !!nodes[id]) ?? [],
+  });
 
   readonly filterValue = signal('');
   readonly isFiltering = computed(() => !!this.filterValue().trim());
@@ -222,6 +269,23 @@ export class FormsPanel {
 
   addNewForm(): void {
     this.createFormDialogService.open();
+  }
+
+  toggleNodeSelection(nodeId: string): void {
+    if (this.hasStorageRecoveryIssues()) return;
+    this.selectedNodeIds.update((ids) =>
+      ids.includes(nodeId) ? ids.filter((id) => id !== nodeId) : [...ids, nodeId],
+    );
+  }
+
+  deleteSelectedNodes(): void {
+    if (this.hasStorageRecoveryIssues()) return;
+    const selectedIds = this.selectedNodeIds();
+    const nodes = this.hierarchyNodeMap();
+    const roots = selectedIds.filter(
+      (id) => !nodes[id].idPath.slice(0, -1).some((parentId) => selectedIds.includes(parentId)),
+    );
+    roots.forEach((id) => this.formService.deleteWorkspaceNode(id));
   }
 
   addNewFolder(): void {

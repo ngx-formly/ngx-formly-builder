@@ -19,6 +19,7 @@ describe('FormsPanel', () => {
   let createFolder: ReturnType<typeof vi.fn>;
   let openCreateFormDialog: ReturnType<typeof vi.fn>;
   let openImportDialog: ReturnType<typeof vi.fn>;
+  let deleteWorkspaceNode: ReturnType<typeof vi.fn>;
   const formList = signal<BaseEditorForm[]>([]);
   const hierarchyRootNodeIds = signal<string[]>([]);
   const hierarchyNodeMap = signal<Record<string, WorkspaceNode>>({});
@@ -35,6 +36,7 @@ describe('FormsPanel', () => {
     resetCorruptedStorage = vi.fn();
     openCreateFormDialog = vi.fn();
     openImportDialog = vi.fn();
+    deleteWorkspaceNode = vi.fn();
 
     TestBed.resetTestingModule();
     TestBed.overrideComponent(FormsPanel, {
@@ -70,6 +72,7 @@ describe('FormsPanel', () => {
             hierarchyRootNodeIds,
             hierarchyNodeMap,
             createFolder,
+            deleteWorkspaceNode,
             storageRecoveryIssues,
             hasStorageRecoveryIssues,
             getStorageRecoveryBackup: () => '{}',
@@ -209,5 +212,112 @@ describe('FormsPanel', () => {
     buttons[1].click();
 
     expect(resetCorruptedStorage).toHaveBeenCalledOnce();
+  });
+
+  describe('bulk selection', () => {
+    beforeEach(() => {
+      hierarchyRootNodeIds.set(['folder', 'other']);
+      hierarchyNodeMap.set({
+        folder: {
+          id: 'folder',
+          name: 'Folder',
+          type: 'folder',
+          parentId: null,
+          idPath: ['folder'],
+          childIds: ['child'],
+          isExpanded: true,
+        },
+        child: {
+          id: 'child',
+          name: 'Child',
+          type: 'form',
+          parentId: 'folder',
+          idPath: ['folder', 'child'],
+          libraryId: 'form-material',
+          fieldCount: 0,
+        },
+        other: {
+          id: 'other',
+          name: 'Other',
+          type: 'form',
+          parentId: null,
+          idPath: ['other'],
+          libraryId: 'form-material',
+          fieldCount: 0,
+        },
+      });
+      fixture.detectChanges();
+    });
+
+    it('shows the delete action only while items are selected and supports deselection', () => {
+      const panel = fixture.componentInstance;
+      const deleteButton = () =>
+        fixture.nativeElement.querySelector('button[aria-label^="Delete selected items"]');
+      expect(deleteButton()).toBeNull();
+
+      panel.toggleNodeSelection('child');
+      fixture.detectChanges();
+      expect(deleteButton().getAttribute('aria-label')).toBe('Delete selected items (1)');
+
+      panel.toggleNodeSelection('child');
+      fixture.detectChanges();
+      expect(deleteButton()).toBeNull();
+    });
+
+    it('deletes selected items across filters and retains only selections still in storage', () => {
+      const panel = fixture.componentInstance;
+      panel.toggleNodeSelection('child');
+      panel.toggleNodeSelection('other');
+      panel.filterValue.set('Other');
+      fixture.detectChanges();
+      fixture.nativeElement.querySelector('button[aria-label="Delete selected items (2)"]').click();
+      expect(deleteWorkspaceNode.mock.calls).toEqual([['child'], ['other']]);
+
+      const remaining = { ...hierarchyNodeMap() };
+      delete remaining['child'];
+      hierarchyNodeMap.set(remaining);
+      fixture.detectChanges();
+      expect(panel.selectedNodeIds()).toEqual(['other']);
+      expect(
+        fixture.nativeElement.querySelector('button[aria-label="Delete selected items (1)"]'),
+      ).toBeTruthy();
+
+      hierarchyNodeMap.set({});
+      fixture.detectChanges();
+      expect(panel.selectedNodeIds()).toEqual([]);
+      expect(
+        fixture.nativeElement.querySelector('button[aria-label^="Delete selected items"]'),
+      ).toBeNull();
+    });
+
+    it('deletes a selected folder once when its child is also selected', () => {
+      const panel = fixture.componentInstance;
+      panel.toggleNodeSelection('child');
+      panel.toggleNodeSelection('folder');
+      panel.deleteSelectedNodes();
+      expect(deleteWorkspaceNode.mock.calls).toEqual([['folder']]);
+    });
+
+    it('blocks bulk selection and deletion while storage requires recovery', () => {
+      const panel = fixture.componentInstance;
+      panel.toggleNodeSelection('child');
+      storageRecoveryIssues.set([
+        {
+          editorType: 'test-editor',
+          kind: 'forms',
+          reason: 'invalid-json',
+          storageKey: 'forms',
+          rawValue: '{',
+        },
+      ]);
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelector('button[aria-label^="Delete selected items"]').disabled,
+      ).toBe(true);
+      panel.toggleNodeSelection('other');
+      panel.deleteSelectedNodes();
+      expect(panel.selectedNodeIds()).toEqual(['child']);
+      expect(deleteWorkspaceNode).not.toHaveBeenCalled();
+    });
   });
 });

@@ -40,30 +40,61 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
       }
     </span>
 
+    @if (selectionLabel()) {
+      <button
+        pButton
+        type="button"
+        text
+        class="touch-actions-visible absolute inset-y-0 w-10 rounded-l-lg opacity-0 focus:opacity-100"
+        [style.left]="'calc(var(--spacing) * 4 * ' + level() + ')'"
+        [class.opacity-100]="isMouseInside() || isSelected()"
+        [attr.aria-label]="selectionLabel()"
+        [attr.aria-pressed]="isSelected()"
+        [disabled]="selectionDisabled()"
+        (click)="$event.preventDefault(); $event.stopPropagation(); selectionToggled.emit()"
+      >
+        <i
+          pButtonIcon
+          class="material-symbols-outlined"
+          aria-hidden="true"
+        >
+          {{ isSelected() ? 'check_box' : 'check_box_outline_blank' }}
+        </i>
+      </button>
+    }
+
     <div
       class="flex min-w-0 grow items-center justify-between gap-2 pr-1"
       [style.paddingLeft]="paddingLeft()"
     >
       <div class="flex min-w-0 items-center gap-2 overflow-hidden">
-        <button
-          pButton
-          text
-          class="size-8 shrink-0"
-          rounded
-          aria-label="Toggle children"
-          [class.invisible]="!isParent()"
-          [class.disabled]="!isParent()"
-          (click)="toggleClicked.emit($event)"
-        >
-          <i
-            pButtonIcon
-            class="material-symbols-outlined"
-            style="font-size: 24px;"
-            [class.rotate-90]="isExpanded()"
+        @if (selectionLabel()) {
+          <span
+            class="w-8 shrink-0"
+            aria-hidden="true"
+          ></span>
+        }
+        @if (isParent() || !selectionLabel()) {
+          <button
+            pButton
+            text
+            class="size-8 shrink-0"
+            rounded
+            aria-label="Toggle children"
+            [class.invisible]="!isParent()"
+            [class.disabled]="!isParent()"
+            (click)="toggleClicked.emit($event)"
           >
-            chevron_right
-          </i>
-        </button>
+            <i
+              pButtonIcon
+              class="material-symbols-outlined"
+              style="font-size: 24px;"
+              [class.rotate-90]="isExpanded()"
+            >
+              chevron_right
+            </i>
+          </button>
+        }
         <ng-content />
       </div>
 
@@ -84,8 +115,12 @@ export class TreeItem {
   readonly isActive = input(false, { transform: booleanAttribute });
   readonly canInteract = input(true, { transform: booleanAttribute });
   readonly alwaysShowActions = input(false, { transform: booleanAttribute });
+  readonly selectionLabel = input('');
+  readonly isSelected = input(false);
+  readonly selectionDisabled = input(false);
 
   toggleClicked = output<MouseEvent>();
+  selectionToggled = output<void>();
 
   protected mouseInsideService = inject(MouseInsideService);
 

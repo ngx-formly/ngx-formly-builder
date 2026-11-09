@@ -9,6 +9,7 @@ import {
   inject,
   input,
   numberAttribute,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -36,6 +37,10 @@ import { TreeItem } from '../../shared/tree-item';
             [level]="level()"
             [isExpanded]="isExpanded()"
             [alwaysShowActions]="alwaysShowFolderActions()"
+            [selectionLabel]="'Select folder ' + workspaceNode.name"
+            [isSelected]="selectedNodeIds().includes(nodeId())"
+            [selectionDisabled]="hasStorageRecoveryIssues()"
+            (selectionToggled)="nodeSelectionToggled.emit(nodeId())"
             (click)="toggleFolder($event)"
             (toggleClicked)="toggleFolder($event)"
           >
@@ -97,6 +102,8 @@ import { TreeItem } from '../../shared/tree-item';
                     [level]="level() + 1"
                     [isFiltering]="isFiltering()"
                     [filteredVisibleNodeIds]="filteredVisibleNodeIds()"
+                    [selectedNodeIds]="selectedNodeIds()"
+                    (nodeSelectionToggled)="nodeSelectionToggled.emit($event)"
                   />
                 </li>
               }
@@ -119,6 +126,10 @@ import { TreeItem } from '../../shared/tree-item';
           [level]="level()"
           [isActive]="isActiveForm()"
           [alwaysShowActions]="alwaysShowFormActions()"
+          [selectionLabel]="'Select form ' + workspaceNode.name"
+          [isSelected]="selectedNodeIds().includes(nodeId())"
+          [selectionDisabled]="hasStorageRecoveryIssues()"
+          (selectionToggled)="nodeSelectionToggled.emit(nodeId())"
           (click)="selectForm($event)"
         >
           <button
@@ -209,6 +220,8 @@ export class WorkspaceTreeItem {
   readonly level = input(0, { transform: numberAttribute });
   readonly isFiltering = input(false, { transform: booleanAttribute });
   readonly filteredVisibleNodeIds = input<string[]>([]);
+  readonly selectedNodeIds = input<string[]>([]);
+  readonly nodeSelectionToggled = output<string>();
 
   readonly formTreeItemRef = viewChild('formTreeItem', { read: ElementRef });
   readonly folderTreeItemRef = viewChild('folderTreeItem', { read: ElementRef });
