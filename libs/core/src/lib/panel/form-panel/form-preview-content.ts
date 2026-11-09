@@ -120,6 +120,9 @@ export class FormPreviewContent {
     frameDocument.open();
     frameDocument.write('<!doctype html><html><head></head><body></body></html>');
     frameDocument.close();
+    const base = frameDocument.createElement('base');
+    base.href = this.document.baseURI;
+    frameDocument.head.append(base);
     this.syncFrameAppearance(frameDocument);
     this.syncFrameStyles(frameDocument);
     this.observeStyles(frameDocument);

@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { FORMLY_CONFIG, FormlyConfig } from '@ngx-formly/core';
 import { CORE_BUILDER_FORM } from './types';
 import { CoreLibraryService } from '../config/core-library.service';
+import { ReadonlyWrapper } from './readonly-wrapper';
 
 @Injectable()
 export class FormlyConfigService {
@@ -33,5 +34,21 @@ export class FormlyConfigService {
         this.formlyConfig.addConfig(option);
       }
     }
+
+    this.formlyConfig.addConfig({
+      wrappers: [{ name: 'core-readonly', component: ReadonlyWrapper }],
+      extensions: [
+        {
+          name: 'core-readonly',
+          extension: {
+            postPopulate(field) {
+              if (!field.parent || field.wrappers?.includes('core-readonly')) return;
+              const wrappers = (field.wrappers ??= []);
+              wrappers.splice(wrappers.indexOf('core-field') + 1, 0, 'core-readonly');
+            },
+          },
+        },
+      ],
+    });
   }
 }

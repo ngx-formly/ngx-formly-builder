@@ -29,7 +29,7 @@ for (const mode of ['inline', 'dialog'] as const) {
     const preview =
       mode === 'dialog'
         ? page.getByRole('dialog', { name: 'Form Preview' })
-        : page.locator('core-form-preview-content').first();
+        : page.locator('core-form-panel');
     const frame = preview.frameLocator('iframe[title="Responsive form preview"]');
     const dateInput = frame.getByRole('textbox', { name: 'Preferred follow-up date' });
     await dateInput.clear();

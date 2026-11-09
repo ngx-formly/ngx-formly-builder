@@ -8,6 +8,7 @@ import { CORE_LIBRARY_CONFIGS, LibraryConfig } from './types';
 import { CoreLibraryService } from './core-library.service';
 import { FormlyConfigService } from '../formly/formly-config.service';
 import { CoreFieldWrapper } from '../formly/field-wrapper';
+import { ReadonlyWrapper } from '../formly/readonly-wrapper';
 import { provideCoreConfig } from '../provider';
 
 const configA: LibraryConfig = {
@@ -194,4 +195,48 @@ describe('CoreConfigService', () => {
       'editor',
     );
   });
+
+  it.each([false, true])(
+    'adds readonly styling only to the local form scope (builder: %s)',
+    (isBuilder) => {
+      TestBed.configureTestingModule({
+        providers: [provideFormlyCore(), provideCoreConfig([configA, configB])],
+      });
+      const parentConfig = TestBed.inject(FormlyConfig);
+      const libraries = TestBed.inject(CoreLibraryService);
+      const injector = Injector.create({
+        parent: TestBed.inject(Injector),
+        providers: [
+          provideFormlyCore(),
+          FormlyConfigService,
+          { provide: CORE_BUILDER_FORM, useValue: isBuilder },
+        ],
+      });
+
+      try {
+        for (const library of [configA, configB]) {
+          libraries.setActiveLibrary(library.id);
+          injector.get(FormlyConfigService).loadLibraryConfigOptions();
+          const config = injector.get(FormlyConfig);
+          expect(config.getWrapper('core-readonly')?.component).toBe(ReadonlyWrapper);
+          const extension = config.extensions['core-readonly'];
+          const wrappers = isBuilder ? ['core-field', 'form-field'] : ['form-field'];
+          const field = { parent: {}, wrappers };
+          extension.postPopulate!(field);
+          extension.postPopulate!(field);
+          expect(field.wrappers).toEqual(
+            isBuilder
+              ? ['core-field', 'core-readonly', 'form-field']
+              : ['core-readonly', 'form-field'],
+          );
+          const root = {};
+          extension.postPopulate!(root);
+          expect(root).not.toHaveProperty('wrappers');
+        }
+        expect(parentConfig.extensions['core-readonly']).toBeUndefined();
+      } finally {
+        injector.destroy();
+      }
+    },
+  );
 });
