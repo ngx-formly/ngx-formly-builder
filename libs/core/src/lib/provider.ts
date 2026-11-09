@@ -12,8 +12,10 @@ import {
 import { CoreFieldService } from './config/core-field.service';
 import { CoreLibraryService } from './config/core-library.service';
 import { defaultTypeOption } from './config/library';
+import { vanillaLibraryConfig } from './config/vanilla/vanilla.library';
 import {
   CORE_EDITOR_CONFIG,
+  CORE_FORM_TEMPLATES,
   CORE_LIBRARY_CONFIGS,
   CoreEditorConfig,
   FormlyBuilderConfig,
@@ -65,7 +67,7 @@ export function provideCoreTheme(): EnvironmentProviders {
 }
 
 export function provideCoreConfig(
-  libraryConfig: LibraryConfig[],
+  libraryConfig: LibraryConfig[] = [],
   autoSave = true,
   overrides: Partial<Pick<CoreEditorConfig, 'editorType' | 'autoSaveDelay'>> = {},
 ): EnvironmentProviders {
@@ -105,7 +107,7 @@ export function provideCoreConfig(
     },
     {
       provide: CORE_LIBRARY_CONFIGS,
-      useValue: libraryConfig,
+      useValue: [vanillaLibraryConfig, ...libraryConfig],
     },
     CoreLibraryService,
     provideFormlyConfig(formlyConfig),
@@ -113,7 +115,7 @@ export function provideCoreConfig(
 }
 
 /** Configures an embeddable Formly Builder and its isolated Formly runtime. */
-export function provideFormlyBuilder(config: FormlyBuilderConfig): EnvironmentProviders {
+export function provideFormlyBuilder(config: FormlyBuilderConfig = {}): EnvironmentProviders {
   const formStore = config.formStore ?? LocalFormStoreService;
 
   return makeEnvironmentProviders([
@@ -123,6 +125,7 @@ export function provideFormlyBuilder(config: FormlyBuilderConfig): EnvironmentPr
       editorType: config.editorType,
       autoSaveDelay: config.autoSaveDelay,
     }),
+    { provide: CORE_FORM_TEMPLATES, useValue: config.formTemplates ?? null },
     {
       provide: CORE_FORM_STORE,
       useClass: formStore,

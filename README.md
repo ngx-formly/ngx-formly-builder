@@ -30,7 +30,8 @@ and schema workflows from the other community builders.
 ## Name and canonical URLs
 
 The application and documentation use **ngx-formly Builder**. `Studio` remains the reference
-application's source-folder name, and `Studio Material` remains a UI profile name.
+application's source-folder name. The Material UI profile includes the standard controls and the
+builder's additional fields and layouts.
 The demo is hosted at [builder.formly.dev](https://builder.formly.dev/). Canonical/social metadata
 and crawler files still reference [formlystudio.com](https://formlystudio.com/), while package
 homepages and documentation links use [docs.formlystudio.com](https://docs.formlystudio.com/).
@@ -159,7 +160,7 @@ font with its matching font-face and `.material-symbols-outlined` rules:
 />
 ```
 
-Register the PrimeNG theme and one or more UI profiles, then render the builder component:
+Register the PrimeNG theme and any optional UI profiles, then render the builder component:
 
 ```ts
 import { ApplicationConfig, ChangeDetectionStrategy, Component } from '@angular/core';
@@ -197,6 +198,11 @@ mode. `provideCoreTheme()` remains available to hosts that also synchronize the 
 
 `provideFormlyBuilder` accepts an editor storage namespace, autosave settings, and a custom
 `FormStoreService` implementation. The API remains provisional until the first public prerelease.
+
+Use `provideFormlyBuilder()` without profiles for native HTML controls. Leaving **UI Library**
+empty when creating or importing a form uses Vanilla: input, number, textarea, checkbox, select,
+and field groups. Pass shared `FormTemplate[]` through `formTemplates` to offer examples that use
+the selected library. Without this setting, the editor uses the templates configured in each profile.
 
 Document models and persistence APIs can also be consumed without importing the editor UI:
 

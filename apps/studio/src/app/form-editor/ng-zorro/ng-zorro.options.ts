@@ -6,6 +6,7 @@ import {
   createObjectProperty,
   createSelectProperty,
   FieldTypeOption,
+  nativeFieldTypes,
   FieldWrapperOption,
 } from '@ngx-formly/builder';
 
@@ -69,6 +70,7 @@ const inputProperties = [
       { label: 'Email', value: 'email' },
       { label: 'Password', value: 'password' },
       { label: 'Telephone', value: 'tel' },
+      { label: 'Date', value: 'date' },
     ],
     description: 'HTML input type used by the field.',
   }),
@@ -248,6 +250,7 @@ export const ngZorroFieldCategoryOptions = [
       selectTypeConfig,
       radioTypeConfig,
       checkboxTypeConfig,
+      ...nativeFieldTypes,
     ],
   },
   {

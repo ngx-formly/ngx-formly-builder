@@ -1,15 +1,5 @@
-import { expect, Page, test } from '@playwright/test';
-
-async function createContactForm(page: Page) {
-  await page.getByRole('button', { name: 'Create Form' }).first().click();
-  const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
-  await createFormDialog
-    .getByRole('radio', { name: /Material Showcase\s+\u2022\s+Material\b/ })
-    .check();
-  await createFormDialog.getByRole('button', { name: /Create Form/ }).click();
-  await expect(page.getByRole('button', { name: 'Builder' })).toBeVisible();
-  await expect(page.locator('core-form-builder-content')).toContainText('supportRequest');
-}
+import { loadMaterialFixture as createContactForm } from './helpers/material-fixture';
+import { expect, test } from '@playwright/test';
 
 test('Form Editor import: imports supported field configuration into the builder', async ({
   page,
@@ -31,6 +21,7 @@ test('Form Editor import: imports supported field configuration into the builder
   await expect(dialog).toBeHidden();
   await expect(page.getByText('Imported Smoke Form', { exact: true })).toBeVisible();
   await expect(page.locator('core-form-builder-content')).toContainText('Imported Email');
+  await expect(page.locator('core-form-builder-content core-vanilla-field input')).toBeVisible();
 });
 
 test('Form Editor JSON smoke: shows field configuration and returns to component view', async ({
@@ -108,7 +99,9 @@ test('Form Editor authoring: adds a group and a nested field', async ({ page }) 
   const initialFieldCount = await formContent.locator('core-formly-field-header').count();
   await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
 
-  const groupSource = page.locator('core-type-container').filter({ hasText: 'Group' }).first();
+  const groupSource = page
+    .locator('core-type-container')
+    .filter({ hasText: /\bGroup\b/, hasNotText: 'Button Group' });
   await groupSource.dragTo(formContent);
 
   await expect(formContent).toContainText('Group');

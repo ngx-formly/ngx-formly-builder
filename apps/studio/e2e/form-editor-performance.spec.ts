@@ -1,14 +1,5 @@
+import { loadMaterialFixture as createContactForm } from './helpers/material-fixture';
 import { expect, Page, test } from '@playwright/test';
-
-async function createContactForm(page: Page) {
-  await page.getByRole('button', { name: 'Create Form' }).first().click();
-  const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
-  await createFormDialog
-    .getByRole('radio', { name: /Material Showcase\s+\u2022\s+Material\b/ })
-    .check();
-  await createFormDialog.getByRole('button', { name: /Create Form/ }).click();
-  await expect(page.locator('core-form-builder-content')).toContainText('Name');
-}
 
 async function measure<T>(page: Page, action: () => Promise<T>) {
   const startedAt = await page.evaluate(() => performance.now());

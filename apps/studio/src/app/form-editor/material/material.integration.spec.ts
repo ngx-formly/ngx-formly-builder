@@ -11,13 +11,13 @@ import { withStepperType, withTabsType } from '@ngx-formly/builder-material-fiel
 import { FormlyConfig, FormlyFieldConfig } from '@ngx-formly/core';
 import { firstValueFrom } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { materialFormEditorConfig } from '../material/material.library';
-import { studioMaterialFormEditorConfig } from './studio-material.library';
+import { provideFormEditor } from '../form-editor.provider';
+import { materialFormEditorConfig } from './material.library';
 
-const studioMaterialForm = {
-  id: 'studio-material-button-group',
-  libraryId: 'form-studio-material',
-  name: 'Studio Material Button Group',
+const materialForm = {
+  id: 'material-button-group',
+  libraryId: 'form-material',
+  name: 'Material Button Group',
   model: { density: 'comfortable' },
   fields: [
     {
@@ -36,10 +36,10 @@ const studioMaterialForm = {
   ],
 };
 
-const studioMaterialCardForm = {
-  id: 'studio-material-card',
-  libraryId: 'form-studio-material',
-  name: 'Studio Material Card',
+const materialCardForm = {
+  id: 'material-card',
+  libraryId: 'form-material',
+  name: 'Material Card',
   model: { firstName: 'Ada' },
   fields: [
     {
@@ -61,10 +61,10 @@ const studioMaterialCardForm = {
   ],
 };
 
-const studioMaterialPostalCodeForm = {
-  id: 'studio-material-postal-code',
-  libraryId: 'form-studio-material',
-  name: 'Studio Material Postal Code',
+const materialPostalCodeForm = {
+  id: 'material-postal-code',
+  libraryId: 'form-material',
+  name: 'Material Postal Code',
   model: { postalCode: 'K1A0B1' },
   fields: [
     {
@@ -83,9 +83,9 @@ const studioMaterialPostalCodeForm = {
   ],
 };
 
-const studioMaterialStepperForm = {
-  id: 'studio-material-stepper',
-  libraryId: 'form-studio-material',
+const materialStepperForm = {
+  id: 'material-stepper',
+  libraryId: 'form-material',
   name: 'Stepper',
   model: { country: 'Canada', firstName: 'Ada' },
   fields: [
@@ -134,9 +134,9 @@ const studioMaterialStepperForm = {
   ],
 };
 
-const studioMaterialTabsForm = {
-  id: 'studio-material-tabs',
-  libraryId: 'form-studio-material',
+const materialTabsForm = {
+  id: 'material-tabs',
+  libraryId: 'form-material',
   name: 'Tabs',
   model: { firstName: 'Ada', country: 'Canada' },
   fields: [
@@ -183,7 +183,7 @@ const studioMaterialTabsForm = {
   ],
 };
 
-describe('Studio Material profile integration', () => {
+describe('Material profile integration', () => {
   let libraryService: CoreLibraryService;
   let formService: CoreFormService;
 
@@ -192,7 +192,7 @@ describe('Studio Material profile integration', () => {
     TestBed.configureTestingModule({
       providers: [
         provideFormlyBuilder({
-          libraries: [materialFormEditorConfig, studioMaterialFormEditorConfig],
+          libraries: [materialFormEditorConfig],
           autoSave: false,
         }),
       ],
@@ -204,13 +204,13 @@ describe('Studio Material profile integration', () => {
 
   it('keeps runtime components separate from builder overrides and preserves defaults', () => {
     const runtime = new FormlyConfig();
-    for (const option of studioMaterialFormEditorConfig.configOptions ?? []) {
+    for (const option of materialFormEditorConfig.configOptions ?? []) {
       runtime.addConfig(option);
     }
     expect(runtime.getType('stepper')?.component).toBe(withStepperType().types?.[0].component);
     expect(runtime.getType('tabs')?.component).toBe(withTabsType().types?.[0].component);
 
-    for (const option of studioMaterialFormEditorConfig.builderConfigOptions ?? []) {
+    for (const option of materialFormEditorConfig.builderConfigOptions ?? []) {
       runtime.addConfig(option);
     }
     expect(runtime.getType('stepper')?.component).toBe(
@@ -222,13 +222,53 @@ describe('Studio Material profile integration', () => {
     );
   });
 
+  it.each(['form-material', 'form-studio-material'])(
+    'opens, edits, saves, and reopens forms with library id %s',
+    async (libraryId) => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [provideFormEditor()] });
+      formService = TestBed.inject(CoreFormService);
+      libraryService = TestBed.inject(CoreLibraryService);
+      await firstValueFrom(
+        formService.addForm$(
+          'Saved Material form',
+          materialCardForm.fields,
+          { firstName: 'Ada' },
+          libraryId,
+        ),
+      );
+      expect(formService.formLoadError()).toBeNull();
+      expect(libraryService.activeLibrary()?.label).toBe('Material');
+      expect(formService.activeFormFields()[0]._info.isParent).toBe(true);
+
+      const formId = formService.activeFormId()!;
+      formService.setActiveField(formService.activeRootFieldIds()[0]);
+      formService.modifyActiveField({
+        type: PropertyChangeType.VALUE,
+        path: ['props', 'cardTitle'],
+        value: 'Updated profile',
+      });
+      formService.saveActiveForm();
+      formService.setActiveForm(null);
+      formService.setActiveForm(formId);
+
+      const exported = formService.convertToRawForm(formService.activeForm()!);
+      expect(exported.libraryId).toBe(libraryId);
+      expect(exported.model).toEqual({ firstName: 'Ada' });
+      expect(exported.fields[0].props?.['cardTitle']).toBe('Updated profile');
+      expect(exported.fields[0].fieldGroup?.[0]).toMatchObject(
+        materialCardForm.fields[0].fieldGroup[0],
+      );
+    },
+  );
+
   it('retains transient state through edits and mode changes without exporting it', async () => {
     await firstValueFrom(
       formService.addForm$(
         'Transient tabs state',
-        studioMaterialTabsForm.fields,
-        studioMaterialTabsForm.model,
-        'form-studio-material',
+        materialTabsForm.fields,
+        materialTabsForm.model,
+        'form-material',
       ),
     );
     const state = TestBed.inject(BuilderFieldStateService);
@@ -249,7 +289,7 @@ describe('Studio Material profile integration', () => {
     }
 
     const exported = formService.convertToRawForm(formService.activeForm()!);
-    expect(exported.model).toEqual(studioMaterialTabsForm.model);
+    expect(exported.model).toEqual(materialTabsForm.model);
     expect(JSON.stringify(exported)).not.toContain('selectedIndex');
     expect(JSON.stringify(exported)).not.toContain('_info');
 
@@ -263,9 +303,9 @@ describe('Studio Material profile integration', () => {
     await firstValueFrom(
       formService.addForm$(
         'Deleted stepper state',
-        studioMaterialStepperForm.fields,
+        materialStepperForm.fields,
         {},
-        'form-studio-material',
+        'form-material',
       ),
     );
     const state = TestBed.inject(BuilderFieldStateService);
@@ -282,47 +322,45 @@ describe('Studio Material profile integration', () => {
   });
 
   it('round-trips Button Group options and scalar values without editor metadata', () => {
-    libraryService.setActiveLibrary('form-studio-material');
+    libraryService.setActiveLibrary('form-material');
 
-    const editorForm = formService.convertFromRawForm(studioMaterialForm);
+    const editorForm = formService.convertFromRawForm(materialForm);
     const convertedForm = formService.convertToRawForm(editorForm);
     const serializedForm = JSON.stringify(convertedForm);
 
-    expect(convertedForm.libraryId).toBe('form-studio-material');
+    expect(convertedForm.libraryId).toBe('form-material');
     expect(convertedForm.model).toEqual({ density: 'comfortable' });
-    expect(convertedForm.fields[0]).toMatchObject(studioMaterialForm.fields[0]);
+    expect(convertedForm.fields[0]).toMatchObject(materialForm.fields[0]);
     expect(serializedForm).not.toContain('_info');
   });
 
   it('round-trips nested Card fields and wrapper properties', () => {
-    libraryService.setActiveLibrary('form-studio-material');
+    libraryService.setActiveLibrary('form-material');
 
-    const editorForm = formService.convertFromRawForm(studioMaterialCardForm);
+    const editorForm = formService.convertFromRawForm(materialCardForm);
     const convertedForm = formService.convertToRawForm(editorForm);
     const convertedRoot = convertedForm.fields[0] as FormlyFieldConfig;
 
-    expect(convertedForm.fields[0]).toMatchObject(studioMaterialCardForm.fields[0]);
+    expect(convertedForm.fields[0]).toMatchObject(materialCardForm.fields[0]);
     expect(convertedRoot.props?.['cardSubtitle']).toBe('Personal details');
     expect(convertedRoot.fieldGroup).toHaveLength(1);
-    expect(convertedRoot.fieldGroup?.[0]).toMatchObject(
-      studioMaterialCardForm.fields[0].fieldGroup[0],
-    );
+    expect(convertedRoot.fieldGroup?.[0]).toMatchObject(materialCardForm.fields[0].fieldGroup[0]);
     expect(JSON.stringify(convertedForm)).not.toContain('_info');
   });
 
   it('round-trips Postal Code formatting and storage properties', () => {
-    libraryService.setActiveLibrary('form-studio-material');
+    libraryService.setActiveLibrary('form-material');
 
-    const editorForm = formService.convertFromRawForm(studioMaterialPostalCodeForm);
+    const editorForm = formService.convertFromRawForm(materialPostalCodeForm);
     const convertedForm = formService.convertToRawForm(editorForm);
 
     expect(convertedForm.model).toEqual({ postalCode: 'K1A0B1' });
-    expect(convertedForm.fields[0]).toMatchObject(studioMaterialPostalCodeForm.fields[0]);
+    expect(convertedForm.fields[0]).toMatchObject(materialPostalCodeForm.fields[0]);
     expect(JSON.stringify(convertedForm)).not.toContain('_info');
   });
 
   it('exposes Stepper as a configurable parent in the field catalog', () => {
-    const stepperType = studioMaterialFormEditorConfig.fieldCategoryOptions
+    const stepperType = materialFormEditorConfig.fieldCategoryOptions
       .flatMap(({ children }) => children)
       .find(({ name }) => name === 'stepper');
 
@@ -345,7 +383,7 @@ describe('Studio Material profile integration', () => {
   });
 
   it('exposes Step as a configurable parent in the field catalog', () => {
-    const stepType = studioMaterialFormEditorConfig.fieldCategoryOptions
+    const stepType = materialFormEditorConfig.fieldCategoryOptions
       .flatMap(({ children }) => children)
       .find(({ name }) => name === 'step');
 
@@ -370,7 +408,7 @@ describe('Studio Material profile integration', () => {
   });
 
   it('exposes Tabs as a configurable parent in the field catalog', () => {
-    const tabsType = studioMaterialFormEditorConfig.fieldCategoryOptions
+    const tabsType = materialFormEditorConfig.fieldCategoryOptions
       .flatMap(({ children }) => children)
       .find(({ name }) => name === 'tabs');
 
@@ -396,7 +434,7 @@ describe('Studio Material profile integration', () => {
   });
 
   it('exposes Tab as a configurable parent in the field catalog', () => {
-    const tabType = studioMaterialFormEditorConfig.fieldCategoryOptions
+    const tabType = materialFormEditorConfig.fieldCategoryOptions
       .flatMap(({ children }) => children)
       .find(({ name }) => name === 'tab');
 
@@ -418,33 +456,31 @@ describe('Studio Material profile integration', () => {
   });
 
   it('accepts and round-trips Stepper fields with explicit Step children', () => {
-    libraryService.setActiveLibrary('form-studio-material');
+    libraryService.setActiveLibrary('form-material');
 
-    expect(
-      studioMaterialFormEditorConfig.schema.safeParse(studioMaterialStepperForm.fields).success,
-    ).toBe(true);
+    expect(materialFormEditorConfig.schema.safeParse(materialStepperForm.fields).success).toBe(
+      true,
+    );
 
-    const editorForm = formService.convertFromRawForm(studioMaterialStepperForm);
+    const editorForm = formService.convertFromRawForm(materialStepperForm);
     const convertedForm = formService.convertToRawForm(editorForm);
     const convertedRoot = convertedForm.fields[0] as FormlyFieldConfig;
 
-    expect(convertedForm.fields[0]).toMatchObject(studioMaterialStepperForm.fields[0]);
+    expect(convertedForm.fields[0]).toMatchObject(materialStepperForm.fields[0]);
     expect(convertedRoot.fieldGroup).toHaveLength(2);
     expect(JSON.stringify(convertedForm)).not.toContain('_info');
   });
 
   it('accepts and round-trips Tabs fields with explicit Tab children', () => {
-    libraryService.setActiveLibrary('form-studio-material');
+    libraryService.setActiveLibrary('form-material');
 
-    expect(
-      studioMaterialFormEditorConfig.schema.safeParse(studioMaterialTabsForm.fields).success,
-    ).toBe(true);
+    expect(materialFormEditorConfig.schema.safeParse(materialTabsForm.fields).success).toBe(true);
 
-    const editorForm = formService.convertFromRawForm(studioMaterialTabsForm);
+    const editorForm = formService.convertFromRawForm(materialTabsForm);
     const convertedForm = formService.convertToRawForm(editorForm);
     const convertedRoot = convertedForm.fields[0] as FormlyFieldConfig;
 
-    expect(convertedForm.fields[0]).toMatchObject(studioMaterialTabsForm.fields[0]);
+    expect(convertedForm.fields[0]).toMatchObject(materialTabsForm.fields[0]);
     expect(convertedRoot.fieldGroup).toHaveLength(2);
     expect(JSON.stringify(convertedForm)).not.toContain('_info');
   });

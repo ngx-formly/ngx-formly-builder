@@ -44,6 +44,8 @@ describe('bootstrapFormEditorConfig', () => {
       'radio',
       'multicheckbox',
       'checkbox',
+      'file',
+      'example-submit',
       'formly-group',
     ]);
   });

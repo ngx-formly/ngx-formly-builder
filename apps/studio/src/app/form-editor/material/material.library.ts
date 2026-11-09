@@ -1,5 +1,5 @@
 import { createLibrary } from '@ngx-formly/builder';
-import { materialConfigOptions } from './material.config';
+import { materialBuilderConfigOptions, materialConfigOptions } from './material.config';
 import { formTemplates } from './material.forms';
 import { materialFieldCategoryOptions } from './material.options';
 
@@ -10,4 +10,5 @@ export const materialFormEditorConfig = createLibrary({
   formTemplates,
   label: 'Material',
   configOptions: materialConfigOptions(),
+  builderConfigOptions: materialBuilderConfigOptions(),
 });

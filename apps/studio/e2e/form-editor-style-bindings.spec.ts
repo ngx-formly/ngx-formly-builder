@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 for (const viewport of [
   { width: 1600, height: 1000 },
   { width: 390, height: 844 },
+  { width: 320, height: 568 },
 ]) {
   test(`keeps editor styles valid at ${viewport.width}px`, async ({ page }) => {
     const warnings: string[] = [];
@@ -19,17 +20,20 @@ for (const viewport of [
     const createDialog = page.getByRole('dialog', { name: 'Create Form' });
     await expect(createDialog).toBeVisible();
     await expect(createDialog).toHaveCSS('width', `${Math.min(800, viewport.width - 32)}px`);
-    await expect(createDialog).toHaveCSS('height', '600px');
-    await createDialog
-      .getByRole('radio', { name: /Material Showcase\s+\u2022\s+Material\b/ })
-      .check();
-    await createDialog.getByRole('button', { name: /Create Form/ }).click();
+    const dialogBounds = await createDialog.boundingBox();
+    expect(dialogBounds!.height).toBeLessThanOrEqual(viewport.height - 32);
+    await expect(
+      createDialog.getByRole('button', { name: 'Start with a blank form', exact: true }),
+    ).toBeInViewport();
+    await createDialog.getByRole('combobox', { name: 'UI Library', exact: true }).click();
+    await page.getByRole('option', { name: 'Material', exact: true }).click();
+    await createDialog.getByRole('button', { name: 'Expense Report', exact: true }).click();
     await expect(createDialog).toBeHidden();
-    await expect(page.locator('core-form-builder-content')).toContainText('supportRequest');
+    await expect(page.locator('core-form-builder-content')).toContainText('expenseReport');
 
     const badge = page.locator('core-active-field-chip p-chip').filter({ visible: true }).first();
     await expect(badge).toBeVisible();
-    await expect(badge).toContainText('supportRequest');
+    await expect(badge).toContainText('expenseReport');
     await expect(badge).toHaveCSS('display', 'inline-flex');
     await expect(badge).toHaveCSS('border-radius', '16px');
     await expect(badge).toHaveCSS('background-color', 'rgb(243, 239, 246)');
@@ -45,7 +49,7 @@ for (const viewport of [
     await expect(
       preview
         .frameLocator('iframe[title="Responsive form preview"]')
-        .getByRole('textbox', { name: 'Customer name' }),
+        .getByRole('textbox', { name: 'Report Title' }),
     ).toBeVisible();
     expect(warnings).toEqual([]);
   });

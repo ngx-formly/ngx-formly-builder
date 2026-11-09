@@ -79,6 +79,23 @@ describe('CoreConfigService', () => {
     expect(service.activeLibrary()).toBeNull();
   });
 
+  it('keeps hidden libraries available to saved forms without offering them for new forms', () => {
+    const config = {
+      ...configA,
+      hidden: true,
+      formTemplates: [{ name: 'Old template', libraryId: configA.id, fields: [], model: {} }],
+    };
+    const service = createService([config]);
+
+    service.setActiveLibrary(config.id);
+
+    expect(service.activeLibrary()).toBe(config);
+    expect(service.getLibrary(config.id)).toBe(config);
+    expect(service.getLibraryLabel(config.id)).toBe(config.label);
+    expect(service.libraryOptions).toEqual([]);
+    expect(service.formTemplates).toEqual([]);
+  });
+
   it('isolates Formly config options when switching profiles', () => {
     const service = createService([isolatedConfigA, isolatedConfigB]);
     const formlyConfigService = TestBed.inject(FormlyConfigService);

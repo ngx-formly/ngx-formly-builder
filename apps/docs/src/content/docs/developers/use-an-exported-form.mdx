@@ -10,7 +10,7 @@ The field export is not a saved editor document: it does not include the profile
 the form model, or Angular code. Keep track of the runtime configuration it requires. Exported
 fields omit editor-only `_info` metadata and the editor's `core-field` wrapper.
 
-This example targets Angular 22, Formly 11.x, and a form created with the standard Material library.
+This example targets Angular 22, Formly 11.x, and a Material form using only standard controls.
 
 ## Install the runtime packages
 
@@ -18,9 +18,10 @@ This example targets Angular 22, Formly 11.x, and a form created with the standa
 npm install @ngx-formly/core @ngx-formly/material @angular/material
 ```
 
-Use the corresponding package for a Bootstrap or Ng Zorro form. Studio Material fields require the
-matching Studio Material types and configuration from the project's source to be available to your
-application. Studio Material is not published as a standalone public package.
+Use the corresponding package for a Bootstrap or Ng Zorro form. Material's additional fields,
+such as cards, tabs, steppers, and postal code, require their matching runtime components and
+configuration from this project's source. The complete Material profile is not published as a
+standalone public package.
 
 ## Register Formly
 
@@ -44,6 +45,20 @@ For a custom profile, reuse its runtime `configOptions` registrations in your co
 along with required services and styles. Do not register its editor-only `builderConfigOptions`.
 See [Add custom components](/developers/add-custom-components/) for the distinction. The profile's
 palette and property metadata are not required to render the exported form.
+
+The **Contact Us** and **Profile Update** examples also use portable controls from the builder:
+
+```ts
+import { nativeFieldConfig } from '@ngx-formly/builder';
+
+// Add this alongside your selected UI library configuration.
+provideFormlyCore(withFormlyMaterial(), nativeFieldConfig);
+```
+
+The `file` type stores `{ name, type, size, dataUrl }` in the model. The `example-submit` type
+only validates locally. Replace its button with your application's submission handler when
+connecting the form to a service. These controls use the builder's existing theme and utility
+styles; supply your own styles in a standalone application.
 
 ## Add the exported fields
 

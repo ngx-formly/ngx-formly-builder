@@ -1,17 +1,8 @@
+import { loadMaterialFixture as createContactForm } from './helpers/material-fixture';
 import { expect, test } from '@playwright/test';
 
 test.describe('Form Editor tablet composition', () => {
   test.use({ viewport: { width: 1024, height: 768 } });
-
-  async function createContactForm(page: import('@playwright/test').Page) {
-    await page.getByRole('button', { name: 'Create Form' }).first().click();
-    const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
-    await createFormDialog
-      .getByRole('radio', { name: /Material Showcase\s+\u2022\s+Material\b/ })
-      .check();
-    await createFormDialog.getByRole('button', { name: /Create Form/ }).click();
-    await expect(page.getByRole('button', { name: 'Builder' })).toBeVisible();
-  }
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/form-editor');

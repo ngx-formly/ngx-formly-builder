@@ -1,5 +1,6 @@
+import { nativeFieldConfig } from '@ngx-formly/builder';
 import { withFormlyNgZorroAntd } from '@ngx-formly/ng-zorro-antd';
 
 export function ngZorroConfigOptions() {
-  return withFormlyNgZorroAntd();
+  return [...withFormlyNgZorroAntd(), nativeFieldConfig];
 }

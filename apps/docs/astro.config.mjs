@@ -7,6 +7,7 @@ export default defineConfig({
   site: 'https://docs.formlystudio.com',
   outDir: '../../dist/apps/docs',
   redirects: {
+    '/ui-libraries/studio-material': '/ui-libraries/material',
     '/guides/configuring-fields': '/guides/add-and-configure-fields',
     '/guides/creating-a-form': '/guides/add-and-configure-fields',
     '/guides/field-presets': '/guides/add-and-configure-fields',
@@ -63,7 +64,6 @@ export default defineConfig({
           label: 'Demo UI Profiles',
           items: [
             { label: 'Overview', link: '/ui-libraries/' },
-            { label: 'Studio Material', link: '/ui-libraries/studio-material/' },
             { label: 'Material', link: '/ui-libraries/material/' },
             { label: 'Ng Zorro', link: '/ui-libraries/ng-zorro/' },
             { label: 'Bootstrap', link: '/ui-libraries/bootstrap/' },

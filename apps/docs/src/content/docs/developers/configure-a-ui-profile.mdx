@@ -38,12 +38,11 @@ by the UI library is not necessarily supported by its Formly adapter.
 ## 2. Add a starter form
 
 ```ts title="app-material.forms.ts"
-import { DefaultForm } from '@ngx-formly/builder';
+import { FormTemplate } from '@ngx-formly/builder';
 
-export const formTemplates: DefaultForm[] = [
+export const appFormTemplates: FormTemplate[] = [
   {
     name: 'Contact details',
-    libraryId: 'form-app-material',
     fields: [
       {
         key: 'name',
@@ -56,30 +55,32 @@ export const formTemplates: DefaultForm[] = [
 ];
 ```
 
-Templates belong to their profile through `libraryId`. Keep this ID stable: saved forms use it to
-select the profile. Renaming it requires migrating those forms; an unknown ID fails rather than
-silently selecting Material.
+Shared templates use the library selected in the Create Form dialog. Use field types and properties
+supported by every library offered in your editor. Saved forms store the chosen profile's `id`, so
+keep that ID stable; an unknown ID fails rather than silently selecting Material.
 
 ## 3. Compose the profile
 
 ```ts title="app-material.library.ts"
 import { createLibrary } from '@ngx-formly/builder';
+import { materialBuilderConfigOptions } from '../material/material.config';
 import { appMaterialConfigOptions } from './app-material.config';
-import { formTemplates } from './app-material.forms';
 import { appMaterialFieldCategoryOptions } from './app-material.options';
 
 export const appMaterialFormEditorConfig = createLibrary({
   id: 'form-app-material',
   label: 'App Material',
   configOptions: appMaterialConfigOptions(),
+  builderConfigOptions: materialBuilderConfigOptions(),
   fieldCategoryOptions: appMaterialFieldCategoryOptions,
-  formTemplates,
+  formTemplates: [],
   enableFormUploadSchema: true,
 });
 ```
 
 `createLibrary()` generates the import schema from the field metadata. You do not supply a separate
-schema. Import validation checks configuration structure; it does not prove that components render
+schema. The Material builder configuration supplies the authoring adapters for tabs and steppers.
+Import validation checks configuration structure; it does not prove that components render
 correctly or that application services are available.
 
 ## 4. Register it with Studio
@@ -88,15 +89,17 @@ In `form-editor.provider.ts`, import the profile:
 
 ```ts
 import { appMaterialFormEditorConfig } from './app-material/app-material.library';
+import { appFormTemplates } from './app-material/app-material.forms';
 ```
 
 Add it to the existing `provideFormlyBuilder({ libraries: [...] })` array alongside the shipped
-profiles. The builder provider configures an isolated Formly runtime and local persistence. Templates are already
-included in the profile; they do not need a separate provider.
+profiles, and append `appFormTemplates` to the existing top-level `formTemplates` array. The builder
+provider configures an isolated Formly runtime and local persistence.
+
+Top-level `formTemplates` replaces the profile-specific template list. If it is omitted, the editor
+uses each profile's `formTemplates`, whose `DefaultForm` entries include a fixed `libraryId`.
 
 ## Verify the profile
-
-![Create Form dialog with the Contact details template selected and App Material identified as its owning profile.](../../../assets/screenshots/app-material-template.webp)
 
 - Create a form with App Material and open its Contact details template.
 - Add, configure, and preview a standard field; confirm the expected model and validation.
@@ -107,7 +110,7 @@ included in the profile; they do not need a separate provider.
 Use the existing
 [Material profile tests](https://github.com/ngx-formly/ngx-formly-builder/blob/main/apps/studio/src/app/form-editor/material/material.library.spec.ts)
 as a starting point for a neighboring `app-material.library.spec.ts`: check the ID, catalog, runtime
-registrations, and template ownership. Run `pnpm run test:studio` and `pnpm run build:studio` after
+registrations, and template compatibility. Run `pnpm run test:studio` and `pnpm run build:studio` after
 adding application code.
 
 Next, [add custom components](/developers/add-custom-components/) to this profile.

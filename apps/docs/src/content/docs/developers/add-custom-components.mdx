@@ -4,7 +4,8 @@ description: Expose custom Formly types, wrappers, and properties in your Studio
 ---
 
 Start with the App Material profile from [Configure a UI profile](/developers/configure-a-ui-profile/).
-This example adds the existing Studio postal-code component. Use the same steps for your own
+This example customizes the existing Material postal-code component under an application-specific
+type name. Use the same steps for your own
 registered Formly type; component implementation remains ordinary ngx-formly code.
 
 ## 1. Register the runtime type
@@ -12,16 +13,18 @@ registered Formly type; component implementation remains ordinary ngx-formly cod
 Replace the profile's runtime factory with:
 
 ```ts title="app-material.config.ts"
-import { withPostalCodeType } from '@ngx-formly/builder-material-fields';
 import { materialConfigOptions } from '../material/material.config';
 
 export function appMaterialConfigOptions() {
-  return [...materialConfigOptions(), withPostalCodeType()];
+  return [
+    ...materialConfigOptions(),
+    { types: [{ name: 'app-postal-code', extends: 'postal-code' }] },
+  ];
 }
 ```
 
-`withPostalCodeType()` registers `postal-code`, its Material `form-field` wrapper, and validation
-messages. The Material configuration supplies that wrapper's implementation.
+The Material configuration already registers `postal-code`, its Material `form-field` wrapper, and
+validation messages. `app-postal-code` inherits that runtime behavior with its own editor metadata.
 
 For your own component, supply a Formly `ConfigOption` with a named type registration:
 `{ types: [{ name: 'your-type', component: YourFieldType }] }`. Named types allow saved JSON to
@@ -43,7 +46,7 @@ import {
 } from '../material/material.options';
 
 const postalCodeTypeOption: FieldTypeOption = {
-  name: 'postal-code',
+  name: 'app-postal-code',
   displayName: 'Postal Code',
   materialSymbol: 'local_post_office',
   keyGenerationPrefix: 'postal',
@@ -69,7 +72,7 @@ The metadata `name` must match the runtime type. `defaultConfig` supplies insert
 the property key `props.mask` identifies the value edited in the field configuration. The component
 must actually consume that property. This compact example exposes only a subset of the component's
 options; use the
-[full Studio metadata](https://github.com/ngx-formly/ngx-formly-builder/blob/main/apps/studio/src/app/form-editor/studio-material/studio-material.options.ts)
+[full Material metadata](https://github.com/ngx-formly/ngx-formly-builder/blob/main/apps/studio/src/app/form-editor/material/material.options.ts)
 for boolean, select, validation, and preset examples.
 
 ## 3. Exercise it in a template
@@ -79,7 +82,7 @@ Add this field to the Contact details template:
 ```ts
 {
   key: 'postalCode',
-  type: 'postal-code',
+  type: 'app-postal-code',
   props: { label: 'Postal Code', mask: '00000', inputMode: 'numeric' },
 }
 ```
@@ -122,8 +125,8 @@ your consuming application must supply the same runtime dependencies. See Formly
 | Preview works but the exported form fails    | Register the same types, wrappers, validators, services, and styles in the consuming app. |
 
 Adapt the existing
-[Studio profile tests](https://github.com/ngx-formly/ngx-formly-builder/blob/main/apps/studio/src/app/form-editor/studio-material/studio-material.library.spec.ts)
-and [integration tests](https://github.com/ngx-formly/ngx-formly-builder/blob/main/apps/studio/src/app/form-editor/studio-material/studio-material.integration.spec.ts).
+[Material profile tests](https://github.com/ngx-formly/ngx-formly-builder/blob/main/apps/studio/src/app/form-editor/material/material.library.spec.ts)
+and [integration tests](https://github.com/ngx-formly/ngx-formly-builder/blob/main/apps/studio/src/app/form-editor/material/material.integration.spec.ts).
 Check catalog/runtime names, defaults, wrapper compatibility, template `libraryId`, property edits,
 profile switching, and exported fields without editor `_info` metadata. Run `pnpm run test:studio`
 and `pnpm run build:studio`; also run the affected library suite if you change a reusable component.

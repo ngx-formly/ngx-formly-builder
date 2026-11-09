@@ -48,7 +48,7 @@ test('backs up the hierarchy and blocks creation until corrupt forms are reset',
   await expect(createForm).toBeEnabled();
   await createForm.click();
   const dialog = page.getByRole('dialog', { name: 'Create Form' });
-  await dialog.getByRole('button', { name: 'Create Form' }).click();
+  await dialog.getByRole('button', { name: 'Start with a blank form', exact: true }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
 });
@@ -70,13 +70,15 @@ test('keeps a mobile creation dialog open when storage becomes corrupt before su
   const errors: Error[] = [];
   page.on('pageerror', (error) => errors.push(error));
 
-  await dialog.getByRole('button', { name: 'Create Form' }).click();
+  await dialog.getByRole('button', { name: 'Start with a blank form', exact: true }).click();
 
   await expect(dialog).toBeVisible();
   await expect(
     dialog.getByText('Recover saved data in the Workspace panel before creating a form.'),
   ).toBeVisible();
   await expect(dialog.getByRole('textbox', { name: 'Name', exact: true })).toHaveValue('My draft');
-  await expect(dialog.getByRole('button', { name: 'Create Form' })).toBeDisabled();
+  await expect(
+    dialog.getByRole('button', { name: 'Start with a blank form', exact: true }),
+  ).toBeDisabled();
   expect(errors).toEqual([]);
 });

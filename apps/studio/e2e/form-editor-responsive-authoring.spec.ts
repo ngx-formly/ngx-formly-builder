@@ -1,20 +1,12 @@
+import { loadMaterialFixture as createContactForm } from './helpers/material-fixture';
 import { expect, Page, test } from '@playwright/test';
 
-async function createContactForm(page: Page) {
+async function createTemplateForm(page: Page, libraryName: string) {
   await page.getByRole('button', { name: 'Create Form' }).first().click();
   const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
-  await createFormDialog
-    .getByRole('radio', { name: /Material Showcase\s+\u2022\s+Material\b/ })
-    .check();
-  await createFormDialog.getByRole('button', { name: /Create Form/ }).click();
-  await expect(page.getByRole('button', { name: 'Builder' })).toBeVisible();
-}
-
-async function createTemplateForm(page: Page, templateName: RegExp) {
-  await page.getByRole('button', { name: 'Create Form' }).first().click();
-  const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
-  await createFormDialog.getByRole('radio', { name: templateName }).check();
-  await createFormDialog.getByRole('button', { name: /Create Form/ }).click();
+  await createFormDialog.getByRole('combobox', { name: 'UI Library', exact: true }).click();
+  await page.getByRole('option', { name: libraryName, exact: true }).click();
+  await createFormDialog.getByRole('button', { name: 'Starter Form', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Builder' })).toBeVisible();
 }
 
@@ -128,8 +120,9 @@ test.describe('Form Editor responsive authoring', () => {
     await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
     await page.getByRole('complementary').getByRole('button', { name: 'Create Form' }).click();
     const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
-    await createFormDialog.getByRole('radio', { name: /Blank Form/ }).check();
-    await createFormDialog.getByRole('button', { name: /Create Form/ }).click();
+    await createFormDialog
+      .getByRole('button', { name: 'Start with a blank form', exact: true })
+      .click();
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
 
@@ -211,8 +204,9 @@ test.describe('Form Editor responsive authoring', () => {
     await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
     await page.getByRole('complementary').getByRole('button', { name: 'Create Form' }).click();
     const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
-    await createFormDialog.getByRole('radio', { name: /Blank Form/ }).check();
-    await createFormDialog.getByRole('button', { name: /Create Form/ }).click();
+    await createFormDialog
+      .getByRole('button', { name: 'Start with a blank form', exact: true })
+      .click();
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
 
@@ -281,10 +275,10 @@ test.describe('Form Editor responsive authoring', () => {
 });
 
 test.describe('Form Editor responsive starter forms', () => {
-  for (const template of [/Bootstrap Showcase/, /Ng Zorro Showcase/]) {
-    test(`keeps ${template.source} controls usable at phone width`, async ({ page }) => {
+  for (const library of ['Bootstrap', 'Ng Zorro']) {
+    test(`keeps ${library} controls usable at phone width`, async ({ page }) => {
       await page.goto('/form-editor');
-      await createTemplateForm(page, template);
+      await createTemplateForm(page, library);
       await page.setViewportSize({ width: 375, height: 812 });
 
       const formContent = page.locator('core-form-builder-content');

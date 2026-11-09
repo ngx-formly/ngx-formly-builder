@@ -399,6 +399,8 @@ interface FieldWrapperOption {
 interface LibraryConfig {
     /** Unique configuration id used to route editor operations. */
     id: string;
+    /** Keep a library available for saved forms without offering it for new forms. */
+    hidden?: boolean;
     /** Categories and their field types shown in the palette. */
     fieldCategoryOptions: FieldCategoryOption[];
     /** Enable JSON schema validation in the form import dialog. */
@@ -422,8 +424,10 @@ interface CoreEditorConfig {
 }
 /** Public configuration for an embedded Formly Builder instance. */
 interface FormlyBuilderConfig {
-    /** Formly UI profiles available to authors. */
-    libraries: LibraryConfig[];
+    /** Optional UI profiles. Native HTML controls are available without a UI library. */
+    libraries?: LibraryConfig[];
+    /** Shared templates rendered with the selected library, replacing profile-specific templates. */
+    formTemplates?: FormTemplate[];
     /** Storage namespace used to isolate this editor's documents. */
     editorType?: string;
     /** Enable debounced persistence for active form mutations. Defaults to true. */
@@ -433,8 +437,10 @@ interface FormlyBuilderConfig {
     /** Persistence implementation. Defaults to browser local storage. */
     formStore?: Type<FormStoreService>;
 }
+type FormTemplate = Pick<DefaultForm, 'description' | 'fields' | 'icon' | 'id' | 'model' | 'name'>;
 declare const CORE_EDITOR_CONFIG: InjectionToken<CoreEditorConfig>;
 export declare const CORE_LIBRARY_CONFIGS: InjectionToken<LibraryConfig[]>;
+declare const CORE_FORM_TEMPLATES: InjectionToken<FormTemplate[]>;
 export declare class CoreLibraryService {
     protected readonly libraryConfigs: LibraryConfig[];
     readonly formTemplates: import("@ngx-formly/builder").DefaultForm[];
@@ -823,9 +829,9 @@ export declare class MarkdownDialogService {
 }
 export declare function provideCore(): EnvironmentProviders;
 export declare function provideCoreTheme(): EnvironmentProviders;
-export declare function provideCoreConfig(libraryConfig: LibraryConfig[], autoSave?: boolean, overrides?: Partial<Pick<CoreEditorConfig, 'autoSaveDelay' | 'editorType'>>): EnvironmentProviders;
+export declare function provideCoreConfig(libraryConfig?: LibraryConfig[], autoSave?: boolean, overrides?: Partial<Pick<CoreEditorConfig, 'autoSaveDelay' | 'editorType'>>): EnvironmentProviders;
 /** Configures an embeddable Formly Builder and its isolated Formly runtime. */
-export declare function provideFormlyBuilder(config: FormlyBuilderConfig): EnvironmentProviders;
+export declare function provideFormlyBuilder(config?: FormlyBuilderConfig): EnvironmentProviders;
 export declare function provideFormStore(service: Type<FormStoreService>): EnvironmentProviders;
 export declare function provideLocalFormStore(): EnvironmentProviders;
 export declare const primengPreset: Preset;
@@ -840,5 +846,8 @@ declare const defaultTypeOption: {
 declare const validationMessagesPath: string[];
 declare function getFormSchema(fieldCategoryOptions: FieldCategoryOption[]): z.ZodType;
 export declare function createLibrary(config: Omit<LibraryConfig, 'defaultTypeOption' | 'schema'>): LibraryConfig;
-export { type BaseEditorForm, type BasePropertyConfig, type BaseWorkspaceNode, CORE_FORM_STORE, FormlyBuilder as Core, type CoreAddFieldOption, type CoreEditorConfig, type DefaultForm, type EditorForm, type FieldCategoryOption, type FieldInfo, type FieldInfoBadge, type FieldTypeOption, type FieldTypePreset, type FieldValidationConfig, type FieldWrapperOption, type FormStoreDataKind, type FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, type FormStoreService, type FormlyBuilderConfig, type GroupChildPropertyConfig, type GroupPropertyConfig, type PropertyConfig as IProperty, type PropertyConfig, type LibraryConfig, type MarkdownPropertyConfig, type PropertyChange, PropertyChangeType, type PropertyCreator, type ValidationRuleConfig, type ValidationRulePropertyConfig, type WorkspaceFolderNode, type WorkspaceFormNode, type WorkspaceHierarchy, type WorkspaceNode, type WorkspaceNodeType, type WrappersPropertyConfig, type WrappersPropertyOption, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion };
+/** Portable file and demo-submit controls that do not require a UI adapter. */
+export declare const nativeFieldTypes: FieldTypeOption[];
+export declare const nativeFieldConfig: ConfigOption;
+export { type BaseEditorForm, type BasePropertyConfig, type BaseWorkspaceNode, CORE_FORM_STORE, FormlyBuilder as Core, type CoreAddFieldOption, type CoreEditorConfig, type DefaultForm, type EditorForm, type FieldCategoryOption, type FieldInfo, type FieldInfoBadge, type FieldTypeOption, type FieldTypePreset, type FieldValidationConfig, type FieldWrapperOption, type FormStoreDataKind, type FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, type FormStoreService, type FormTemplate, type FormlyBuilderConfig, type GroupChildPropertyConfig, type GroupPropertyConfig, type PropertyConfig as IProperty, type PropertyConfig, type LibraryConfig, type MarkdownPropertyConfig, type PropertyChange, PropertyChangeType, type PropertyCreator, type ValidationRuleConfig, type ValidationRulePropertyConfig, type WorkspaceFolderNode, type WorkspaceFormNode, type WorkspaceHierarchy, type WorkspaceNode, type WorkspaceNodeType, type WrappersPropertyConfig, type WrappersPropertyOption, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion };
 ```

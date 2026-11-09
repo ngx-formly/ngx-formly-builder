@@ -79,6 +79,8 @@ export interface FieldWrapperOption {
 export interface LibraryConfig {
   /** Unique configuration id used to route editor operations. */
   id: string;
+  /** Keep a library available for saved forms without offering it for new forms. */
+  hidden?: boolean;
   /** Categories and their field types shown in the palette. */
   fieldCategoryOptions: FieldCategoryOption[];
   /** Enable JSON schema validation in the form import dialog. */
@@ -104,8 +106,10 @@ export interface CoreEditorConfig {
 
 /** Public configuration for an embedded Formly Builder instance. */
 export interface FormlyBuilderConfig {
-  /** Formly UI profiles available to authors. */
-  libraries: LibraryConfig[];
+  /** Optional UI profiles. Native HTML controls are available without a UI library. */
+  libraries?: LibraryConfig[];
+  /** Shared templates rendered with the selected library, replacing profile-specific templates. */
+  formTemplates?: FormTemplate[];
   /** Storage namespace used to isolate this editor's documents. */
   editorType?: string;
   /** Enable debounced persistence for active form mutations. Defaults to true. */
@@ -116,5 +120,11 @@ export interface FormlyBuilderConfig {
   formStore?: Type<FormStoreService>;
 }
 
+export type FormTemplate = Pick<
+  DefaultForm,
+  'id' | 'name' | 'icon' | 'description' | 'fields' | 'model'
+>;
+
 export const CORE_EDITOR_CONFIG = new InjectionToken<CoreEditorConfig>('CoreLibraryEditorConfig');
 export const CORE_LIBRARY_CONFIGS = new InjectionToken<LibraryConfig[]>('CoreLibraryConfigs');
+export const CORE_FORM_TEMPLATES = new InjectionToken<FormTemplate[]>('CoreFormTemplates');

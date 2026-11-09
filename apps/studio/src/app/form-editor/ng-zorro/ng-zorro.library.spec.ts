@@ -43,6 +43,8 @@ describe('ngZorroFormEditorConfig', () => {
       'select',
       'radio',
       'checkbox',
+      'file',
+      'example-submit',
       'formly-group',
     ]);
     expect(fieldTypes).not.toContain('datepicker');

@@ -53,10 +53,21 @@ describe('ImportDialog', () => {
       'New Form',
       [{ type: 'input' }],
       {},
-      'form-material',
+      'form-vanilla',
       true,
       null,
     );
+  });
+
+  it('keeps an explicitly selected library when importing', () => {
+    const { addForm$, component } = setup();
+    component.formName.set('Material form');
+    component.formFieldsJSON.set('[]');
+    component.selectedLibraryId.set('form-material');
+
+    component.importForm();
+
+    expect(addForm$).toHaveBeenCalledWith('Material form', [], {}, 'form-material', true, null);
   });
 
   it('leaves persistence failures handled by the import subscription', () => {

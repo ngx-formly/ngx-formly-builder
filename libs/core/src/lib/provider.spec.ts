@@ -8,6 +8,9 @@ import { TestBed } from '@angular/core/testing';
 import { Observable, of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import { createLibrary } from './config/library';
+import { CoreFieldService } from './config/core-field.service';
+import { CoreLibraryService } from './config/core-library.service';
+import { VANILLA_LIBRARY_ID } from './config/vanilla/vanilla.library';
 import { CORE_EDITOR_CONFIG, CORE_LIBRARY_CONFIGS } from './config/types';
 import { BaseEditorForm, DefaultForm, WorkspaceHierarchy } from './model/types';
 import { LocalFormStoreService } from './persistence/local-form-store.service';
@@ -60,13 +63,41 @@ describe('provideFormlyBuilder', () => {
 
     expect(TestBed.inject(BuilderEngineService)).toBe(TestBed.inject(CoreFormService));
     expect(TestBed.inject(EngineFieldState)).toBe(TestBed.inject(BuilderFieldStateService));
-    expect(TestBed.inject(CORE_LIBRARY_CONFIGS)).toEqual([library]);
+    expect(TestBed.inject(CORE_LIBRARY_CONFIGS).map(({ id }) => id)).toEqual([
+      VANILLA_LIBRARY_ID,
+      library.id,
+    ]);
     expect(TestBed.inject(CORE_EDITOR_CONFIG)).toMatchObject({
       editorType: 'form-editor',
       autoSave: true,
     });
     expect(TestBed.inject(CORE_FORM_STORE)).toBeInstanceOf(LocalFormStoreService);
   });
+
+  it.each([undefined, { libraries: [] }])(
+    'creates and reopens vanilla forms without profiles: %j',
+    (config) => {
+      localStorage.clear();
+      TestBed.configureTestingModule({ providers: [provideFormlyBuilder(config)] });
+      const forms = TestBed.inject(CoreFormService);
+      const libraries = TestBed.inject(CoreLibraryService);
+      const fields = TestBed.inject(CoreFieldService);
+
+      forms.addForm$('Vanilla form', [], {}, VANILLA_LIBRARY_ID).subscribe();
+      expect(libraries.libraryOptions).toEqual([]);
+      expect(libraries.activeLibraryLabel()).toBe('Vanilla');
+      expect(fields.activeFieldTypeOptions().map(({ name }) => name)).toContain('input');
+      forms.addField('input');
+      forms.saveActiveForm();
+      const formId = forms.activeFormId()!;
+      forms.setActiveForm(null);
+      forms.setActiveForm(formId);
+
+      expect(forms.formLoadError()).toBeNull();
+      expect(forms.activeFieldCount()).toBe(1);
+      expect(forms.convertToRawForm(forms.activeForm()!).fields[0].type).toBe('input');
+    },
+  );
 
   it('accepts editor identity, autosave, and storage overrides', () => {
     TestBed.configureTestingModule({

@@ -10,33 +10,35 @@ you need, or start blank for full control.
 
 1. Open **Workspace** in the sidebar.
 2. Select **Create Form**.
-3. Enter a name for your form.
-4. Choose a template in the **Create Form** dialog.
-5. Select **Create Form**.
+3. Optionally enter a name. Leave it empty to use the template's title, or **New form** for a blank form.
+4. Select **Material**, **Ng Zorro**, or **Bootstrap**, or leave **UI Library** empty for Vanilla.
+5. Click an example under **Quick Start**, or **Start with a blank form**, to create it immediately.
 
 The new form opens in **Builder**. Select a field to replace its example content, remove fields you do not need, or add new fields from **Add**.
 
-Each template selects its configured UI library automatically. The library cannot be changed after
-creation.
+Templates work with any of the available libraries. Choose the library before clicking an example;
+the library cannot be changed after creation.
 
 ## Available templates
 
 The Form Editor provides these starters:
 
-| Template                     | Good starting point for                            |
-| ---------------------------- | -------------------------------------------------- |
-| **Starter Form**             | Learning the editor with a simple contact form     |
-| **Material Showcase**        | Material field catalog                             |
-| **Bootstrap Showcase**       | Bootstrap field catalog                            |
-| **Ng Zorro Showcase**        | Ng Zorro field catalog                             |
-| **Studio Material Showcase** | Studio Material field catalog                      |
-| **Expense Report**           | Expense details, amounts, and approval information |
+| Template           | Good starting point for                        |
+| ------------------ | ---------------------------------------------- |
+| **Starter Form**   | Learning the editor with a simple contact form |
+| **Expense Report** | Expense details, amounts, and receipt flags    |
+| **Contact Us**     | Contact information, subject, and message      |
+| **Profile Update** | Personal details, bio, and a profile picture   |
 
 Templates are examples, not fixed forms. Rename the form and change any field or value after creating it.
 
+**Send Message** and **Update Profile** validate the example locally; they do not send data to a
+server. Profile pictures are saved with the local form model and are limited to 2 MB. Connect your
+own submission and upload handlers when using an exported form in an application.
+
 ## Start with a blank form
 
-Choose **Blank Form** when none of the templates matches your workflow. Select the UI library before
+Choose **Start with a blank form** when none of the templates matches your workflow. Select the UI library before
 creating the form; it cannot be changed later. [Compare UI libraries](/ui-libraries/) before deciding.
 
 ## Templates and presets

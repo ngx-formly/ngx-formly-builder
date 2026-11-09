@@ -12,6 +12,7 @@ export {
   CORE_LIBRARY_CONFIGS,
   type CoreEditorConfig,
   type FormlyBuilderConfig,
+  type FormTemplate,
   type FieldCategoryOption,
   type FieldTypeOption,
   type FieldTypePreset,
@@ -75,3 +76,4 @@ export {
 export { primengPreset } from './lib/primeng';
 
 export { createLibrary } from './lib/config/library';
+export { nativeFieldConfig, nativeFieldTypes } from './lib/config/native-fields';

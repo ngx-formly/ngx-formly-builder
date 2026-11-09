@@ -1,12 +1,5 @@
-import { expect, Page, test } from '@playwright/test';
-
-async function createMaterialForm(page: Page) {
-  await page.getByRole('button', { name: 'Create Form' }).first().click();
-  const dialog = page.getByRole('dialog', { name: 'Create Form' });
-  await dialog.getByRole('radio', { name: /Material Showcase\s+\u2022\s+Material\b/ }).check();
-  await dialog.getByRole('button', { name: /Create Form/ }).click();
-  await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
-}
+import { loadMaterialFixture as createMaterialForm } from './helpers/material-fixture';
+import { expect, test } from '@playwright/test';
 
 test('reopens a saved form using only the keyboard', async ({ page }) => {
   await page.goto('/form-editor');

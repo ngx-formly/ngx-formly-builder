@@ -11,19 +11,20 @@ Choose the UI library that matches the consuming Angular application's design sy
 controls available fields, properties, containers, and exported type names, and cannot be changed
 after the form is created.
 
-| Library                                           | Choose it when                                                                             | Coverage                                                                                         |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| [Studio Material](/ui-libraries/studio-material/) | You want the recommended Material experience and Studio-specific controls in ngx-formly Builder | Material controls plus postal code, button group, markdown, cards, tabs, steppers, and repeaters |
-| [Material](/ui-libraries/material/)               | Your application uses the standard `@ngx-formly/material` field set                        | Standard Material controls and groups                                                            |
-| [Ng Zorro](/ui-libraries/ng-zorro/)               | Your application uses the standard `@ngx-formly/ng-zorro-antd` field set                   | Ng Zorro controls and groups                                                                     |
-| [Bootstrap](/ui-libraries/bootstrap/)             | Your application uses the standard `@ngx-formly/bootstrap` field set                       | Bootstrap controls and groups                                                                    |
+| Library                               | Choose it when                                                           | Coverage                                                                                         |
+| ------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Vanilla (no library)                  | You want native HTML controls without a UI library                       | Input, number, textarea, checkbox, select, and groups                                            |
+| [Material](/ui-libraries/material/)   | You want Material controls and richer layouts                            | Standard controls plus postal code, button group, markdown, cards, tabs, steppers, and repeaters |
+| [Ng Zorro](/ui-libraries/ng-zorro/)   | Your application uses the standard `@ngx-formly/ng-zorro-antd` field set | Ng Zorro controls and groups                                                                     |
+| [Bootstrap](/ui-libraries/bootstrap/) | Your application uses the standard `@ngx-formly/bootstrap` field set     | Bootstrap controls and groups                                                                    |
 
-**Studio Material is the recommended default within ngx-formly Builder** for new Material-based forms.
-It is not currently published as a standalone public package. Choose standard Material when the
-consuming application should depend only on the upstream Material package.
+**Material is the single Material-based profile in ngx-formly Builder.** It combines the standard
+Formly Material controls with the builder's additional types. Exports using those additional types
+require their matching runtime components and configuration; the complete profile is not currently
+published as a standalone public package.
 
-Templates select their configured library automatically. For a blank form or import, select the
-library before creating the form. To use another library later, create a new form and manually
+Templates work with any of the available libraries. Leave the library empty to use Vanilla, or
+select the library that supports your fields. To use another library later, create a new form and manually
 rebuild or import a compatible configuration; Studio does not convert existing forms between
 libraries.
 

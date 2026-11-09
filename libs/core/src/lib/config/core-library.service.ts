@@ -1,11 +1,16 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { CORE_LIBRARY_CONFIGS, LibraryConfig } from './types';
+import { VANILLA_LIBRARY_ID } from './vanilla/vanilla.library';
 
 @Injectable()
 export class CoreLibraryService {
   protected readonly libraryConfigs = inject(CORE_LIBRARY_CONFIGS);
-  readonly formTemplates = this.libraryConfigs.flatMap((config) => config.formTemplates ?? []);
-  readonly libraryOptions = this.libraryConfigs.map((cfg) => ({ id: cfg.id, label: cfg.label }));
+  readonly formTemplates = this.libraryConfigs
+    .filter((config) => !config.hidden)
+    .flatMap((config) => config.formTemplates ?? []);
+  readonly libraryOptions = this.libraryConfigs
+    .filter((cfg) => cfg.id !== VANILLA_LIBRARY_ID && !cfg.hidden)
+    .map((cfg) => ({ id: cfg.id, label: cfg.label }));
 
   protected readonly activeLibrarySrc = signal<LibraryConfig | null>(null);
   readonly activeLibrary = this.activeLibrarySrc.asReadonly();

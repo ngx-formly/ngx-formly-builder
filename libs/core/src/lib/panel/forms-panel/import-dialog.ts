@@ -16,6 +16,7 @@ import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { CoreFormService } from '../../editor/core-form.service';
 import { CoreLibraryService } from '../../config/core-library.service';
+import { VANILLA_LIBRARY_ID } from '../../config/vanilla/vanilla.library';
 import { ImportDialogService } from './import-dialog.service';
 import { JSONContentDialog } from '../../json-content/json-content-dialog';
 
@@ -75,28 +76,26 @@ import { JSONContentDialog } from '../../json-content/json-content-dialog';
         <div>
           <p-floatlabel variant="on">
             <p-select
-              #libraryModel="ngModel"
               class="w-full"
               name="formlyUI"
-              required
               checkmark
               optionLabel="label"
               optionValue="id"
+              ariaLabel="UI Library"
+              [showClear]="true"
+              [pt]="{ label: { 'aria-describedby': 'import-form-library-help' } }"
               [inputId]="selectedLibraryInputId"
               [options]="libraryOptions"
               [(ngModel)]="selectedLibraryId"
             />
             <label [for]="selectedLibraryInputId">UI Library</label>
           </p-floatlabel>
-          @if (!libraryModel.valid && libraryModel.touched) {
-            <p-message
-              class="mt-1 inline-block"
-              severity="error"
-              size="small"
-              variant="simple"
-              >UI Library is required.</p-message
-            >
-          }
+          <small
+            class="mt-1 block text-muted-color"
+            id="import-form-library-help"
+          >
+            Leave empty for Vanilla (native HTML controls).
+          </small>
         </div>
       </ng-container>
       <ng-container lhsActions>
@@ -137,25 +136,22 @@ export class ImportDialog {
   selectedLibraryInputId = 'import-form-selected-library';
   libraryOptions = this.libraryService.libraryOptions;
   readonly schema = computed(() => {
-    const selectedLibraryId = this.selectedLibraryId();
-    if (!selectedLibraryId) {
-      return undefined;
-    }
-
-    const selectedLibrary = this.libraryService.getLibrary(selectedLibraryId);
+    const selectedLibrary = this.libraryService.getLibrary(
+      this.selectedLibraryId() ?? VANILLA_LIBRARY_ID,
+    );
     return selectedLibrary?.enableFormUploadSchema ? selectedLibrary.schema : undefined;
   });
 
   readonly formName = signal('');
   readonly formFieldsJSON = signal('');
-  readonly selectedLibraryId = signal(this.libraryOptions[0]?.id);
+  readonly selectedLibraryId = signal<string | null>(null);
 
   constructor() {
     effect(() => {
       if (this.isOpen()) {
         this.formName.set('New Form');
         this.formFieldsJSON.set('[]');
-        this.selectedLibraryId.set(this.libraryOptions[0]?.id);
+        this.selectedLibraryId.set(null);
       }
     });
   }
@@ -193,7 +189,14 @@ export class ImportDialog {
     }
 
     this.formService
-      .addForm$(this.formName(), formFields, {}, this.selectedLibraryId(), true, null)
+      .addForm$(
+        this.formName(),
+        formFields,
+        {},
+        this.selectedLibraryId() ?? VANILLA_LIBRARY_ID,
+        true,
+        null,
+      )
       .subscribe({
         next: () => {
           const activeFormId = this.formService.activeFormId();
