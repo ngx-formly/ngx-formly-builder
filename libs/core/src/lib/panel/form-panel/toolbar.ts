@@ -37,44 +37,45 @@ import { NameEditPopover } from '../../shared/name-edit-popover';
   },
   template: `
     <div class="flex min-w-0 grow flex-col gap-2 md:flex-row md:items-center md:justify-between">
-      <div class="flex min-w-0 items-center gap-4">
-        <div>
-          <div
-            #formNameTarget
-            class="flex min-w-0 flex-col"
-          >
-            <span class="max-w-full truncate text-lg font-medium">{{ activeFormName() }} </span>
-            <span class="flex items-center gap-1.5 text-sm text-muted-color">
-              <span>{{ activeLibraryLabel() }}</span>
-              <span>&bull;</span>
-              <span>{{ activeFieldCount() }} Field{{ activeFieldCount() === 1 ? '' : 's' }}</span>
-            </span>
-          </div>
-          <core-name-edit-popover
-            #formNamePopover
-            title="Edit form name"
-            placeholder="Form name"
-            [(value)]="formNameEditValue"
-            (save)="setFormName()"
-            (visibleChange)="formNamePopoverVisible.set($event)"
-          />
-        </div>
-        <button
-          pButton
-          text
-          rounded
-          aria-label="Edit form name"
-          coreTooltip="Edit form name"
-          tooltipPosition="top"
-          (click)="openFormNameEditor()"
+      <div class="min-w-0">
+        <div
+          #formNameTarget
+          class="flex min-w-0 flex-col"
         >
-          <i
-            pButtonIcon
-            class="material-symbols-outlined"
-          >
-            edit
-          </i>
-        </button>
+          <div class="flex min-w-0 items-center gap-2">
+            <span class="max-w-full truncate text-lg font-medium">{{ activeFormName() }} </span>
+            <button
+              pButton
+              text
+              rounded
+              class="shrink-0"
+              aria-label="Edit form name"
+              coreTooltip="Edit form name"
+              tooltipPosition="top"
+              (click)="openFormNameEditor()"
+            >
+              <i
+                pButtonIcon
+                class="material-symbols-outlined"
+              >
+                edit
+              </i>
+            </button>
+          </div>
+          <span class="flex items-center gap-1.5 text-sm text-muted-color">
+            <span>{{ activeLibraryLabel() }}</span>
+            <span>&bull;</span>
+            <span>{{ activeFieldCount() }} Field{{ activeFieldCount() === 1 ? '' : 's' }}</span>
+          </span>
+        </div>
+        <core-name-edit-popover
+          #formNamePopover
+          title="Edit form name"
+          placeholder="Form name"
+          [(value)]="formNameEditValue"
+          (save)="setFormName()"
+          (visibleChange)="formNamePopoverVisible.set($event)"
+        />
       </div>
       <div class="flex min-w-0 flex-wrap items-center gap-2 md:justify-end md:gap-4">
         <p-selectbutton
