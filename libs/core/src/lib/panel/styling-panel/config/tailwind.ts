@@ -40,7 +40,6 @@ const numberVariants = [
 const spacingLabels = Object.fromEntries(
   numberVariants.map((value) => [value, `${value} · ${Number(value) * 0.25}rem`]),
 );
-const spacingDescription = 'Uses the default 0.25rem spacing unit; host CSS may override it.';
 
 const fractionVariants = [
   '1/2',
@@ -137,7 +136,6 @@ const fieldSizing: StyleOptionCategory = {
       value: 'h',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, ...fractionVariants2, ...textVariants2],
     },
     {
@@ -145,7 +143,6 @@ const fieldSizing: StyleOptionCategory = {
       value: 'w',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, ...fractionVariants2, ...textVariants2],
     },
   ],
@@ -160,7 +157,6 @@ const fieldMargin: StyleOptionCategory = {
       spanWidth: true,
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, ...textVariants],
     },
     {
@@ -168,7 +164,6 @@ const fieldMargin: StyleOptionCategory = {
       value: 'mx',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, ...textVariants],
     },
     {
@@ -176,7 +171,6 @@ const fieldMargin: StyleOptionCategory = {
       value: 'my',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, ...textVariants],
     },
     {
@@ -184,7 +178,6 @@ const fieldMargin: StyleOptionCategory = {
       value: 'mt',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, ...textVariants],
     },
     {
@@ -192,7 +185,6 @@ const fieldMargin: StyleOptionCategory = {
       value: 'mb',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, ...textVariants],
     },
     {
@@ -200,7 +192,6 @@ const fieldMargin: StyleOptionCategory = {
       value: 'ml',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, ...textVariants],
     },
     {
@@ -208,7 +199,6 @@ const fieldMargin: StyleOptionCategory = {
       value: 'mr',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, ...textVariants],
     },
   ],
@@ -274,21 +264,18 @@ const fieldGroupGap: StyleOptionCategory = {
       value: 'gap',
       spanWidth: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants],
     },
     {
       name: 'Horizontal',
       value: 'gap-x',
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants],
     },
     {
       name: 'Vertical',
       value: 'gap-y',
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants],
     },
   ],
@@ -303,7 +290,6 @@ const fieldGroupPadding: StyleOptionCategory = {
       spanWidth: true,
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, 'px'],
     },
     {
@@ -311,7 +297,6 @@ const fieldGroupPadding: StyleOptionCategory = {
       value: 'px',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, 'px'],
     },
     {
@@ -319,7 +304,6 @@ const fieldGroupPadding: StyleOptionCategory = {
       value: 'py',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, 'px'],
     },
     {
@@ -327,7 +311,6 @@ const fieldGroupPadding: StyleOptionCategory = {
       value: 'pt',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, 'px'],
     },
     {
@@ -335,7 +318,6 @@ const fieldGroupPadding: StyleOptionCategory = {
       value: 'pb',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, 'px'],
     },
     {
@@ -343,7 +325,6 @@ const fieldGroupPadding: StyleOptionCategory = {
       value: 'pl',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, 'px'],
     },
     {
@@ -351,7 +332,6 @@ const fieldGroupPadding: StyleOptionCategory = {
       value: 'pr',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
-      description: spacingDescription,
       variants: [...numberVariants, 'px'],
     },
   ],
