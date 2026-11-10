@@ -27,7 +27,7 @@ describe('TabletSidebar', () => {
     fixture.detectChanges();
   });
 
-  it('defines all seven tablet panel workflows', () => {
+  it('defines all eight tablet panel workflows', () => {
     const options = fixture.componentInstance['panelOptions'];
 
     expect(options.map((option) => option.value)).toEqual([
@@ -38,6 +38,7 @@ describe('TabletSidebar', () => {
       'validation',
       'styling',
       'model',
+      'settings',
     ]);
   });
 

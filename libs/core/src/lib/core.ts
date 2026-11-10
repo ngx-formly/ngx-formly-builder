@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   inject,
+  input,
   signal,
   ViewContainerRef,
 } from '@angular/core';
@@ -37,7 +38,7 @@ import { TABLET_PANEL_OPTIONS, TabletSidebar } from './sidebar/tablet-sidebar';
           <core-lhs-sidebar />
         </ng-template>
         <ng-template #panel>
-          <core-form-panel />
+          <core-form-panel [hideFormTitle]="hideFormTitle()" />
         </ng-template>
         <ng-template #panel>
           <core-rhs-sidebar />
@@ -56,7 +57,7 @@ import { TABLET_PANEL_OPTIONS, TabletSidebar } from './sidebar/tablet-sidebar';
           <core-tablet-sidebar />
         </ng-template>
         <ng-template #panel>
-          <core-form-panel />
+          <core-form-panel [hideFormTitle]="hideFormTitle()" />
         </ng-template>
       </p-splitter>
     } @else if (isMobile()) {
@@ -67,7 +68,10 @@ import { TABLET_PANEL_OPTIONS, TabletSidebar } from './sidebar/tablet-sidebar';
           [value]="activePanel()"
           (selected)="openMobilePanel($event)"
         />
-        <core-form-panel class="min-w-0 grow" />
+        <core-form-panel
+          class="min-w-0 grow"
+          [hideFormTitle]="hideFormTitle()"
+        />
       </div>
 
       <p-drawer
@@ -88,6 +92,8 @@ import { TABLET_PANEL_OPTIONS, TabletSidebar } from './sidebar/tablet-sidebar';
   `,
 })
 export class FormlyBuilder {
+  readonly hideFormTitle = input(false);
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly responsiveService = inject(CoreResponsiveService);
   private readonly panelService = inject(PanelService);

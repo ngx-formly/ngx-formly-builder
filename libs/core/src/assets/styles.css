@@ -101,7 +101,7 @@
     @apply flex min-h-0 flex-1 flex-col overflow-hidden;
 
     .content-list {
-      @apply flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4;
+      @apply flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4;
     }
   }
 }

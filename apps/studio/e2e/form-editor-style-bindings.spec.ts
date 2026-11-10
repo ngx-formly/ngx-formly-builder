@@ -30,12 +30,16 @@ for (const viewport of [
     await expect(createDialog).toBeHidden();
     await expect(page.locator('core-form-builder-content')).toContainText('expenseReport');
 
-    const badge = page.locator('core-active-field-chip p-chip').filter({ visible: true }).first();
-    await expect(badge).toBeVisible();
-    await expect(badge).toContainText('expenseReport');
-    await expect(badge).toHaveCSS('display', 'inline-flex');
-    await expect(badge).toHaveCSS('border-radius', '16px');
-    await expect(badge).toHaveCSS('background-color', 'rgb(243, 239, 246)');
+    const navbar = page.locator('app-header');
+    await expect(
+      navbar.getByRole('button', { name: 'Rename form: Expense Report' }),
+    ).toBeInViewport();
+    await expect(page.locator('core-panel-header p-chip')).toHaveCount(0);
+
+    if (viewport.width === 1600) {
+      const title = (await navbar.locator('core-form-title').boundingBox())!;
+      expect(title.x + title.width / 2).toBeCloseTo(viewport.width / 2, 0);
+    }
 
     if (viewport.width < 1024) {
       await page.locator('.p-drawer-close-button').click();

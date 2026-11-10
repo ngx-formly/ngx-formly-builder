@@ -330,6 +330,50 @@ interface FieldValidationConfig {
     /** Additional validation display controls such as validation.show. */
     displayProperties?: PropertyConfig[];
 }
+export declare enum ClassType {
+    CLASS_NAME = "className",
+    FIELD_GROUP_CLASS_NAME = "fieldGroupClassName"
+}
+export declare enum BreakpointAffix {
+    PREFIX = "prefix",
+    INFIX = "infix",
+    SUFFIX = "suffix"
+}
+interface StyleDependency {
+    type: ClassType;
+    value: string;
+}
+interface StyleOptionConfig {
+    name: string;
+    /** Explains the option without changing its generated classes. */
+    description?: string;
+    value?: string;
+    variants: string[];
+    /** Display labels keyed by variant; omitted labels fall back to the variant. */
+    variantLabels?: Record<string, string>;
+    hasBreakpoints?: boolean;
+    spanWidth?: boolean;
+    dependsOn?: StyleDependency;
+    dependsOnParent?: StyleDependency;
+}
+interface StylesConfig {
+    /** Name displayed in Builder settings. */
+    label?: string;
+    breakpointAffix: BreakpointAffix;
+    breakpoints: Breakpoint[];
+    className: StyleOptionCategory[];
+    fieldGroupClassName: StyleOptionCategory[];
+}
+interface StyleOptionCategory {
+    name: string;
+    options: StyleOptionConfig[];
+}
+interface Breakpoint {
+    name: string;
+    description: string;
+    value: string;
+}
+declare const CORE_STYLES_CONFIG: InjectionToken<StylesConfig>;
 /**
  * A category of field types shown in the UI.
  */
@@ -352,7 +396,7 @@ interface FieldTypeOption {
     name: string;
     /** Human friendly name shown in the palette. */
     displayName: string;
-    /** Optional help shown in the palette tooltip. */
+    /** Optional description shown below the field name in the palette. */
     description?: string;
     /** Optional prefix used when generating field keys. */
     keyGenerationPrefix?: string;
@@ -423,9 +467,15 @@ interface CoreEditorConfig {
     autoSave?: boolean;
     /** Delay in milliseconds before an active form mutation is persisted. */
     autoSaveDelay?: number;
+    /** Show the read-only builder settings panel. Defaults to true. */
+    showSettings?: boolean;
 }
 /** Public configuration for an embedded Formly Builder instance. */
 interface FormlyBuilderConfig {
+    /** Replaces the default Tailwind styling catalogue. The host supplies matching CSS. */
+    styles?: StylesConfig;
+    /** Show the read-only builder settings panel. Defaults to true. */
+    showSettings?: boolean;
     /** Optional UI profiles. Native HTML controls are available without a UI library. */
     libraries?: LibraryConfig[];
     /** Shared templates rendered with the selected library, replacing profile-specific templates. */
@@ -512,7 +562,7 @@ interface CoreAddFieldOption extends MenuItem {
     items?: CoreAddFieldOption[];
     fieldType?: string;
 }
-type LHSPanelType = 'add-field' | 'fields' | 'forms';
+type LHSPanelType = 'add-field' | 'fields' | 'forms' | 'settings';
 type RHSPanelType = 'field-edit' | 'model' | 'styling' | 'validation';
 declare enum DropAction {
     COPY = "copy",
@@ -532,6 +582,7 @@ interface DragOverData {
 }
 type FormDisplayMode = 'form' | 'json' | 'preview';
 export declare class PanelService {
+    readonly showSettings: boolean;
     protected readonly activePanelSrc: import("@angular/core").WritableSignal<LHSPanelType | RHSPanelType>;
     readonly activePanel: import("@angular/core").Signal<LHSPanelType | RHSPanelType>;
     protected readonly activeLHSPanelSrc: import("@angular/core").WritableSignal<LHSPanelType>;
@@ -686,6 +737,7 @@ declare class FormPreviewContent {
     }, {}, never, never, true, never>;
 }
 declare class FormPanel {
+    readonly hideFormTitle: import("@angular/core").InputSignal<boolean>;
     protected formService: CoreFormService;
     protected readonly previewContent: import("@angular/core").Signal<FormPreviewContent | undefined>;
     activeFormId: import("@angular/core").Signal<string | undefined>;
@@ -701,7 +753,13 @@ declare class FormPanel {
     }>[]>;
     setActiveFormDisplayMode(mode?: number | string): void;
     static ɵfac: i0.ɵɵFactoryDeclaration<FormPanel, never>;
-    static ɵcmp: i0.ɵɵComponentDeclaration<FormPanel, "core-form-panel", never, {}, {}, never, never, true, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<FormPanel, "core-form-panel", never, {
+        "hideFormTitle": {
+            "alias": "hideFormTitle";
+            "required": false;
+            "isSignal": true;
+        };
+    }, {}, never, never, true, never>;
 }
 export declare class CreateFormDialogService {
     protected readonly isOpenSrc: import("@angular/core").WritableSignal<boolean>;
@@ -753,44 +811,6 @@ declare class ModelEditPanel {
     static ɵfac: i0.ɵɵFactoryDeclaration<ModelEditPanel, never>;
     static ɵcmp: i0.ɵɵComponentDeclaration<ModelEditPanel, "core-model-edit-panel", never, {}, {}, never, never, true, never>;
 }
-declare enum ClassType {
-    CLASS_NAME = "className",
-    FIELD_GROUP_CLASS_NAME = "fieldGroupClassName"
-}
-declare enum BreakpointAffix {
-    PREFIX = "prefix",
-    INFIX = "infix",
-    SUFFIX = "suffix"
-}
-interface StyleDependency {
-    type: ClassType;
-    value: string;
-}
-interface StyleOptionConfig {
-    name: string;
-    value?: string;
-    variants: string[];
-    hasBreakpoints?: boolean;
-    spanWidth?: boolean;
-    dependsOn?: StyleDependency;
-    dependsOnParent?: StyleDependency;
-}
-interface StylesConfig {
-    breakpointAffix: BreakpointAffix;
-    breakpoints: Breakpoint[];
-    className: StyleOptionCategory[];
-    fieldGroupClassName: StyleOptionCategory[];
-}
-interface StyleOptionCategory {
-    name: string;
-    options: StyleOptionConfig[];
-}
-interface Breakpoint {
-    name: string;
-    description: string;
-    value: string;
-}
-declare const CORE_STYLES_CONFIG: InjectionToken<StylesConfig>;
 declare class StylingPanel {
     fieldChange: import("@angular/core").OutputEmitterRef<PropertyChange>;
     typeOfClassType: typeof ClassType;
@@ -800,7 +820,7 @@ declare class StylingPanel {
     readonly fieldGroupClassNameMap: import("@angular/core").Signal<Record<string, StyleOptionCategory[]>>;
     protected formService: CoreFormService;
     protected fieldService: CoreFieldService;
-    protected stylesConfig: StylesConfig;
+    protected stylesConfig: import("@ngx-formly/builder").StylesConfig;
     protected classNamePath: string[];
     protected fieldGroupClassNamePath: string[];
     protected activeField: import("@angular/core").Signal<EditorField<import("@ngx-formly/core").FormlyFieldProps & {
@@ -839,6 +859,7 @@ declare class ValidationPanel {
     static ɵcmp: i0.ɵɵComponentDeclaration<ValidationPanel, "core-validation-panel", never, {}, {}, never, never, true, never>;
 }
 export declare class FormlyBuilder {
+    readonly hideFormTitle: import("@angular/core").InputSignal<boolean>;
     private readonly destroyRef;
     private readonly responsiveService;
     private readonly panelService;
@@ -856,7 +877,28 @@ export declare class FormlyBuilder {
     constructor();
     openMobilePanel(panel: string): void;
     static ɵfac: i0.ɵɵFactoryDeclaration<FormlyBuilder, never>;
-    static ɵcmp: i0.ɵɵComponentDeclaration<FormlyBuilder, "formly-builder", never, {}, {}, never, never, true, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<FormlyBuilder, "formly-builder", never, {
+        "hideFormTitle": {
+            "alias": "hideFormTitle";
+            "required": false;
+            "isSignal": true;
+        };
+    }, {}, never, never, true, never>;
+}
+export declare class FormTitle {
+    protected readonly forms: CoreFormService;
+    protected readonly edit: import("@angular/core").WritableSignal<null | {
+        formId: string;
+        name: string;
+    }>;
+    private readonly injector;
+    private readonly focusTarget;
+    protected startEdit(formId: string): void;
+    protected handleKeydown(event: KeyboardEvent, name: string): void;
+    protected finishEdit(name: null | string, restoreFocus?: boolean): void;
+    private focusAfterRender;
+    static ɵfac: i0.ɵɵFactoryDeclaration<FormTitle, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<FormTitle, "core-form-title", never, {}, {}, never, never, true, never>;
 }
 export declare const CORE_THEME: InjectionToken<WritableSignal<"dark" | "light">>;
 export declare function generateTypeOptionSchema({ properties, validationConfig }: {
@@ -897,14 +939,15 @@ export declare class MarkdownDialogService {
     static ɵfac: i0.ɵɵFactoryDeclaration<MarkdownDialogService, never>;
     static ɵprov: i0.ɵɵInjectableDeclaration<any>;
 }
-export declare function provideCore(): EnvironmentProviders;
+export declare function provideCore(styles?: StylesConfig): EnvironmentProviders;
 export declare function provideCoreTheme(): EnvironmentProviders;
-export declare function provideCoreConfig(libraryConfig?: LibraryConfig[], autoSave?: boolean, overrides?: Partial<Pick<CoreEditorConfig, 'autoSaveDelay' | 'editorType'>>): EnvironmentProviders;
+export declare function provideCoreConfig(libraryConfig?: LibraryConfig[], autoSave?: boolean, overrides?: Partial<Pick<CoreEditorConfig, 'autoSaveDelay' | 'editorType' | 'showSettings'>>): EnvironmentProviders;
 /** Configures an embeddable Formly Builder and its isolated Formly runtime. */
 export declare function provideFormlyBuilder(config?: FormlyBuilderConfig): EnvironmentProviders;
 export declare function provideFormStore(service: Type<FormStoreService>): EnvironmentProviders;
 export declare function provideLocalFormStore(): EnvironmentProviders;
 export declare const primengPreset: Preset;
+export declare const tailwindConfig: StylesConfig;
 declare const defaultTypeOption: {
     name: string;
     displayName: string;
@@ -922,5 +965,5 @@ export declare const nativeFieldTypes: FieldTypeOption[];
 export declare const nativeFieldConfig: ConfigOption;
 /** Recheck expression validators when another field changes their model. */
 export declare function withValidationExpressions(): ConfigOption;
-export { type BaseEditorForm, type BasePropertyConfig, type BaseWorkspaceNode, CORE_FORM_STORE, FormlyBuilder as Core, type CoreAddFieldOption, type CoreEditorConfig, type DefaultForm, type EditorForm, type FieldCategoryOption, type FieldInfo, type FieldInfoBadge, type FieldTypeOption, type FieldTypePreset, type FieldValidationConfig, type FieldWrapperOption, type FormStoreDataKind, type FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, type FormStoreService, type FormTemplate, type FormlyBuilderConfig, type GroupChildPropertyConfig, type GroupPropertyConfig, type PropertyConfig as IProperty, type PropertyConfig, type LibraryConfig, type MarkdownPropertyConfig, type PropertyChange, PropertyChangeType, type PropertyCreator, type ValidationRuleConfig, type ValidationRulePropertyConfig, type WorkspaceFolderNode, type WorkspaceFormNode, type WorkspaceHierarchy, type WorkspaceNode, type WorkspaceNodeType, type WorkspaceValidation, type WrappersPropertyConfig, type WrappersPropertyOption, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion };
+export { type BaseEditorForm, type BasePropertyConfig, type BaseWorkspaceNode, type Breakpoint, CORE_FORM_STORE, FormlyBuilder as Core, type CoreAddFieldOption, type CoreEditorConfig, type DefaultForm, type EditorForm, type FieldCategoryOption, type FieldInfo, type FieldInfoBadge, type FieldTypeOption, type FieldTypePreset, type FieldValidationConfig, type FieldWrapperOption, type FormStoreDataKind, type FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, type FormStoreService, type FormTemplate, type FormlyBuilderConfig, type GroupChildPropertyConfig, type GroupPropertyConfig, type PropertyConfig as IProperty, type PropertyConfig, type LibraryConfig, type MarkdownPropertyConfig, type PropertyChange, PropertyChangeType, type PropertyCreator, type StyleDependency, type StyleOptionCategory, type StyleOptionConfig, type StylesConfig, type ValidationRuleConfig, type ValidationRulePropertyConfig, type WorkspaceFolderNode, type WorkspaceFormNode, type WorkspaceHierarchy, type WorkspaceNode, type WorkspaceNodeType, type WorkspaceValidation, type WrappersPropertyConfig, type WrappersPropertyOption, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion };
 ```

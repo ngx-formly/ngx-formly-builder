@@ -1,0 +1,126 @@
+---
+title: Builder configuration
+description: Configure initialization settings, styling choices, readable labels, and settings visibility.
+---
+
+Pass initialization settings to `provideFormlyBuilder()` from `@ngx-formly/builder`. Settings apply
+to the builder's Angular provider scope. They are not saved in exported forms and cannot be changed
+from the read-only **Builder settings** panel. Recreate the provider scope to apply a new configuration.
+
+## Available settings
+
+| Option          | Default                          | Purpose                                                                         |
+| --------------- | -------------------------------- | ------------------------------------------------------------------------------- |
+| `libraries`     | `[]`                             | Additional UI profiles. Native Vanilla fields are always registered.            |
+| `formTemplates` | Templates from visible libraries | Shared templates that replace library-specific templates; `[]` offers none.     |
+| `editorType`    | `'form-editor'`                  | Namespace for persisted documents. Use distinct values for independent editors. |
+| `autoSave`      | `true`                           | Persist form changes automatically.                                             |
+| `autoSaveDelay` | `3000`                           | Debounce delay in milliseconds; inactive when autosave is disabled.             |
+| `formStore`     | Browser local storage            | A class implementing `FormStoreService`.                                        |
+| `styles`        | `tailwindConfig`                 | The complete styling catalogue: breakpoints and Self/Children controls.         |
+| `showSettings`  | `true`                           | Show the read-only Builder settings panel on every screen size.                 |
+
+The settings panel works without an open form. It shows effective settings, libraries, template
+names, and styling choices. It does not display stored form data or serialize services and components.
+
+```ts
+import { provideFormlyBuilder } from '@ngx-formly/builder';
+
+provideFormlyBuilder({
+  editorType: 'survey-designer',
+  autoSaveDelay: 750,
+  showSettings: false,
+});
+```
+
+For custom persistence, supply `formStore: YourFormStore`. Implement the exported `FormStoreService`
+contract in your application and provide any dependencies its constructor needs. Turning off
+autosave leaves explicit Save available.
+
+## Styling choices and labels
+
+A custom `styles` object **replaces the whole default catalogue**. There is no deep merge. Spread
+`tailwindConfig` explicitly when retaining parts of the default setup:
+
+```ts
+import { provideFormlyBuilder, tailwindConfig, type StylesConfig } from '@ngx-formly/builder';
+
+const surveyStyles: StylesConfig = {
+  ...tailwindConfig,
+  label: 'Survey styles',
+  className: [
+    {
+      name: 'Size',
+      options: [
+        {
+          name: 'Width',
+          value: 'w',
+          variants: ['48', 'auto'],
+          variantLabels: { '48': 'Comfortable · 12rem', auto: 'Automatic' },
+          description: 'Comfortable uses the default Tailwind spacing scale.',
+          hasBreakpoints: true,
+        },
+      ],
+    },
+  ],
+};
+
+provideFormlyBuilder({ styles: surveyStyles });
+```
+
+This replaces the **Self** controls with one Width choice while retaining the preset's breakpoints
+and **Children** controls. Choosing “Comfortable · 12rem” saves `w-48`; at SM it saves `sm:w-48`.
+Labels never enter the form's class strings. Missing labels fall back to the original variant.
+
+The default size and spacing labels use Tailwind's standard `0.25rem` spacing unit: `48 · 12rem`
+means 48 units. Pixel dimensions depend on the host's root font size. If you override the spacing
+scale in CSS, provide matching labels and descriptions in your catalogue. Initialization settings
+do not change the spacing scale, root font size, or CSS rules.
+
+## Catalogue structure
+
+The package exports `StylesConfig`, `StyleOptionConfig`, `StyleOptionCategory`, `StyleDependency`,
+`Breakpoint`, `BreakpointAffix`, and `ClassType` alongside `tailwindConfig`.
+
+- `label` names the styling profile in Builder settings.
+- `className` defines the **Self** categories; `fieldGroupClassName` defines **Children** categories.
+- Each category has a `name` and `options`. Each option supplies a `name`, `variants`, and an
+  optional class prefix in `value`, plus optional `description` and `variantLabels`.
+- `hasBreakpoints` enables responsive choices. `spanWidth` gives a control the full panel width.
+- `dependsOn` and `dependsOnParent` restrict options to compatible layouts, using `ClassType` and
+  the required class value.
+- `breakpoints` supplies the ordered names, descriptions, and class affixes. The first breakpoint
+  is initially selected. `breakpointAffix` determines whether its value is a prefix, infix, or suffix.
+
+Use empty category arrays to remove preset controls. An empty breakpoint array disables preset
+controls entirely; the CSS Class Names editor remains available. Existing saved classes are retained
+when they are not represented in the new catalogue.
+
+## Supply matching CSS
+
+The packaged stylesheet generates the default Tailwind catalogue. Your host must generate or load
+CSS for any additional class names and breakpoints. The configuration controls what the editor
+writes; it cannot generate styles at runtime.
+
+For a custom Tailwind class assembled from a prefix and variant, include the full class explicitly
+in your global CSS source when scanning would not find it:
+
+```css
+@source inline('w-112 sm:w-112');
+```
+
+Custom responsive names also need matching Tailwind theme definitions. For example, a configuration
+breakpoint `{ name: 'Wide', description: '70rem and up', value: 'wide:' }` needs:
+
+```css
+@theme {
+  --breakpoint-wide: 70rem;
+}
+@source inline('wide:w-48');
+```
+
+Keep names, descriptions, and labels consistent with those CSS definitions. Custom class systems
+can use the same catalogue structure with their own stylesheet.
+
+For installation, theme setup, and isolated route providers, see
+[Embed in Angular](/developers/embed-in-angular/).

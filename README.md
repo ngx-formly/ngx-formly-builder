@@ -107,6 +107,11 @@ and saved forms are unchanged.
 
 ## Embedding contract (prerelease)
 
+Follow [Embed in Angular](https://docs.formlystudio.com/developers/embed-in-angular/) for a complete
+installation from locally packed packages. The
+[configuration reference](https://docs.formlystudio.com/developers/builder-configuration/) covers
+initialization options, custom styling choices, and readable size labels.
+
 The Studio route uses the same component and provider intended for embedding. The complete
 [package-consumer fixture](integration/package-consumer) runs against npm tarballs without Studio
 or workspace source imports.
@@ -197,7 +202,12 @@ theme settings into its existing provider. Toggle the `.dark` class on an ancest
 mode. `provideCoreTheme()` remains available to hosts that also synchronize the code editor theme.
 
 `provideFormlyBuilder` accepts an editor storage namespace, autosave settings, and a custom
-`FormStoreService` implementation. The API remains provisional until the first public prerelease.
+`FormStoreService` implementation. Pass `styles` to replace the Tailwind styling catalogue,
+using `tailwindConfig` as an optional starting point. Style options accept `variantLabels` and
+`description`; their saved class values stay unchanged. The read-only **Builder settings** panel
+shows the effective configuration, including before a form is opened. Set `showSettings: false`
+to hide it in your application. Host CSS determines the actual dimensions and available classes.
+The API remains provisional until the first public prerelease.
 
 Use `provideFormlyBuilder()` without profiles for native HTML controls. Leaving **UI Library**
 empty when creating or importing a form uses Vanilla: input, number, textarea, checkbox, select,

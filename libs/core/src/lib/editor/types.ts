@@ -6,7 +6,7 @@ export interface CoreAddFieldOption extends MenuItem {
   fieldType?: string;
 }
 
-export type LHSPanelType = 'fields' | 'add-field' | 'forms';
+export type LHSPanelType = 'fields' | 'add-field' | 'forms' | 'settings';
 export type RHSPanelType = 'field-edit' | 'validation' | 'styling' | 'model';
 
 export enum DropAction {

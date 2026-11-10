@@ -1,11 +1,11 @@
 ---
 title: Developers
-description: Configure Studio for your ngx-formly components and use the generated forms in Angular.
+description: Embed the builder, configure Studio, and render generated forms in Angular.
 ---
 
 Use ngx-formly Builder to author and test configurations for the ngx-formly components you maintain.
-Start from a checkout of this repository and configure Studio with your application's field types,
-wrappers, defaults, and editable properties.
+Embed the builder in your Angular application or configure Studio with your application's field
+types, wrappers, defaults, and editable properties.
 
 ## Editor configuration and runtime configuration
 
@@ -18,13 +18,15 @@ cards, and repeating sections, providing runtime registrations and editor metada
 
 ## Choose a starting point
 
-- **Configure your editor:** [Set up your editor](/developers/set-up-your-editor/), then
+- **Embed in your application:** [Embed in Angular](/developers/embed-in-angular/), then
+  [Builder configuration](/developers/builder-configuration/) for initialization settings and styling.
+- **Configure a Studio checkout:** [Set up your editor](/developers/set-up-your-editor/), then
   [configure a UI profile](/developers/configure-a-ui-profile/) and
   [add custom components](/developers/add-custom-components/).
 - **Render an existing export:** [Use an exported form](/developers/use-an-exported-form/).
 
-These guides target Angular 22 and Formly 11.x. Editor libraries are not published npm packages yet.
-The repository verifies its prerelease embedding contract through a package-consumer fixture.
+These guides target Angular 22 and Formly 11.x. The embedding guide uses locally packed packages,
+matching the isolated package-consumer fixture verified by the repository.
 The editor shell in `libs/core` uses `@ngx-formly/builder`. Headless state uses
 `@ngx-formly/builder-state`, reusable Material fields use `@ngx-formly/builder-material-fields`,
 and editor-only Material adapters use `@ngx-formly/builder-material`. Public APIs remain

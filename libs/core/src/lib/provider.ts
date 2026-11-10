@@ -29,7 +29,7 @@ import { FieldPresetDialogService } from './field-preset/field-preset-dialog.ser
 import { CoreFieldWrapper } from './formly/field-wrapper';
 import { FieldInfo } from './model/types';
 import { tailwindConfig } from './panel/styling-panel/config/tailwind';
-import { CORE_STYLES_CONFIG } from './panel/styling-panel/types';
+import { CORE_STYLES_CONFIG, StylesConfig } from './panel/styling-panel/types';
 import { LocalFormStoreService } from './persistence/local-form-store.service';
 import { CORE_FORM_STORE, FormStoreService } from './persistence/types';
 import { ArrayTableDialogService } from './properties/array/array-table-dialog.service';
@@ -37,14 +37,14 @@ import { ExpressionDialogService } from './properties/expressions/expression-dia
 import { MarkdownDialogService } from './properties/markdown/markdown-dialog.service';
 import { CORE_THEME } from './theme';
 
-export function provideCore(): EnvironmentProviders {
+export function provideCore(styles: StylesConfig = tailwindConfig): EnvironmentProviders {
   return makeEnvironmentProviders([
     CoreFormService,
     { provide: BuilderEngineService, useExisting: CoreFormService },
     CoreFieldService,
     {
       provide: CORE_STYLES_CONFIG,
-      useValue: tailwindConfig,
+      useValue: styles,
     },
     PanelService,
     FieldPresetDialogService,
@@ -69,13 +69,14 @@ export function provideCoreTheme(): EnvironmentProviders {
 export function provideCoreConfig(
   libraryConfig: LibraryConfig[] = [],
   autoSave = true,
-  overrides: Partial<Pick<CoreEditorConfig, 'editorType' | 'autoSaveDelay'>> = {},
+  overrides: Partial<Pick<CoreEditorConfig, 'editorType' | 'autoSaveDelay' | 'showSettings'>> = {},
 ): EnvironmentProviders {
   const editorConfig: CoreEditorConfig = {
     editorType: overrides.editorType ?? 'form-editor',
     defaultTypeOption,
     autoSave,
     autoSaveDelay: overrides.autoSaveDelay,
+    showSettings: overrides.showSettings ?? true,
   };
   const formlyConfig: ConfigOption = {
     wrappers: [{ name: 'core-field', component: CoreFieldWrapper }],
@@ -120,10 +121,11 @@ export function provideFormlyBuilder(config: FormlyBuilderConfig = {}): Environm
 
   return makeEnvironmentProviders([
     provideFormlyCore(),
-    provideCore(),
+    provideCore(config.styles),
     provideCoreConfig(config.libraries, config.autoSave ?? true, {
       editorType: config.editorType,
       autoSaveDelay: config.autoSaveDelay,
+      showSettings: config.showSettings,
     }),
     { provide: CORE_FORM_TEMPLATES, useValue: config.formTemplates ?? null },
     {

@@ -4,12 +4,13 @@ import { LHSPanelType } from '../editor/types';
 import { FieldsPanel, PanelOptionConfig } from '../panel';
 import { AddFieldPanel } from '../panel/add-field-panel/add-field-panel';
 import { FormsPanel } from '../panel/forms-panel/forms-panel';
+import { SettingsPanel } from '../panel/settings-panel/settings-panel';
 import { PanelOptionList } from './panel-option-list';
 
 @Component({
   selector: 'core-lhs-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FieldsPanel, AddFieldPanel, FormsPanel, PanelOptionList],
+  imports: [FieldsPanel, AddFieldPanel, FormsPanel, PanelOptionList, SettingsPanel],
   host: { class: 'flex h-full min-h-0 min-w-0 shrink-0' },
   template: `
     <core-panel-option-list
@@ -19,6 +20,11 @@ import { PanelOptionList } from './panel-option-list';
       (selected)="setActivePanel($event)"
     />
     @switch (activePanel()) {
+      @case ('settings') {
+        @if (panelService.showSettings) {
+          <core-settings-panel class="panel" />
+        }
+      }
       @case ('fields') {
         <core-fields-panel class="panel" />
       }
@@ -51,6 +57,7 @@ export class LHSSidebar {
       value: 'add-field',
       matIcon: 'add',
     },
+    { label: 'Builder settings', value: 'settings', matIcon: 'settings' },
   ];
 
   setActivePanel(panel: string) {

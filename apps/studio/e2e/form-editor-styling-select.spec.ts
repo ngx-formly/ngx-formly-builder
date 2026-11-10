@@ -36,7 +36,7 @@ test('renders styling options as soon as the dropdown opens', async ({ page }) =
     return frames;
   });
   expect(frames.length).toBeGreaterThan(0);
-  expect(frames.filter((frame) => !frame.visibleOptions.includes('0'))).toEqual([]);
+  expect(frames.filter((frame) => !frame.visibleOptions.includes('0 · 0rem'))).toEqual([]);
 
   await page.getByRole('option', { name: 'fit', exact: true }).click();
   await expect(height).toHaveText('fit');
@@ -50,20 +50,20 @@ test('renders styling options as soon as the dropdown opens', async ({ page }) =
   );
   await page.keyboard.press('Home');
   await page.keyboard.press('Enter');
-  await expect(height).toHaveText('0');
+  await expect(height).toHaveText('0 · 0rem');
   await expect(classes).toContainText('h-0');
 
-  await page.getByRole('button', { name: 'SM', exact: true }).click();
+  await page.locator('core-styling-panel').getByRole('button', { name: 'SM', exact: true }).click();
   await height.click();
-  await page.getByRole('option', { name: '4', exact: true }).click();
-  await expect(height).toHaveText('4');
+  await page.getByRole('option', { name: '4 · 1rem', exact: true }).click();
+  await expect(height).toHaveText('4 · 1rem');
   await expect(classes).toContainText('sm:h-4');
   await heightOption.getByRole('button', { name: 'Clear', exact: true }).click();
   await expect(classes).not.toContainText('sm:h-4');
   await expect(classes).toContainText('h-0');
 
-  await page.getByRole('button', { name: 'Default', exact: true }).click();
-  await expect(height).toHaveText('0');
+  await page.locator('core-styling-panel').getByRole('button', { name: 'Default', exact: true }).click();
+  await expect(height).toHaveText('0 · 0rem');
   await heightOption.getByRole('button', { name: 'Clear', exact: true }).click();
   await expect(classes).not.toContainText('h-0');
 });

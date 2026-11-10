@@ -3,24 +3,19 @@ import { CoreFieldService } from '../../config/core-field.service';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Empty, EmptyNoFieldSelected } from '../../empty';
 import { PropertyChange } from '../../properties/types';
-import { ActiveFieldChip } from '../../shared/active-field-chip';
 import { PanelHeader } from '../../shared/panel-header';
 import { ValidationPanelContent } from './validation-panel-content';
 
 @Component({
   selector: 'core-validation-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Empty, EmptyNoFieldSelected, ValidationPanelContent, ActiveFieldChip, PanelHeader],
+  imports: [Empty, EmptyNoFieldSelected, ValidationPanelContent, PanelHeader],
   host: { class: 'overflow-hidden' },
   template: `
     <core-panel-header
       header="Validation"
       subHeader="Configure validation for the selected field"
-    >
-      <ng-container headerChip>
-        <core-active-field-chip />
-      </ng-container>
-    </core-panel-header>
+    />
     @if (activeField(); as field) {
       @if (config(); as validationConfig) {
         <core-validation-panel-content

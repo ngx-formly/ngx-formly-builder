@@ -1,6 +1,6 @@
 import { CoreFormService } from '../../editor/core-form.service';
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, viewChild } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ButtonDirective } from 'primeng/button';
@@ -94,7 +94,10 @@ import { FormToolbarComponent } from './toolbar';
       </div>
     }
     @if (activeFormId()) {
-      <core-form-toolbar class="shrink-0">
+      <core-form-toolbar
+        class="shrink-0"
+        [hideFormTitle]="hideFormTitle()"
+      >
         @if (activeFormDisplayMode() !== 'json') {
           <core-preview-device-toolbar
             class="md:mr-auto"
@@ -144,6 +147,7 @@ import { FormToolbarComponent } from './toolbar';
   `,
 })
 export class FormPanel {
+  readonly hideFormTitle = input(false);
   protected formService = inject(CoreFormService);
   protected readonly previewContent = viewChild(FormPreviewContent);
 

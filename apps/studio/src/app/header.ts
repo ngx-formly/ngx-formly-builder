@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, isDevMode } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  isDevMode,
+  type TemplateRef,
+} from '@angular/core';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Divider } from 'primeng/divider';
 
@@ -9,12 +17,24 @@ import { ThemeToggle } from './theme-toggle';
 @Component({
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ThemeToggle, Divider, RouterLink, ButtonDirective, ButtonIcon, ButtonLabel],
+  imports: [
+    NgTemplateOutlet,
+    ThemeToggle,
+    Divider,
+    RouterLink,
+    ButtonDirective,
+    ButtonIcon,
+    ButtonLabel,
+  ],
   host: {
     class: 'flex flex-col overflow-hidden',
   },
   template: `
-    <div class="flex min-h-0 flex-1 items-center justify-between gap-2 px-4 py-1">
+    <div
+      class="flex min-h-0 flex-1 items-center justify-between gap-2 px-4 py-1"
+      [class.xl:grid]="center()"
+      [class.xl:grid-cols-3]="center()"
+    >
       <div class="flex min-w-0 items-center">
         <h1 class="min-w-0 text-xl font-bold">
           <a
@@ -29,11 +49,20 @@ import { ThemeToggle } from './theme-toggle';
               height="30"
               class="shrink-0"
             />
-            <span class="truncate">ngx-formly Builder</span>
+            <span
+              class="truncate"
+              [class.max-sm:hidden]="center()"
+              >ngx-formly Builder</span
+            >
           </a>
         </h1>
       </div>
-      <div class="flex min-w-0 shrink items-center justify-end gap-1">
+      @if (center(); as title) {
+        <div class="flex min-w-0 flex-1 justify-center">
+          <ng-container [ngTemplateOutlet]="title" />
+        </div>
+      }
+      <div class="flex shrink-0 items-center justify-end gap-1">
         <a
           pButton
           text
@@ -114,6 +143,8 @@ import { ThemeToggle } from './theme-toggle';
   `,
 })
 export class Header {
+  readonly center = input<TemplateRef<unknown>>();
+
   readonly responsiveService = inject(ResponsiveService);
 
   isMobile = this.responsiveService.isMobile;

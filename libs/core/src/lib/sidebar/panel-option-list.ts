@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
 import { Divider } from 'primeng/divider';
+import { PanelService } from '../editor/panel.service';
 import { CoreFormService } from '../editor/core-form.service';
 import { PanelOptionConfig } from '../panel';
 import { PanelOption } from './panel-option';
@@ -18,27 +19,31 @@ import { PanelOption } from './panel-option';
         layout="vertical"
       />
     }
-    <ul>
+    <ul class="flex flex-col">
       @for (option of options(); track option.value) {
-        <li>
-          @if (!$first && option.value === 'field-edit') {
-            <div
-              class="px-3 py-2"
-              aria-hidden="true"
-            >
-              <p-divider />
-            </div>
-          }
-          <core-panel-option
-            [matIcon]="option.matIcon"
-            [label]="option.label"
-            [value]="option.value"
-            [isActive]="option.value === value()"
-            [disabled]="option.value !== 'forms' && !activeFormId()"
-            [position]="position()"
-            (selected)="selectOption(option.value)"
-          />
-        </li>
+        @if (option.value !== 'settings' || showSettings) {
+          <li [class.mt-auto]="option.value === 'settings'">
+            @if (!$first && option.value === 'field-edit') {
+              <div
+                class="px-3 py-2"
+                aria-hidden="true"
+              >
+                <p-divider />
+              </div>
+            }
+            <core-panel-option
+              [matIcon]="option.matIcon"
+              [label]="option.label"
+              [value]="option.value"
+              [isActive]="option.value === value()"
+              [disabled]="
+                option.value !== 'forms' && option.value !== 'settings' && !activeFormId()
+              "
+              [position]="position()"
+              (selected)="selectOption(option.value)"
+            />
+          </li>
+        }
       }
     </ul>
     @if (position() === 'left') {
@@ -50,6 +55,7 @@ import { PanelOption } from './panel-option';
   `,
 })
 export class PanelOptionList {
+  protected readonly showSettings = inject(PanelService).showSettings;
   protected readonly activeFormId = inject(CoreFormService).activeFormId;
 
   readonly options = input.required<PanelOptionConfig[]>();

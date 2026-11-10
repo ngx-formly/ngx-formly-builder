@@ -112,6 +112,7 @@ const formFieldWrapperOptions = [formFieldWrapperConfig];
 
 const inputTypeConfig: FieldTypeOption = {
   displayName: 'Input',
+  description: 'Text, email, password and more',
   name: 'input',
   materialSymbol: 'text_fields',
   keyGenerationPrefix: 'inp',
@@ -123,6 +124,7 @@ const inputTypeConfig: FieldTypeOption = {
 
 const numberTypeConfig: FieldTypeOption = {
   displayName: 'Number',
+  description: 'Numeric value with limits',
   name: 'number',
   materialSymbol: 'numbers',
   keyGenerationPrefix: 'num',
@@ -157,6 +159,7 @@ const numberTypeConfig: FieldTypeOption = {
 
 const textareaTypeConfig: FieldTypeOption = {
   displayName: 'Textarea',
+  description: 'Multi-line text entry',
   name: 'textarea',
   materialSymbol: 'subject',
   keyGenerationPrefix: 'txt',
@@ -176,6 +179,7 @@ const textareaTypeConfig: FieldTypeOption = {
 
 const selectTypeConfig: FieldTypeOption = {
   displayName: 'Select',
+  description: 'Dropdown list of choices',
   name: 'select',
   materialSymbol: 'list',
   keyGenerationPrefix: 'sel',
@@ -203,6 +207,7 @@ const selectTypeConfig: FieldTypeOption = {
 
 const radioTypeConfig: FieldTypeOption = {
   displayName: 'Radio',
+  description: 'One choice from a list',
   name: 'radio',
   materialSymbol: 'radio_button_checked',
   keyGenerationPrefix: 'rdo',
@@ -221,6 +226,7 @@ const radioTypeConfig: FieldTypeOption = {
 
 const multicheckboxTypeConfig: FieldTypeOption = {
   displayName: 'Multi Checkbox',
+  description: 'Multiple choices from a list',
   name: 'multicheckbox',
   materialSymbol: 'check_box',
   keyGenerationPrefix: 'mch',
@@ -239,6 +245,7 @@ const multicheckboxTypeConfig: FieldTypeOption = {
 
 const checkboxTypeConfig: FieldTypeOption = {
   displayName: 'Checkbox',
+  description: 'Single yes-or-no choice',
   name: 'checkbox',
   materialSymbol: 'check_box_outline_blank',
   keyGenerationPrefix: 'chk',
@@ -250,6 +257,7 @@ const checkboxTypeConfig: FieldTypeOption = {
 
 const groupTypeConfig: FieldTypeOption = {
   displayName: 'Group',
+  description: 'Related fields in one group',
   name: 'formly-group',
   materialSymbol: 'ad_group',
   disableKeyGeneration: true,

@@ -12,19 +12,29 @@ import { TypeContainer } from './type-option-container';
   },
   template: `
     <core-type-container
-      class="justify-between"
       [fieldType]="preset().typeOption!.name"
       [preset]="preset()"
       [showActions]="isMouseInside()"
     >
-      <span class="inline-flex items-center gap-2">
-        <i
-          aria-hidden="true"
-          class="material-symbols-outlined pointer-events-none size-6 shrink-0"
-          [class.opacity-30]="isMouseInside()"
-          >{{ isMouseInside() ? 'drag_indicator' : preset().typeOption!.materialSymbol }}</i
+      <span class="flex min-w-0 flex-1 items-center gap-3">
+        <span
+          class="flex size-12 shrink-0 items-center justify-center rounded-xl border border-surface bg-emphasis"
         >
-        <span>{{ preset().displayName }}</span>
+          <i
+            aria-hidden="true"
+            class="material-symbols-outlined pointer-events-none"
+            [class.opacity-30]="isMouseInside()"
+            >{{ isMouseInside() ? 'drag_indicator' : preset().typeOption!.materialSymbol }}</i
+          >
+        </span>
+        <span class="min-w-0 [overflow-wrap:anywhere]">
+          <span class="block leading-snug font-semibold">{{ preset().displayName }}</span>
+          @if (preset().typeOption?.description) {
+            <span class="mt-1 block text-sm leading-snug text-muted-color">
+              {{ preset().typeOption!.description }}
+            </span>
+          }
+        </span>
       </span>
     </core-type-container>
   `,

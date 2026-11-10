@@ -1,3 +1,4 @@
+import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { PanelService } from './panel.service';
 
@@ -5,7 +6,8 @@ describe('PanelService', () => {
   let service: PanelService;
 
   beforeEach(() => {
-    service = new PanelService();
+    TestBed.configureTestingModule({ providers: [PanelService] });
+    service = TestBed.inject(PanelService);
   });
 
   it('defaults active LHS panel to forms and RHS panel to field-edit', () => {

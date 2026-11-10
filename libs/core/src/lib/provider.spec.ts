@@ -4,6 +4,10 @@ import {
 } from '@ngx-formly/builder-state';
 import { CoreFormService } from './editor/core-form.service';
 import { BuilderFieldStateService } from './editor/builder-field-state.service';
+import { createEnvironmentInjector, EnvironmentInjector } from '@angular/core';
+import { tailwindConfig } from './panel/styling-panel/config/tailwind';
+import { CORE_STYLES_CONFIG, StylesConfig } from './panel/styling-panel/types';
+import { PanelService } from './editor/panel.service';
 import { TestBed } from '@angular/core/testing';
 import { Observable, of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
@@ -56,6 +60,37 @@ class TestFormStore implements FormStoreService {
 }
 
 describe('provideFormlyBuilder', () => {
+  it('isolates styling and visibility overrides between builder scopes', () => {
+    const styles: StylesConfig = {
+      ...tailwindConfig,
+      label: 'Empty catalogue',
+      className: [],
+      fieldGroupClassName: [],
+      breakpoints: [],
+    };
+    const parent = TestBed.inject(EnvironmentInjector);
+    const custom = createEnvironmentInjector(
+      [provideFormlyBuilder({ editorType: 'custom', styles, showSettings: false })],
+      parent,
+    );
+    const defaults = createEnvironmentInjector([provideFormlyBuilder()], parent);
+    try {
+      expect(custom.get(CORE_STYLES_CONFIG)).toBe(styles);
+      expect(defaults.get(CORE_STYLES_CONFIG)).toBe(tailwindConfig);
+      expect(custom.get(CORE_EDITOR_CONFIG).editorType).toBe('custom');
+      expect(defaults.get(CORE_EDITOR_CONFIG).editorType).toBe('form-editor');
+      expect(defaults.get(PanelService).showSettings).toBe(true);
+      const panels = custom.get(PanelService);
+      expect(panels.showSettings).toBe(false);
+      panels.setActivePanel('settings');
+      expect(panels.activePanel()).toBe('forms');
+      expect(styles.className).toEqual([]);
+    } finally {
+      custom.destroy();
+      defaults.destroy();
+    }
+  });
+
   it('provides defaults for an embedded editor', () => {
     TestBed.configureTestingModule({
       providers: [provideFormlyBuilder({ libraries: [library] })],
@@ -70,8 +105,10 @@ describe('provideFormlyBuilder', () => {
     expect(TestBed.inject(CORE_EDITOR_CONFIG)).toMatchObject({
       editorType: 'form-editor',
       autoSave: true,
+      showSettings: true,
     });
     expect(TestBed.inject(CORE_FORM_STORE)).toBeInstanceOf(LocalFormStoreService);
+    expect(TestBed.inject(CORE_STYLES_CONFIG)).toBe(tailwindConfig);
   });
 
   it.each([undefined, { libraries: [] }])(

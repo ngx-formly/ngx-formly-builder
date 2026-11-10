@@ -7,10 +7,10 @@ import { TypePreset } from './type-preset';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TypePreset],
   template: `
-    <h3 class="flex items-center font-medium">
+    <h3 class="font-medium text-muted-color">
       {{ category().displayName }}
     </h3>
-    <ul class="mt-2 flex flex-col gap-2">
+    <ul class="mt-3 flex flex-col gap-2">
       @for (preset of category().children; track preset.displayName) {
         <li [class.hidden]="isFiltering() && !filteredVisibleFieldIds().includes(preset.id)">
           <core-add-field-type-preset [preset]="preset" />

@@ -11,6 +11,7 @@ import {
   StylingPanel,
 } from '../panel';
 import { ValidationPanel } from '../panel/validation-panel/validation-panel';
+import { SettingsPanel } from '../panel/settings-panel/settings-panel';
 import { PanelOptionList } from './panel-option-list';
 
 export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
@@ -21,6 +22,7 @@ export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
   { label: 'Validation', value: 'validation', matIcon: 'rule' },
   { label: 'Styling', value: 'styling', matIcon: 'palette' },
   { label: 'Model', value: 'model', matIcon: 'database' },
+  { label: 'Builder settings', value: 'settings', matIcon: 'settings' },
 ];
 
 @Component({
@@ -35,6 +37,7 @@ export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
     PanelOptionList,
     StylingPanel,
     ValidationPanel,
+    SettingsPanel,
   ],
   host: { class: 'flex h-full min-w-0' },
   template: `
@@ -48,6 +51,11 @@ export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
       @switch (activePanel()) {
         @case ('forms') {
           <core-forms-panel class="panel" />
+        }
+        @case ('settings') {
+          @if (panelService.showSettings) {
+            <core-settings-panel class="panel" />
+          }
         }
         @case ('fields') {
           <core-fields-panel class="panel" />
@@ -72,7 +80,7 @@ export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
   `,
 })
 export class TabletSidebar {
-  private readonly panelService = inject(PanelService);
+  protected readonly panelService = inject(PanelService);
 
   protected readonly activePanel = this.panelService.activePanel;
   protected readonly panelOptions = TABLET_PANEL_OPTIONS;

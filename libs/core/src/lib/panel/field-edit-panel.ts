@@ -4,13 +4,12 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { Empty, EmptyNoFieldSelected } from '../empty';
 import { FieldPropertyList } from '../properties/field-property-list';
 import { PropertyChange } from '../properties/types';
-import { ActiveFieldChip } from '../shared/active-field-chip';
 import { PanelHeader } from '../shared/panel-header';
 
 @Component({
   selector: 'core-field-edit-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Empty, FieldPropertyList, EmptyNoFieldSelected, PanelHeader, ActiveFieldChip],
+  imports: [Empty, FieldPropertyList, EmptyNoFieldSelected, PanelHeader],
   host: {
     class: 'overflow-hidden',
   },
@@ -18,11 +17,7 @@ import { PanelHeader } from '../shared/panel-header';
     <core-panel-header
       header="Field Edit"
       subHeader="Edit the selected field's properties"
-    >
-      <ng-container headerChip>
-        <core-active-field-chip />
-      </ng-container>
-    </core-panel-header>
+    />
     @if (activeField(); as field) {
       @if (properties().length) {
         <core-field-property-list

@@ -1,37 +1,39 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { FieldTypeOption } from '../../config/types';
-import { Tooltip } from '../../shared';
 import { TypeContainer } from './type-option-container';
 
 @Component({
   selector: 'core-add-field-type-option',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TypeContainer, Tooltip],
+  imports: [TypeContainer],
   host: {
     '(mouseenter)': 'isMouseInside.set(true)',
     '(mouseleave)': 'isMouseInside.set(false)',
   },
   template: `
     <core-type-container
-      class="justify-between"
       [fieldType]="type().name"
       [showActions]="isMouseInside()"
     >
-      <span
-        class="inline-flex items-center gap-2"
-        tooltipPosition="right"
-        tooltipEvent="both"
-        [coreTooltip]="type().description"
-        [attr.aria-description]="type().description"
-        [attr.tabindex]="type().description ? 0 : null"
-      >
-        <i
-          aria-hidden="true"
-          class="material-symbols-outlined pointer-events-none size-6 shrink-0"
-          [class.opacity-30]="isMouseInside()"
-          >{{ isMouseInside() ? 'drag_indicator' : type().materialSymbol }}</i
+      <span class="flex min-w-0 flex-1 items-center gap-3">
+        <span
+          class="flex size-12 shrink-0 items-center justify-center rounded-xl border border-surface bg-emphasis"
         >
-        {{ type().displayName }}
+          <i
+            aria-hidden="true"
+            class="material-symbols-outlined pointer-events-none"
+            [class.opacity-30]="isMouseInside()"
+            >{{ isMouseInside() ? 'drag_indicator' : type().materialSymbol }}</i
+          >
+        </span>
+        <span class="min-w-0 [overflow-wrap:anywhere]">
+          <span class="block leading-snug font-semibold">{{ type().displayName }}</span>
+          @if (type().description) {
+            <span class="mt-1 block text-sm leading-snug text-muted-color">
+              {{ type().description }}
+            </span>
+          }
+        </span>
       </span>
     </core-type-container>
   `,

@@ -18,6 +18,7 @@ export const formEditorRoutes: Routes = [
             fragment: fragment ?? undefined,
           }),
       },
+      { path: 'settings', data: { panel: 'settings' }, children: [] },
       { path: 'forms', data: { panel: 'forms', workspaceTab: 'forms' }, children: [] },
       { path: 'validations', data: { panel: 'forms', workspaceTab: 'validations' }, children: [] },
       { path: 'forms/:formId/fields', data: { panel: 'fields' }, children: [] },

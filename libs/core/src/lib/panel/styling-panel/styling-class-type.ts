@@ -1,11 +1,11 @@
 import {
-    ChangeDetectionStrategy,
-    Component,
-    computed,
-    inject,
-    input,
-    output,
-    signal,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Panel } from 'primeng/panel';
@@ -20,31 +20,35 @@ import { ClassType, CORE_STYLES_CONFIG, StyleOptionCategory } from './types';
   imports: [SelectButton, FormsModule, Panel, StylingOption],
   host: { class: 'flex flex-col gap-2' },
   template: `
-    <p-selectbutton
-      optionLabel="name"
-      optionValue="value"
-      allowEmpty="false"
-      [options]="stylesConfig.breakpoints"
-      [(ngModel)]="activeBreakpointValue"
-    />
-    <h4>{{ activeBreakpoint().description }}</h4>
-    <div>
-      @for (category of activeCategories(); track category.name) {
-        <p-panel [header]="category.name">
-          <div class="grid grid-cols-2 gap-2">
-            @for (option of category.options; track option.name) {
-              <core-styling-option
-                [class.col-span-2]="option.spanWidth"
-                [option]="option"
-                [breakpoint]="activeBreakpoint()"
-                [classType]="classType()"
-                (fieldChange)="fieldChange.emit($event)"
-              />
-            }
-          </div>
-        </p-panel>
-      }
-    </div>
+    @if (activeBreakpoint(); as breakpoint) {
+      <p-selectbutton
+        optionLabel="name"
+        optionValue="value"
+        allowEmpty="false"
+        [options]="stylesConfig.breakpoints"
+        [(ngModel)]="activeBreakpointValue"
+      />
+      <h4>{{ breakpoint.description }}</h4>
+      <div>
+        @for (category of activeCategories(); track category.name) {
+          <p-panel [header]="category.name">
+            <div class="grid grid-cols-2 gap-2">
+              @for (option of category.options; track option.name) {
+                <core-styling-option
+                  [class.col-span-2]="option.spanWidth"
+                  [option]="option"
+                  [breakpoint]="breakpoint"
+                  [classType]="classType()"
+                  (fieldChange)="fieldChange.emit($event)"
+                />
+              }
+            </div>
+          </p-panel>
+        }
+      </div>
+    } @else {
+      <p class="text-sm text-muted-color">No styling presets configured.</p>
+    }
   `,
 })
 export class StylingClassType {
@@ -66,5 +70,5 @@ export class StylingClassType {
   breakpoints = this.stylesConfig.breakpoints;
   breakpointMap = Object.fromEntries(this.stylesConfig.breakpoints.map((bp) => [bp.value, bp]));
 
-  readonly activeBreakpointValue = signal<string>(this.breakpoints[0].value);
+  readonly activeBreakpointValue = signal<string>(this.breakpoints[0]?.value ?? '');
 }

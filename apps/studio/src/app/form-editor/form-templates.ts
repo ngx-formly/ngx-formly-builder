@@ -113,6 +113,11 @@ export const formTemplates: FormTemplate[] = [
         key: 'expenseReport',
         fieldGroupClassName: 'grid grid-cols-1 md:grid-cols-2 gap-4',
         fieldGroup: [
+          {
+            className: 'col-span-full',
+            template:
+              '<h2 class="m-0 text-xl font-semibold">Expense Report</h2><p class="mt-2 mb-0 text-muted-color">Submit your expenses and receipt details for reimbursement.</p>',
+          },
           { type: 'input', key: 'reportTitle', props: { label: 'Report Title', required: true } },
           { type: 'input', key: 'submitter', props: { label: 'Submitter', required: true } },
           {

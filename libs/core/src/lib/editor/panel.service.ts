@@ -1,9 +1,12 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
+import { CORE_EDITOR_CONFIG } from '../config/types';
 import { LHSPanelType, RHSPanelType } from './types';
 
 @Injectable()
 export class PanelService {
+  readonly showSettings = inject(CORE_EDITOR_CONFIG, { optional: true })?.showSettings ?? true;
+
   protected readonly activePanelSrc = signal<LHSPanelType | RHSPanelType>('forms');
   readonly activePanel = this.activePanelSrc.asReadonly();
 
@@ -20,7 +23,7 @@ export class PanelService {
   readonly highlightPanel$ = this.highlightPanelSrc$.asObservable();
 
   setActivePanel(panel: LHSPanelType | RHSPanelType) {
-    if (panel === 'forms' || panel === 'fields' || panel === 'add-field') {
+    if (panel === 'forms' || panel === 'fields' || panel === 'add-field' || panel === 'settings') {
       this.setActiveLHSPanel(panel);
     } else {
       this.setActiveRHSPanel(panel);
@@ -28,7 +31,8 @@ export class PanelService {
   }
 
   setActiveLHSPanel(panel: LHSPanelType) {
-    if (panel !== 'forms') this.activeWorkspaceTab.set('forms');
+    if (panel === 'settings' && !this.showSettings) return;
+    if (panel === 'fields' || panel === 'add-field') this.activeWorkspaceTab.set('forms');
     this.activeLHSPanelSrc.set(panel);
     this.activePanelSrc.set(panel);
     this.highlightPanelSrc$.next(panel);

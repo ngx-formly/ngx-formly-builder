@@ -48,6 +48,7 @@ const fieldTypes: FieldTypeOption[] = [
     name: 'input',
     keyGenerationPrefix: 'inp',
     displayName: 'Input',
+    description: 'Text, email, password and more',
     materialSymbol: 'text_fields',
     defaultConfig: { props: { label: 'Input' } },
     properties: [
@@ -68,6 +69,7 @@ const fieldTypes: FieldTypeOption[] = [
     name: 'number',
     keyGenerationPrefix: 'num',
     displayName: 'Number',
+    description: 'Numeric value with limits',
     materialSymbol: 'numbers',
     defaultConfig: { props: { label: 'Number', type: 'number' } },
     properties: [...properties, placeholder],
@@ -90,6 +92,7 @@ const fieldTypes: FieldTypeOption[] = [
     name: 'textarea',
     keyGenerationPrefix: 'txt',
     displayName: 'Textarea',
+    description: 'Multi-line text entry',
     materialSymbol: 'subject',
     defaultConfig: { props: { label: 'Textarea' } },
     properties: [
@@ -103,6 +106,7 @@ const fieldTypes: FieldTypeOption[] = [
     name: 'checkbox',
     keyGenerationPrefix: 'chk',
     displayName: 'Checkbox',
+    description: 'Single yes-or-no choice',
     materialSymbol: 'check_box',
     defaultConfig: { props: { label: 'Checkbox' } },
     properties,
@@ -112,6 +116,7 @@ const fieldTypes: FieldTypeOption[] = [
     name: 'select',
     keyGenerationPrefix: 'sel',
     displayName: 'Select',
+    description: 'Dropdown list of choices',
     materialSymbol: 'list',
     defaultConfig: {
       props: {
@@ -167,6 +172,7 @@ export const vanillaLibraryConfig = createLibrary({
         {
           name: 'formly-group',
           displayName: 'Group',
+          description: 'Related fields in one group',
           materialSymbol: 'ad_group',
           isParent: true,
           disableKeyGeneration: true,

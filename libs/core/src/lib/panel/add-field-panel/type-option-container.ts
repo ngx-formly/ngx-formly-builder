@@ -29,7 +29,7 @@ interface AddFieldAction extends MenuItem {
   imports: [ButtonDirective, ButtonIcon, DndDraggableDirective, Menu, Tooltip],
   template: `
     <div
-      class="relative flex cursor-grab items-center justify-between gap-2 rounded-lg p-2 text-center transition-colors hover:bg-primary/20"
+      class="relative flex cursor-grab items-center justify-between gap-2 rounded-lg py-2 text-left text-color transition-colors focus-within:bg-emphasis hover:bg-emphasis"
       dndEffectAllowed="copy"
       [dndDraggable]="dragData()"
       (dndStart)="onDragStart()"

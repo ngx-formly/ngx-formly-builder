@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  effect,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { ButtonGroup } from 'primeng/buttongroup';
@@ -17,7 +9,7 @@ import { ExportDialogService } from './export-dialog.service';
 import { PreviewDialogService } from './preview-dialog.service';
 import { FormDisplayMode } from '../../editor/types';
 import { Tooltip } from '../../shared';
-import { NameEditPopover } from '../../shared/name-edit-popover';
+import { FormTitle } from './form-title';
 
 @Component({
   selector: 'core-form-toolbar',
@@ -28,7 +20,7 @@ import { NameEditPopover } from '../../shared/name-edit-popover';
     ButtonLabel,
     FormsModule,
     Tooltip,
-    NameEditPopover,
+    FormTitle,
     SelectButton,
     ButtonGroup,
   ],
@@ -40,44 +32,14 @@ import { NameEditPopover } from '../../shared/name-edit-popover';
       class="flex min-w-0 grow flex-col gap-x-4 gap-y-2 md:flex-row md:flex-wrap md:items-center md:justify-between"
     >
       <div class="min-w-0">
-        <div
-          #formNameTarget
-          class="flex min-w-0 flex-col"
-        >
-          <div class="flex min-w-0 items-center gap-2">
-            <span class="max-w-full truncate text-lg font-medium">{{ activeFormName() }} </span>
-            <button
-              pButton
-              text
-              rounded
-              class="shrink-0"
-              aria-label="Edit form name"
-              coreTooltip="Edit form name"
-              tooltipPosition="top"
-              (click)="openFormNameEditor()"
-            >
-              <i
-                pButtonIcon
-                class="material-symbols-outlined"
-              >
-                edit
-              </i>
-            </button>
-          </div>
-          <span class="flex items-center gap-1.5 text-sm text-muted-color">
-            <span>{{ activeLibraryLabel() }}</span>
-            <span>&bull;</span>
-            <span>{{ activeFieldCount() }} Field{{ activeFieldCount() === 1 ? '' : 's' }}</span>
-          </span>
-        </div>
-        <core-name-edit-popover
-          #formNamePopover
-          title="Edit form name"
-          placeholder="Form name"
-          [(value)]="formNameEditValue"
-          (save)="setFormName()"
-          (visibleChange)="formNamePopoverVisible.set($event)"
-        />
+        @if (!hideFormTitle()) {
+          <core-form-title />
+        }
+        <span class="flex items-center gap-1.5 text-sm text-muted-color">
+          <span>{{ activeLibraryLabel() }}</span>
+          <span>&bull;</span>
+          <span>{{ activeFieldCount() }} Field{{ activeFieldCount() === 1 ? '' : 's' }}</span>
+        </span>
       </div>
       <ng-content />
       <div class="flex min-w-0 flex-wrap items-center gap-2 md:ml-auto md:justify-end md:gap-4">
@@ -166,17 +128,12 @@ export class FormToolbarComponent {
   private readonly previewDialogService = inject(PreviewDialogService);
   private readonly exportDialogService = inject(ExportDialogService);
 
-  activeFormName = this.formService.activeFormName;
-  activeFormId = this.formService.activeFormId;
+  readonly hideFormTitle = input(false);
+
   activeFormDisplayMode = this.formService.activeFormDisplayMode;
   activeFieldCount = this.formService.activeFieldCount;
   saveStatus = this.formService.saveStatus;
   activeLibraryLabel = this.libraryService.activeLibraryLabel;
-  readonly formNamePopover = viewChild('formNamePopover', { read: NameEditPopover });
-  readonly formNameTarget = viewChild('formNameTarget', { read: ElementRef });
-
-  readonly formNameEditValue = signal('');
-  readonly formNamePopoverVisible = signal(false);
   displayModeOptions = [
     { label: 'Builder', value: 'form' },
     { label: 'Preview', value: 'preview' },
@@ -208,24 +165,6 @@ export class FormToolbarComponent {
         return 'Save';
     }
   };
-
-  openFormNameEditor() {
-    this.formNameEditValue.set(this.activeFormName() ?? '');
-    this.formNamePopover()?.show(this.formNameTarget()?.nativeElement);
-  }
-
-  setFormName() {
-    const newName = this.formNameEditValue();
-    this.formNameEditValue.set('');
-    this.formNamePopover()?.hide();
-
-    const activeFormId = this.activeFormId();
-    if (!activeFormId || !newName.trim() || this.activeFormName() === newName) {
-      return;
-    }
-
-    this.formService.setWorkspaceNodeName(activeFormId, newName);
-  }
 
   saveActiveForm() {
     this.formService.saveActiveForm();

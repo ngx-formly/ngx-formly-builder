@@ -51,6 +51,23 @@ describe('StylingOption', () => {
     });
   });
 
+  it('uses display labels while storing only the configured class token', () => {
+    fixture.componentRef.setInput('option', {
+      ...width,
+      variants: ['48', 'auto'],
+      variantLabels: { '48': 'Comfortable' },
+    });
+    expect(component.variantOptions()).toEqual([
+      { value: '48', label: 'Comfortable' },
+      { value: 'auto', label: 'auto' },
+    ]);
+    component.selectVariant('48');
+    expect(activeField().className).toBe('w-48');
+    expect(component.selectedVariant()).toBe('48');
+    component.selectVariant('Comfortable');
+    expect(changed).toHaveBeenCalledTimes(1);
+  });
+
   it('clears only the selected option, preserving custom and responsive classes', () => {
     activeField.set({ className: 'w-4 w-8 mt-2 sm:w-4 custom', fieldGroupClassName: '' });
     component['clear']();

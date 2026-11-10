@@ -11,15 +11,19 @@ export enum BreakpointAffix {
   SUFFIX = 'suffix',
 }
 
-interface StyleDependency {
+export interface StyleDependency {
   type: ClassType;
   value: string;
 }
 
 export interface StyleOptionConfig {
   name: string;
+  /** Explains the option without changing its generated classes. */
+  description?: string;
   value?: string;
   variants: string[];
+  /** Display labels keyed by variant; omitted labels fall back to the variant. */
+  variantLabels?: Record<string, string>;
   hasBreakpoints?: boolean;
   spanWidth?: boolean;
   dependsOn?: StyleDependency;
@@ -27,6 +31,8 @@ export interface StyleOptionConfig {
 }
 
 export interface StylesConfig {
+  /** Name displayed in Builder settings. */
+  label?: string;
   breakpointAffix: BreakpointAffix;
   breakpoints: Breakpoint[];
   className: StyleOptionCategory[];

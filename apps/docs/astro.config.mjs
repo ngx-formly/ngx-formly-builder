@@ -73,6 +73,8 @@ export default defineConfig({
           label: 'Developers',
           items: [
             { label: 'Overview', link: '/developers/' },
+            { label: 'Embed in Angular', link: '/developers/embed-in-angular/' },
+            { label: 'Builder configuration', link: '/developers/builder-configuration/' },
             { label: 'Set up your editor', link: '/developers/set-up-your-editor/' },
             { label: 'Configure a UI profile', link: '/developers/configure-a-ui-profile/' },
             { label: 'Add custom components', link: '/developers/add-custom-components/' },

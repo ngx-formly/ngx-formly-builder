@@ -5,6 +5,7 @@
 export * from './lib/properties';
 
 export { FormlyBuilder } from './lib/core';
+export { FormTitle } from './lib/panel/form-panel/form-title';
 /** @deprecated Use FormlyBuilder. */
 export { FormlyBuilder as Core } from './lib/core';
 
@@ -76,6 +77,17 @@ export {
 } from './lib/provider';
 
 export { primengPreset } from './lib/primeng';
+
+export { tailwindConfig } from './lib/panel/styling-panel/config/tailwind';
+export {
+  BreakpointAffix,
+  ClassType,
+  type Breakpoint,
+  type StyleDependency,
+  type StyleOptionCategory,
+  type StyleOptionConfig,
+  type StylesConfig,
+} from './lib/panel/styling-panel/types';
 
 export { createLibrary } from './lib/config/library';
 export { nativeFieldConfig, nativeFieldTypes } from './lib/config/native-fields';

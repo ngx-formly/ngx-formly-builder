@@ -47,7 +47,7 @@ for (const width of [1536, 1024, 390]) {
     await expect(page.locator('core-fields-panel')).toBeVisible();
     await expect(
       navigation.locator('core-panel-option').getByRole('button', { disabled: false }),
-    ).toHaveCount(7);
+    ).toHaveCount(8);
 
     await navigation.getByRole('button', { name: 'Open Add Field panel', exact: true }).click();
     await expect(page).toHaveURL(/\/workspaces\/forms\/first\/field$/);

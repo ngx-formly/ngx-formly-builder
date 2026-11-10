@@ -7,7 +7,6 @@ import { EmptyNoField } from '../../empty/empty-no-field';
 import { EmptyNoForm } from '../../empty/empty-no-form';
 import { MouseInsideService } from '../../editor/mouse-inside.service';
 import { PanelService } from '../../editor/panel.service';
-import { ActiveFieldChip } from '../../shared/active-field-chip';
 import { Filter } from '../../shared/filter';
 import { PanelHeader } from '../../shared/panel-header';
 import { FieldItem } from './field-item';
@@ -16,7 +15,7 @@ import { FieldItem } from './field-item';
   selector: 'core-fields-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [MouseInsideService],
-  imports: [FieldItem, EmptyNoForm, EmptyNoField, Empty, Filter, PanelHeader, ActiveFieldChip],
+  imports: [FieldItem, EmptyNoForm, EmptyNoField, Empty, Filter, PanelHeader],
   host: {
     class: 'overflow-hidden h-full block',
   },
@@ -24,11 +23,7 @@ import { FieldItem } from './field-item';
     <core-panel-header
       header="Fields"
       subHeader="Browse and filter fields in the active form"
-    >
-      <ng-container headerChip>
-        <core-active-field-chip />
-      </ng-container>
-    </core-panel-header>
+    />
 
     @if (activeFormId()) {
       @if (rootFieldIds().length) {

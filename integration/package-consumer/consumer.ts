@@ -6,6 +6,8 @@ import {
   createLibrary,
   primengPreset,
   provideFormlyBuilder,
+  tailwindConfig,
+  type StylesConfig,
 } from '@ngx-formly/builder';
 import { withMarkdownType, withTabsType } from '@ngx-formly/builder-material-fields';
 import { withTabsTypeBuilder } from '@ngx-formly/builder-material';
@@ -27,6 +29,26 @@ export const consumerLibrary = createLibrary({
   builderConfigOptions: [withTabsTypeBuilder()],
 });
 
+export const consumerStyles: StylesConfig = {
+  ...tailwindConfig,
+  label: 'Consumer styles',
+  className: [
+    {
+      name: 'Size',
+      options: [
+        {
+          name: 'Width',
+          value: 'w',
+          variants: ['48', 'auto'],
+          variantLabels: { '48': 'Comfortable · 12rem' },
+          description: 'Uses the default Tailwind spacing scale.',
+          hasBreakpoints: true,
+        },
+      ],
+    },
+  ],
+};
+
 export const consumerProviders = [
   providePrimeNG({
     theme: {
@@ -40,6 +62,8 @@ export const consumerProviders = [
   provideFormlyBuilder({
     libraries: [consumerLibrary],
     editorType: 'consumer-form-editor',
+    styles: consumerStyles,
+    showSettings: !new URLSearchParams(location.search).has('hide-settings'),
     autoSaveDelay: 500,
   }),
 ];

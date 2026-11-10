@@ -1,0 +1,186 @@
+---
+title: Embed in Angular
+description: Install and configure ngx-formly Builder inside an existing Angular application.
+---
+
+Embed the editor with `FormlyBuilder` and `provideFormlyBuilder()`. Your application owns the
+routing, styles, initialization settings, and persistence. Studio uses the same component and
+provider; you do not need its application shell.
+
+## Install matching packages
+
+This example targets the repository's tested Angular 22, Formly 11, and PrimeNG 21 combination.
+The public API is provisional. Locally built tarballs provide a reproducible integration path
+without depending on npm publication status.
+
+In a checkout of this repository, build and pack the two required packages:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm run build:core
+mkdir -p packages
+pnpm --dir libs/state pack --pack-destination ../../packages
+pnpm --dir libs/core pack --pack-destination ../../packages
+```
+
+Copy both generated `.tgz` files into a `vendor/` directory in your Angular application's repo.
+Install them together from that application's root:
+
+```sh
+pnpm add ./vendor/ngx-formly-builder-state-*.tgz ./vendor/ngx-formly-builder-0*.tgz
+pnpm add @ngx-formly/core@^11 @angular/cdk@^22 primeng@^21.1.10 @primeuix/themes@^2.0.3
+pnpm add tailwindcss@^4 tailwindcss-primeui@^0.6
+pnpm add -D @tailwindcss/postcss@^4 postcss
+```
+
+Use pnpm's default automatic peer installation for the builder's remaining declared peer
+dependencies. Keep Angular packages on matching versions. If your project disables automatic peer
+installation, install the peers listed in the packed `@ngx-formly/builder/package.json` explicitly.
+
+PrimeNG 21 currently declares Angular 21 peers. The tested Angular 22 consumer uses these scoped
+pnpm overrides in its `package.json`; merge them with your application's existing overrides,
+then run `pnpm install`:
+
+```json
+{
+  "pnpm": {
+    "overrides": {
+      "primeng>@angular/cdk": "$@angular/cdk",
+      "primeng>@angular/common": "$@angular/common",
+      "primeng>@angular/core": "$@angular/core",
+      "primeng>@angular/forms": "$@angular/forms",
+      "primeng>@angular/platform-browser": "$@angular/platform-browser",
+      "primeng>@angular/router": "$@angular/router"
+    }
+  }
+}
+```
+
+All referenced Angular packages must be direct dependencies of your host app. This compatibility
+setup is verified by the repository's isolated consumer; it is not a stable compatibility guarantee.
+
+## Configure global styles
+
+Create `.postcssrc.json` at your Angular application's root:
+
+```json
+{
+  "plugins": {
+    "@tailwindcss/postcss": {}
+  }
+}
+```
+
+Use the packaged stylesheet in your global CSS. It contains Tailwind source and must be processed
+by PostCSS:
+
+```css
+@layer theme, base, primeng;
+@import '@ngx-formly/builder/styles.css';
+
+html,
+body,
+app-root {
+  display: block;
+  height: 100%;
+  margin: 0;
+}
+```
+
+When embedding in a smaller page region, give that region an explicit height. The builder fills
+its container. The stylesheet includes Tailwind base styles, which also affect the host page;
+review it alongside your application's existing styles.
+
+Load the icon font in `index.html`, or self-host the same font with its font-face and
+`.material-symbols-outlined` rules:
+
+```html
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+/>
+```
+
+## Initialize and render the builder
+
+This minimal `main.ts` uses native HTML fields, so no Formly UI profile is required:
+
+```ts
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { FormlyBuilder, primengPreset, provideFormlyBuilder } from '@ngx-formly/builder';
+import { definePreset } from '@primeuix/themes';
+import Aura from '@primeuix/themes/aura';
+import { providePrimeNG } from 'primeng/config';
+
+@Component({
+  selector: 'app-root',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FormlyBuilder],
+  template: `<formly-builder class="block h-full" />`,
+})
+class App {}
+
+bootstrapApplication(App, {
+  providers: [
+    providePrimeNG({
+      theme: {
+        preset: definePreset(Aura, primengPreset),
+        options: {
+          darkModeSelector: '.dark',
+          cssLayer: { name: 'primeng', order: 'theme, base, primeng' },
+        },
+      },
+    }),
+    provideFormlyBuilder({
+      editorType: 'customer-surveys',
+      autoSave: true,
+      autoSaveDelay: 1000,
+      showSettings: true,
+    }),
+  ],
+}).catch(console.error);
+```
+
+In an existing app, put the provider setup in your application or route configuration and import
+`FormlyBuilder` into the page component. Merge the theme into an existing `providePrimeNG()` call.
+Open **Builder settings** to inspect the values supplied by your host.
+
+To offer your own components, pass `libraries` using a
+[UI profile](/developers/configure-a-ui-profile/). Register its runtime dependencies and styles in
+the host. The optional Material field and builder-adapter packages can be packed the same way after
+running `pnpm run build:builder-material`.
+
+## Separate builder contexts
+
+For independent editors, register the provider on separate routes with distinct `editorType`
+values. Omit the application-level `provideFormlyBuilder()` in this setup. Keep the PrimeNG theme
+at application level:
+
+```ts
+import { Routes } from '@angular/router';
+import { provideFormlyBuilder } from '@ngx-formly/builder';
+import { FormEditorPage } from './form-editor-page';
+
+export const routes: Routes = [
+  {
+    path: 'surveys',
+    component: FormEditorPage,
+    providers: [provideFormlyBuilder({ editorType: 'surveys' })],
+  },
+  {
+    path: 'internal-forms',
+    component: FormEditorPage,
+    providers: [provideFormlyBuilder({ editorType: 'internal-forms', showSettings: false })],
+  },
+];
+```
+
+`FormEditorPage` is a standalone component importing and rendering `FormlyBuilder`, as above.
+Each route gets its own editor services and document namespace. A namespace separates browser
+storage keys; it is not an authorization boundary. The embedded component itself needs no router.
+
+See [Builder configuration](/developers/builder-configuration/) for styling choices, templates,
+and custom persistence. The
+[package-consumer fixture](https://github.com/ngx-formly/ngx-formly-builder/tree/main/integration/package-consumer)
+provides a complete buildable example tested against packed libraries.

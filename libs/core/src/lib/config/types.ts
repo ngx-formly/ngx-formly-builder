@@ -5,6 +5,7 @@ import { DefaultForm } from '../model/types';
 import { PropertyConfig } from '../properties/types';
 import type { FieldValidationConfig } from '../properties/validation-messages/validation.types';
 import type { FormStoreService } from '../persistence/types';
+import type { StylesConfig } from '../panel/styling-panel/types';
 
 /**
  * A category of field types shown in the UI.
@@ -30,7 +31,7 @@ export interface FieldTypeOption {
   name: string;
   /** Human friendly name shown in the palette. */
   displayName: string;
-  /** Optional help shown in the palette tooltip. */
+  /** Optional description shown below the field name in the palette. */
   description?: string;
   /** Optional prefix used when generating field keys. */
   keyGenerationPrefix?: string;
@@ -104,10 +105,16 @@ export interface CoreEditorConfig {
   autoSave?: boolean;
   /** Delay in milliseconds before an active form mutation is persisted. */
   autoSaveDelay?: number;
+  /** Show the read-only builder settings panel. Defaults to true. */
+  showSettings?: boolean;
 }
 
 /** Public configuration for an embedded Formly Builder instance. */
 export interface FormlyBuilderConfig {
+  /** Replaces the default Tailwind styling catalogue. The host supplies matching CSS. */
+  styles?: StylesConfig;
+  /** Show the read-only builder settings panel. Defaults to true. */
+  showSettings?: boolean;
   /** Optional UI profiles. Native HTML controls are available without a UI library. */
   libraries?: LibraryConfig[];
   /** Shared templates rendered with the selected library, replacing profile-specific templates. */

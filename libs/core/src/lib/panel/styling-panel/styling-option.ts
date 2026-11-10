@@ -22,6 +22,7 @@ import {
   template: `
     <core-field-property-wrapper
       [label]="option().name"
+      [description]="option().description"
       [labelForId]="selectId"
       [isClearable]="true"
       (clear)="clear()"
@@ -29,12 +30,28 @@ import {
       <p-select
         class="w-full"
         checkmark
+        optionLabel="label"
+        optionValue="value"
         [inputId]="selectId"
-        [options]="option().variants"
+        [ariaLabel]="option().name"
+        [pt]="{
+          label: {
+            'aria-describedby': option().description ? selectId + '-description' : undefined,
+          },
+        }"
+        [options]="variantOptions()"
         [ngModel]="selectedVariant()"
         (onChange)="selectVariant($event.value)"
       />
     </core-field-property-wrapper>
+    @if (option().description) {
+      <p
+        class="mt-1 text-xs text-muted-color"
+        [id]="selectId + '-description'"
+      >
+        {{ option().description }}
+      </p>
+    }
   `,
 })
 export class StylingOption {
@@ -63,6 +80,12 @@ export class StylingOption {
   );
   readonly selectedVariant = computed(() =>
     findVariant(this.classValue(), this.option(), this.breakpoint(), this.breakpointAffix),
+  );
+  readonly variantOptions = computed(() =>
+    this.option().variants.map((value) => ({
+      value,
+      label: this.option().variantLabels?.[value] ?? value,
+    })),
   );
 
   selectVariant(variant: string): void {

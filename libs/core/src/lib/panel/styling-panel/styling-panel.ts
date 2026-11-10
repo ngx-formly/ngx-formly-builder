@@ -18,7 +18,6 @@ import { EditorField } from '../../model/types';
 import { createChipsProperty } from '../../properties';
 import { FieldChipsProperty } from '../../properties/chips/chips';
 import { PropertyChange } from '../../properties/types';
-import { ActiveFieldChip } from '../../shared/active-field-chip';
 import { PanelHeader } from '../../shared/panel-header';
 import { StylingClassType } from './styling-class-type';
 import {
@@ -45,17 +44,12 @@ import { hasClass } from './utils';
     PanelHeader,
     FieldChipsProperty,
     Panel,
-    ActiveFieldChip,
   ],
   template: `
     <core-panel-header
       header="Styling"
       subHeader="Edit responsive classes for the selected field"
-    >
-      <ng-container headerChip>
-        <core-active-field-chip />
-      </ng-container>
-    </core-panel-header>
+    />
     @if (activeField()) {
       <p-tabs
         class="flex min-h-0 flex-1 flex-col"

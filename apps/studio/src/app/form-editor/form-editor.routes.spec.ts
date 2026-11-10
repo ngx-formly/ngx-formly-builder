@@ -60,6 +60,37 @@ describe('workspace routes', () => {
     };
   }
 
+  it('opens settings without a form and without restoring a field panel', async () => {
+    const { panels, forms, router } = await open('/workspaces/settings?field=model');
+    expect(router.url).toBe('/workspaces/settings?field=model');
+    expect(forms.activeFormId()).toBeUndefined();
+    expect(panels.activeLHSPanel()).toBe('settings');
+    expect(panels.activePanel()).toBe('settings');
+  });
+
+  it('keeps unsaved form data and view state while visiting settings', async () => {
+    const { harness, forms, panels, router } = await open(
+      '/workspaces/forms/first/fields?view=preview&field=model',
+    );
+    forms.setActiveModel({ draft: 'keep me' });
+    panels.setActiveLHSPanel('settings');
+    await harness.fixture.whenStable();
+    expect(router.url).toBe('/workspaces/settings?view=preview&field=model');
+    expect(forms.activeFormId()).toBe('first');
+    expect(forms.activeModel()).toEqual({ draft: 'keep me' });
+    await harness.navigateByUrl(
+      '/workspaces/forms/first/fields?view=preview&field=model',
+      FormEditorApp,
+    );
+    await harness.fixture.whenStable();
+    expect(panels.activeLHSPanel()).toBe('fields');
+    expect(forms.activeModel()).toEqual({ draft: 'keep me' });
+    await harness.navigateByUrl('/workspaces/settings?view=preview&field=model', FormEditorApp);
+    await harness.fixture.whenStable();
+    expect(panels.activePanel()).toBe('settings');
+    expect(forms.activeFormDisplayMode()).toBe('preview');
+  });
+
   it.each([
     ['fields', 'fields', 'fields'],
     ['field', 'add-field', 'fields'],

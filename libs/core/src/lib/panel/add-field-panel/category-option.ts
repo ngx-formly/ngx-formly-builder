@@ -7,10 +7,10 @@ import { TypeOption } from './type-option';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TypeOption],
   template: `
-    <h3 class="flex items-center font-medium">
+    <h3 class="font-medium text-muted-color">
       {{ category().displayName }}
     </h3>
-    <ul class="mt-2 flex flex-col gap-2">
+    <ul class="mt-3 flex flex-col gap-2">
       @for (type of category().children; track type.displayName) {
         <li [class.hidden]="isFiltering() && !filteredVisibleFieldNames().includes(type.name)">
           <core-add-field-type-option [type]="type" />

@@ -1,20 +1,39 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+  TemplateRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { CoreFormService, FormlyBuilder, PanelService } from '@ngx-formly/builder';
+import { CoreFormService, FormlyBuilder, FormTitle, PanelService } from '@ngx-formly/builder';
 import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-form-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormlyBuilder],
+  imports: [FormlyBuilder, FormTitle],
   host: { class: 'block h-full' },
-  template: `<formly-builder class="block h-full" />`,
+  template: `
+    <ng-template #title>
+      <core-form-title />
+    </ng-template>
+    <formly-builder
+      class="block h-full"
+      [hideFormTitle]="true"
+    />
+  `,
 })
 export class FormEditorApp {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly forms = inject(CoreFormService);
+  private readonly title = viewChild<TemplateRef<unknown>>('title');
+  readonly headerTitle = computed(() => (this.forms.activeFormId() ? this.title() : undefined));
   private readonly panels = inject(PanelService);
   private readonly pendingRoute = signal<{
     formId: string;
@@ -60,7 +79,7 @@ export class FormEditorApp {
         return;
       }
 
-      if (!formId && panel !== 'forms') {
+      if (!formId && panel !== 'forms' && panel !== 'settings') {
         this.panels.setActiveLHSPanel('forms');
         return;
       }
@@ -72,14 +91,16 @@ export class FormEditorApp {
             ? activePanel
             : this.fieldQuery();
       const url = this.router.createUrlTree(
-        panel === 'forms' || !formId
-          ? ['/workspaces', workspaceTab]
-          : [
-              '/workspaces',
-              'forms',
-              formId,
-              panel === 'fields' ? 'fields' : addFieldTab === 'presets' ? 'preset' : 'field',
-            ],
+        panel === 'settings'
+          ? ['/workspaces', 'settings']
+          : panel === 'forms' || !formId
+            ? ['/workspaces', workspaceTab]
+            : [
+                '/workspaces',
+                'forms',
+                formId,
+                panel === 'fields' ? 'fields' : addFieldTab === 'presets' ? 'preset' : 'field',
+              ],
         {
           queryParams: { field, view: displayMode === 'form' ? null : displayMode },
           queryParamsHandling: 'merge',
@@ -101,7 +122,7 @@ export class FormEditorApp {
 
   private restoreRoute(): void {
     const route = this.route.snapshot.firstChild;
-    const panel = route?.data['panel'] as 'forms' | 'fields' | 'add-field';
+    const panel = route?.data['panel'] as 'forms' | 'fields' | 'add-field' | 'settings';
     const formId = route?.paramMap.get('formId');
     const view = this.route.snapshot.queryParamMap.get('view');
     this.forms.setActiveFormDisplayMode(view === 'preview' || view === 'json' ? view : 'form');
@@ -110,6 +131,10 @@ export class FormEditorApp {
       this.panels.activeAddFieldTab.set(route!.data['addFieldTab']);
     }
     this.pendingRoute.set(null);
+    if (panel === 'settings') {
+      this.panels.setActiveLHSPanel('settings');
+      return;
+    }
     if (formId && formId !== this.forms.activeFormId()) {
       this.pendingRoute.set({ formId, panel });
       this.forms.setActiveForm(formId);

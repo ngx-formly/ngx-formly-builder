@@ -120,19 +120,33 @@ test('Form Editor authoring: adds a group and a nested field', async ({ page }) 
   await expect(formContent.locator('core-formly-field-header')).toHaveCount(initialFieldCount + 2);
 });
 
-test('Form Editor authoring: renames the active form in the builder and workspace', async ({
-  page,
-}) => {
+test('Form Editor authoring: renames the active form from the navbar', async ({ page }) => {
   await page.goto('/form-editor');
 
   await createContactForm(page);
-  await page.getByRole('button', { name: 'Edit form name' }).click();
+  const navbar = page.locator('app-header');
+  await navbar.getByRole('button', { name: 'Rename form: New Form' }).click();
 
-  const nameInput = page.getByRole('textbox', { name: 'Form name' });
+  const nameInput = navbar.getByRole('textbox', { name: 'Form name' });
+  await expect(nameInput).toBeFocused();
   await nameInput.fill('Renamed Smoke Form');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Builder', exact: true }).click();
 
-  await expect(page.getByText('Renamed Smoke Form', { exact: true }).first()).toBeVisible();
+  const title = navbar.getByRole('button', { name: 'Rename form: Renamed Smoke Form' });
+  await expect(title).toBeVisible();
+
+  await title.press('Enter');
+  await expect(nameInput).toBeFocused();
+  await nameInput.fill('Discarded Name');
+  await nameInput.press('Escape');
+  await expect(title).toBeFocused();
+
+  await title.press('Enter');
+  await nameInput.fill('Keyboard Rename');
+  await nameInput.press('Enter');
+  await expect(navbar.getByRole('button', { name: 'Rename form: Keyboard Rename' })).toBeFocused();
+  await page.reload();
+  await expect(navbar.getByRole('button', { name: 'Rename form: Keyboard Rename' })).toBeVisible();
 });
 
 test('Form Editor folders: creates a folder and adds a form inside it', async ({ page }) => {

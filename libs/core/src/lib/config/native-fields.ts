@@ -155,6 +155,7 @@ export const nativeFieldTypes: FieldTypeOption[] = [
   {
     name: 'file',
     displayName: 'File',
+    description: 'File attachment',
     materialSymbol: 'attach_file',
     keyGenerationPrefix: 'file',
     defaultConfig: { props: { label: 'File', maxFileSize: 2 * 1024 * 1024 } },
@@ -182,6 +183,7 @@ export const nativeFieldTypes: FieldTypeOption[] = [
   {
     name: 'example-submit',
     displayName: 'Demo Submit',
+    description: 'Try form validation',
     materialSymbol: 'smart_button',
     disableKeyGeneration: true,
     defaultConfig: { props: { label: 'Submit' } },

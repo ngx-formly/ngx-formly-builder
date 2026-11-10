@@ -90,6 +90,7 @@ export const formFieldWrapperOptions = [formFieldWrapperConfig];
 
 export const groupTypeConfig: FieldTypeOption = {
   displayName: 'Group',
+  description: 'Related fields in one group',
   name: 'formly-group',
   materialSymbol: 'ad_group',
   disableKeyGeneration: true,
@@ -149,6 +150,7 @@ const defaultValidationConfig = {
 
 export const inputTypeConfig: FieldTypeOption = {
   displayName: 'Input',
+  description: 'Text, email, password and more',
   name: 'input',
   materialSymbol: 'text_fields',
   keyGenerationPrefix: 'inp',
@@ -198,6 +200,7 @@ export const inputTypeConfig: FieldTypeOption = {
 
 export const textTypeConfig: FieldTypeOption = {
   displayName: 'Text',
+  description: 'Single-line text entry',
   name: 'string',
   materialSymbol: 'match_case',
   keyGenerationPrefix: 'txt',
@@ -244,6 +247,7 @@ export const textTypeConfig: FieldTypeOption = {
 
 export const numberTypeConfig: FieldTypeOption = {
   displayName: 'Number',
+  description: 'Numeric value with limits',
   name: 'number',
   materialSymbol: 'numbers',
   keyGenerationPrefix: 'num',
@@ -292,6 +296,7 @@ export const numberTypeConfig: FieldTypeOption = {
 
 export const textareaTypeConfig: FieldTypeOption = {
   displayName: 'Textarea',
+  description: 'Multi-line text entry',
   name: 'textarea',
   materialSymbol: 'subject',
   keyGenerationPrefix: 'txt',
@@ -349,6 +354,7 @@ export const textareaTypeConfig: FieldTypeOption = {
 
 export const datepickerTypeConfig: FieldTypeOption = {
   displayName: 'Date',
+  description: 'Date picker with a calendar',
   name: 'datepicker',
   materialSymbol: 'event',
   keyGenerationPrefix: 'dtp',
@@ -396,6 +402,7 @@ export const datepickerTypeConfig: FieldTypeOption = {
 
 export const checkboxTypeConfig: FieldTypeOption = {
   displayName: 'Checkbox',
+  description: 'Single yes-or-no choice',
   name: 'checkbox',
   materialSymbol: 'check_box',
   keyGenerationPrefix: 'chk',
@@ -432,6 +439,7 @@ export const checkboxTypeConfig: FieldTypeOption = {
 
 export const radioTypeConfig: FieldTypeOption = {
   displayName: 'Radio',
+  description: 'One choice from a list',
   name: 'radio',
   materialSymbol: 'radio_button_checked',
   keyGenerationPrefix: 'rad',
@@ -502,6 +510,7 @@ export const radioTypeConfig: FieldTypeOption = {
 
 export const multicheckboxTypeConfig: FieldTypeOption = {
   displayName: 'Multi Checkbox',
+  description: 'Multiple choices from a list',
   name: 'multicheckbox',
   materialSymbol: 'check_box',
   keyGenerationPrefix: 'mcb',
@@ -571,6 +580,7 @@ export const multicheckboxTypeConfig: FieldTypeOption = {
 
 export const toggleTypeConfig: FieldTypeOption = {
   displayName: 'Toggle',
+  description: 'On or off switch',
   name: 'toggle',
   materialSymbol: 'toggle_on',
   keyGenerationPrefix: 'tgl',
@@ -602,6 +612,7 @@ export const toggleTypeConfig: FieldTypeOption = {
 
 export const selectTypeConfig: FieldTypeOption = {
   displayName: 'Select',
+  description: 'Dropdown list of choices',
   name: 'select',
   materialSymbol: 'list',
   keyGenerationPrefix: 'sel',
@@ -712,6 +723,7 @@ const cardWrapperOptions = [cardWrapperConfig];
 
 const cardTypeConfig: FieldTypeOption = {
   displayName: 'Card',
+  description: 'Fields grouped with a title',
   name: 'card',
   materialSymbol: 'credit_card',
   disableKeyGeneration: true,
@@ -724,6 +736,7 @@ const cardTypeConfig: FieldTypeOption = {
 
 const repeatTypeConfig: FieldTypeOption = {
   displayName: 'Repeater',
+  description: 'Repeatable set of fields',
   name: 'repeating-section',
   materialSymbol: 'repeat',
   keyGenerationPrefix: 'rep',
@@ -748,6 +761,7 @@ const repeatTypeConfig: FieldTypeOption = {
 
 export const stepTypeConfig: FieldTypeOption = {
   displayName: 'Step',
+  description: 'One stage of a stepped form',
   name: 'step',
   materialSymbol: 'step',
   disableKeyGeneration: true,
@@ -787,6 +801,7 @@ export const stepTypeConfig: FieldTypeOption = {
 
 export const stepperTypeConfig: FieldTypeOption = {
   displayName: 'Stepper',
+  description: 'Form split into guided steps',
   name: 'stepper',
   materialSymbol: 'view_timeline',
   disableKeyGeneration: true,
@@ -824,6 +839,7 @@ export const stepperTypeConfig: FieldTypeOption = {
 
 export const tabTypeConfig: FieldTypeOption = {
   displayName: 'Tab',
+  description: 'One page of a tabbed form',
   name: 'tab',
   materialSymbol: 'tab',
   disableKeyGeneration: true,
@@ -846,6 +862,7 @@ export const tabTypeConfig: FieldTypeOption = {
 
 export const tabsTypeConfig: FieldTypeOption = {
   displayName: 'Tabs',
+  description: 'Fields organized into tabs',
   name: 'tabs',
   materialSymbol: 'tab_group',
   disableKeyGeneration: true,
@@ -937,6 +954,7 @@ const optionsProperty = createArrayProperty({
 
 export const buttonGroupTypeConfig: FieldTypeOption = {
   displayName: 'Button Group',
+  description: 'Choices shown as buttons',
   name: 'button-group',
   materialSymbol: 'view_week',
   keyGenerationPrefix: 'btn',
@@ -971,6 +989,7 @@ export const buttonGroupTypeConfig: FieldTypeOption = {
 
 export const postalCodeTypeConfig: FieldTypeOption = {
   displayName: 'Postal Code',
+  description: 'Formatted postal code entry',
   name: 'postal-code',
   materialSymbol: 'location_on',
   keyGenerationPrefix: 'postal',
@@ -1085,6 +1104,7 @@ export const postalCodeTypeConfig: FieldTypeOption = {
 
 export const markdownTypeConfig: FieldTypeOption = {
   displayName: 'Markdown',
+  description: 'Formatted text and links',
   name: 'markdown',
   materialSymbol: 'markdown',
   disableKeyGeneration: true,
@@ -1107,6 +1127,7 @@ export const markdownTypeConfig: FieldTypeOption = {
 
 export const dividerTypeConfig: FieldTypeOption = {
   displayName: 'Divider',
+  description: 'Horizontal or vertical divider',
   name: 'divider',
   materialSymbol: 'horizontal_rule',
   disableKeyGeneration: true,

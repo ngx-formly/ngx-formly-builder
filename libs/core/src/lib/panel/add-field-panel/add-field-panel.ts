@@ -4,7 +4,6 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { EmptyNoForm } from '../../empty';
 import { AddFieldService } from './add-field.service';
-import { ActiveFieldChip } from '../../shared/active-field-chip';
 import { PanelHeader } from '../../shared/panel-header';
 import { FieldsTabContent } from './fields-tab-content';
 import { PresetsTabContent } from './presets-tab-content';
@@ -24,7 +23,6 @@ import { PanelService } from '../../editor/panel.service';
     PanelHeader,
     FieldsTabContent,
     PresetsTabContent,
-    ActiveFieldChip,
   ],
   host: {
     class: 'overflow-hidden h-full block',
@@ -33,11 +31,7 @@ import { PanelService } from '../../editor/panel.service';
     <core-panel-header
       header="Add Field"
       subHeader="Add or drag a field into the form"
-    >
-      <ng-container headerChip>
-        <core-active-field-chip />
-      </ng-container>
-    </core-panel-header>
+    />
     @if (activeFormId()) {
       <p-tabs
         class="flex min-h-0 flex-1 flex-col"

@@ -8,6 +8,16 @@ import { formatVariant } from '../utils';
 import { tailwindConfig } from './tailwind';
 
 describe('Tailwind styling coverage', () => {
+  it('labels sizes and spacing without treating column counts as lengths', () => {
+    const size = tailwindConfig.className.find(({ name }) => name === 'Size')!;
+    expect(size.options[0].variantLabels?.['48']).toBe('48 · 12rem');
+    expect(size.options[1].variantLabels?.['0.5']).toBe('0.5 · 0.125rem');
+    expect(
+      tailwindConfig.fieldGroupClassName[0].options.find(({ name }) => name === 'Columns')
+        ?.variantLabels,
+    ).toBeUndefined();
+  });
+
   it('generates CSS for every class offered by the panel without application scanning', async () => {
     const source = readFileSync(resolve('libs/core/src/assets/tailwind-styling.css'), 'utf8');
     const result = await postcss([tailwind()]).process(`@import 'tailwindcss/theme';\n${source}`, {
