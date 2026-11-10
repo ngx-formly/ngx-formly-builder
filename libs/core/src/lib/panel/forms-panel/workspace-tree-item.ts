@@ -80,7 +80,27 @@ import { TreeItem } from '../../shared/tree-item';
             [popup]="true"
             (onShow)="folderMenuVisible.set(true)"
             (onHide)="folderMenuVisible.set(false)"
-          />
+          >
+            <ng-template
+              #item
+              let-item
+            >
+              <button
+                type="button"
+                tabindex="-1"
+                class="flex w-full cursor-pointer items-center gap-2 px-3 py-1 text-start"
+                [class.text-button-text-danger]="item.warn"
+              >
+                <i
+                  class="material-symbols-outlined"
+                  aria-hidden="true"
+                >
+                  {{ item.matIcon }}
+                </i>
+                {{ item.label }}
+              </button>
+            </ng-template>
+          </p-menu>
 
           <core-name-edit-popover
             #folderNamePopover
@@ -246,16 +266,17 @@ export class WorkspaceTreeItem {
   linePaddingLeft = `calc(var(--spacing) * 3.75)`;
 
   folderMenuItems: MenuItem[] = [
-    { label: 'Add Folder', command: () => this.addFolderInFolder() },
-    { label: 'Add Form', command: () => this.addFormInFolder() },
+    { label: 'Add Folder', matIcon: 'create_new_folder', command: () => this.addFolderInFolder() },
+    { label: 'Add Form', matIcon: 'note_add', command: () => this.addFormInFolder() },
     {
       label: 'Edit Name',
+      matIcon: 'edit',
       command: () => {
         this.folderNameEditValue.set(this.node()?.name ?? '');
         this.folderNamePopover()?.show(this.folderTreeItemRef()?.nativeElement);
       },
     },
-    { label: 'Delete', command: () => this.deleteNode() },
+    { label: 'Delete', matIcon: 'delete', warn: true, command: () => this.deleteNode() },
   ];
 
   readonly isMouseInside = signal(false);
