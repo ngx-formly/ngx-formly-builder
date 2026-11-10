@@ -87,6 +87,66 @@ describe('workspace routes', () => {
     expect(panels.activePanel()).toBe(panel);
   });
 
+  it.each(['preview', 'json'] as const)('restores the form view from ?view=%s', async (view) => {
+    const { forms, panels, router } = await open(
+      `/workspaces/forms/second/preset?field=model&view=${view}`,
+    );
+
+    expect(router.url).toBe(`/workspaces/forms/second/preset?field=model&view=${view}`);
+    expect(forms.activeFormName()).toBe('Second form');
+    expect(forms.activeFormDisplayMode()).toBe(view);
+    expect(panels.activePanel()).toBe('model');
+  });
+
+  it('syncs form views without losing edits, panel focus, or other URL state', async () => {
+    const { harness, forms, panels, router } = await open(
+      '/workspaces/forms/first/preset?field=model&source=shared#builder',
+    );
+    const editor = harness.routeDebugElement!.componentInstance;
+    forms.setActiveModel({ draft: 'keep me' });
+    panels.setActiveLHSPanel('add-field');
+
+    for (const view of ['preview', 'json', 'form'] as const) {
+      forms.setActiveFormDisplayMode(view);
+      await harness.fixture.whenStable();
+
+      const url = router.parseUrl(router.url);
+      expect(url.queryParams).toEqual({
+        field: 'model',
+        source: 'shared',
+        ...(view === 'form' ? {} : { view }),
+      });
+      expect(url.fragment).toBe('builder');
+      expect(panels.activePanel()).toBe('add-field');
+      expect(forms.activeModel()).toEqual({ draft: 'keep me' });
+      expect(harness.routeDebugElement!.componentInstance).toBe(editor);
+    }
+  });
+
+  it('keeps the form view while switching panels and restores it on route navigation', async () => {
+    const { harness, forms, panels, router } = await open(
+      '/workspaces/forms/first/fields?view=json',
+    );
+    panels.setActiveLHSPanel('add-field');
+    await harness.fixture.whenStable();
+    expect(router.url).toBe('/workspaces/forms/first/field?view=json');
+    expect(forms.activeFormDisplayMode()).toBe('json');
+
+    for (const [query, mode] of [
+      ['?view=preview', 'preview'],
+      ['?view=json', 'json'],
+      ['', 'form'],
+      ['?view=unknown', 'form'],
+    ] as const) {
+      await harness.navigateByUrl(`/workspaces/forms/first/fields${query}`, FormEditorApp);
+      await harness.fixture.whenStable();
+      expect(forms.activeFormDisplayMode()).toBe(mode);
+      expect(router.url).toBe(
+        `/workspaces/forms/first/fields${mode === 'form' ? '' : `?view=${mode}`}`,
+      );
+    }
+  });
+
   it.each(fieldPanels)('sets ?field=%s when the right panel is selected', async (field, panel) => {
     const { harness, panels, router } = await open(
       '/workspaces/forms/first/preset?source=shared#builder',

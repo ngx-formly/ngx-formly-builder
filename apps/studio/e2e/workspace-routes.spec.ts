@@ -145,6 +145,41 @@ for (const width of [1536, 1024, 390]) {
   });
 }
 
+test('restores the form view after reload and through browser history', async ({ page }) => {
+  await page.goto('/workspaces/forms/first/fields');
+  const toolbar = page.locator('core-form-toolbar');
+
+  for (const [label, query] of [
+    ['Preview', '?view=preview'],
+    ['JSON', '?view=json'],
+    ['Builder', ''],
+  ]) {
+    const button = toolbar.getByRole('button', { name: label, exact: true });
+    await button.click();
+    await expect(page).toHaveURL(`/workspaces/forms/first/fields${query}`);
+    await page.reload();
+    await expect(page).toHaveURL(`/workspaces/forms/first/fields${query}`);
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  await page.goBack();
+  await expect(page).toHaveURL('/workspaces/forms/first/fields?view=json');
+  await expect(toolbar.getByRole('button', { name: 'JSON', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.locator('core-json-content .cm-content')).toContainText('"key": "name"');
+  await page.goForward();
+  await expect(page).toHaveURL('/workspaces/forms/first/fields');
+  await expect(toolbar.getByRole('button', { name: 'Builder', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(
+    page.locator('core-form-builder-content').getByRole('textbox', { name: 'Name', exact: true }),
+  ).toHaveValue('Saved value');
+});
+
 test('opens direct Fields links and restores the previous form through history', async ({
   page,
 }) => {

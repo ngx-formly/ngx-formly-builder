@@ -40,6 +40,7 @@ export class FormEditorApp {
       const activePanel = this.panels.activePanel();
       const addFieldTab = this.panels.activeAddFieldTab();
       const workspaceTab = this.panels.activeWorkspaceTab();
+      const displayMode = this.forms.activeFormDisplayMode();
       const pending = this.pendingRoute();
       if (this.router.currentNavigation()) return;
 
@@ -79,7 +80,11 @@ export class FormEditorApp {
               formId,
               panel === 'fields' ? 'fields' : addFieldTab === 'presets' ? 'preset' : 'field',
             ],
-        { queryParams: { field }, queryParamsHandling: 'merge', preserveFragment: true },
+        {
+          queryParams: { field, view: displayMode === 'form' ? null : displayMode },
+          queryParamsHandling: 'merge',
+          preserveFragment: true,
+        },
       );
       if (
         !this.router.isActive(url, {
@@ -98,6 +103,8 @@ export class FormEditorApp {
     const route = this.route.snapshot.firstChild;
     const panel = route?.data['panel'] as 'forms' | 'fields' | 'add-field';
     const formId = route?.paramMap.get('formId');
+    const view = this.route.snapshot.queryParamMap.get('view');
+    this.forms.setActiveFormDisplayMode(view === 'preview' || view === 'json' ? view : 'form');
     this.panels.activeWorkspaceTab.set(route?.data['workspaceTab'] ?? 'forms');
     if (panel === 'add-field') {
       this.panels.activeAddFieldTab.set(route!.data['addFieldTab']);
