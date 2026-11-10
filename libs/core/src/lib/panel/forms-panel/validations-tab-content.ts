@@ -5,13 +5,14 @@ import {
   computed,
   DestroyRef,
   inject,
+  linkedSignal,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import saveAs from 'file-saver';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
-import { defer, finalize, Observable } from 'rxjs';
+import { concatMap, defer, finalize, from, Observable } from 'rxjs';
 import { CoreFormService } from '../../editor/core-form.service';
 import { Empty } from '../../empty/empty';
 import { WorkspaceValidation } from '../../model/types';
@@ -21,6 +22,7 @@ import {
 } from '../../properties/custom-validation/validation-expression-editor';
 import { Filter } from '../../shared/filter';
 import { Tooltip } from '../../shared/tooltip';
+import { TreeItem } from '../../shared/tree-item';
 
 @Component({
   selector: 'core-validations-tab-content',
@@ -33,6 +35,7 @@ import { Tooltip } from '../../shared/tooltip';
     Empty,
     Filter,
     Tooltip,
+    TreeItem,
     ValidationExpressionEditor,
   ],
   host: { class: 'flex min-h-0 flex-1 flex-col gap-2 overflow-hidden' },
@@ -43,9 +46,10 @@ import { Tooltip } from '../../shared/tooltip';
         description="This editor's storage provider does not support saved validations."
       />
     } @else {
-      <div class="px-4">
+      <div class="flex items-center gap-2 px-4">
         <button
           pButton
+          class="min-w-0"
           [disabled]="unavailable()"
           (click)="open('new')"
         >
@@ -55,8 +59,38 @@ import { Tooltip } from '../../shared/tooltip';
             aria-hidden="true"
             >add</i
           >
-          <span pButtonLabel>Create validation</span>
+          <span
+            pButtonLabel
+            class="truncate"
+            >Create validation</span
+          >
         </button>
+        @if (selectedIds().length) {
+          <button
+            pButton
+            type="button"
+            class="ml-auto shrink-0 px-2"
+            severity="danger"
+            text
+            coreTooltip="Delete selected validations"
+            tooltipPosition="top"
+            [attr.aria-label]="'Delete selected validations (' + selectedIds().length + ')'"
+            [disabled]="unavailable()"
+            (click)="removeSelected()"
+          >
+            <i
+              pButtonIcon
+              class="material-symbols-outlined"
+              aria-hidden="true"
+              >delete</i
+            >
+            <span
+              pButtonLabel
+              class="tabular-nums"
+              >{{ selectedIds().length }}</span
+            >
+          </button>
+        }
       </div>
       @if (forms.validationsLoading()) {
         <p
@@ -127,41 +161,50 @@ import { Tooltip } from '../../shared/tooltip';
           </div>
           <ul class="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             @for (rule of filteredValidations(); track rule.id) {
-              <li class="flex min-w-0 items-center gap-1 rounded-sm hover:bg-emphasis">
-                <button
-                  type="button"
-                  class="flex min-w-0 flex-1 items-center gap-2 rounded-sm px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-primary"
-                  [disabled]="busy()"
-                  [attr.aria-label]="'Edit validation ' + rule.name"
-                  (click)="open(rule)"
+              <li>
+                <core-tree-item
+                  [selectionLabel]="'Select validation ' + rule.name"
+                  [isSelected]="selectedIds().includes(rule.id)"
+                  [selectionDisabled]="unavailable()"
+                  (selectionToggled)="toggleSelection(rule.id)"
                 >
                   <i
-                    class="material-symbols-outlined shrink-0"
-                    aria-hidden="true"
+                    itemIcon
+                    class="material-symbols-outlined text-content-secondary"
                     >rule</i
                   >
-                  <span class="min-w-0">
-                    <span class="block truncate font-semibold">{{ rule.name }}</span>
-                    <span class="block truncate text-sm text-muted-color">{{ rule.message }}</span>
-                  </span>
-                </button>
-                <button
-                  pButton
-                  text
-                  rounded
-                  severity="danger"
-                  coreTooltip="Delete validation"
-                  [disabled]="busy()"
-                  [attr.aria-label]="'Delete validation ' + rule.name"
-                  (click)="remove(rule)"
-                >
-                  <i
-                    pButtonIcon
-                    class="material-symbols-outlined"
-                    aria-hidden="true"
-                    >delete</i
+                  <button
+                    type="button"
+                    class="flex min-w-0 flex-col gap-0.5 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    [disabled]="busy()"
+                    [attr.aria-label]="'Edit validation ' + rule.name"
+                    (click)="open(rule)"
                   >
-                </button>
+                    <span class="max-w-full truncate">{{ rule.name }}</span>
+                    <span class="max-w-full truncate text-sm text-muted-color">{{
+                      rule.message
+                    }}</span>
+                  </button>
+                  <button
+                    actions
+                    pButton
+                    text
+                    rounded
+                    class="size-8"
+                    severity="danger"
+                    coreTooltip="Delete validation"
+                    [disabled]="busy()"
+                    [attr.aria-label]="'Delete validation ' + rule.name"
+                    (click)="remove(rule)"
+                  >
+                    <i
+                      pButtonIcon
+                      class="material-symbols-outlined"
+                      aria-hidden="true"
+                      >delete</i
+                    >
+                  </button>
+                </core-tree-item>
               </li>
             } @empty {
               <li>
@@ -221,6 +264,11 @@ export class ValidationsTabContent {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   readonly filterValue = signal('');
+  readonly selectedIds = linkedSignal<WorkspaceValidation[], string[]>({
+    source: this.forms.validations,
+    computation: (rules, previous) =>
+      previous?.value.filter((id) => rules.some((rule) => rule.id === id)) ?? [],
+  });
   readonly editing = signal<WorkspaceValidation | 'new' | null>(null);
   readonly editingRule = computed(() => {
     const rule = this.editing();
@@ -268,6 +316,28 @@ export class ValidationsTabContent {
       this.run(
         () => this.forms.deleteValidation$(rule.id),
         'Could not delete this validation. Try again.',
+      );
+    }
+  }
+
+  toggleSelection(id: string): void {
+    if (this.unavailable()) return;
+    this.selectedIds.update((ids) =>
+      ids.includes(id) ? ids.filter((selected) => selected !== id) : [...ids, id],
+    );
+  }
+
+  removeSelected(): void {
+    const ids = this.selectedIds();
+    if (this.unavailable() || !ids.length) return;
+    if (
+      this.document.defaultView?.confirm(
+        `Delete ${ids.length} selected validations? Existing field copies will be kept.`,
+      )
+    ) {
+      this.run(
+        () => from(ids).pipe(concatMap((id) => this.forms.deleteValidation$(id))),
+        'Could not delete all selected validations. Try again.',
       );
     }
   }

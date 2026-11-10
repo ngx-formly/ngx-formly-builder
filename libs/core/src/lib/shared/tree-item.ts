@@ -17,7 +17,8 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ButtonDirective, ButtonIcon],
   host: {
-    class: 'relative flex items-center rounded-lg py-1.5 transition-colors select-none',
+    class:
+      'group/tree-item relative flex items-center rounded-lg py-1.5 transition-colors select-none',
     '[class.bg-primary/20]': 'isActive()',
     '[class.bg-content-hover-background]': '!isActive() && alwaysShowActions()',
     '[class.hover:bg-content-hover-background]': '!isActive() && canInteract()',
@@ -45,7 +46,7 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
         pButton
         type="button"
         text
-        class="touch-actions-visible absolute inset-y-0 w-10 rounded-l-lg opacity-0 focus:opacity-100"
+        class="touch-actions-visible absolute inset-y-0 w-10 rounded-l-lg opacity-0 group-focus-within/tree-item:opacity-100"
         [style.left]="'calc(var(--spacing) * 4 * ' + level() + ')'"
         [class.opacity-100]="isMouseInside() || isSelected()"
         [attr.aria-label]="selectionLabel()"
@@ -70,9 +71,12 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
       <div class="flex min-w-0 items-center gap-2 overflow-hidden">
         @if (selectionLabel()) {
           <span
-            class="w-8 shrink-0"
+            class="tree-item-icon pointer-events-none flex w-8 shrink-0 items-center justify-center group-focus-within/tree-item:invisible"
             aria-hidden="true"
-          ></span>
+            [class.invisible]="isMouseInside() || isSelected()"
+          >
+            <ng-content select="[itemIcon]" />
+          </span>
         }
         @if (isParent() || !selectionLabel()) {
           <button
@@ -105,6 +109,13 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
         <ng-content select="[actions]" />
       </span>
     </div>
+  `,
+  styles: `
+    @media (hover: none), (pointer: coarse) {
+      .tree-item-icon {
+        visibility: hidden;
+      }
+    }
   `,
 })
 export class TreeItem {

@@ -5,6 +5,7 @@ import { provideFormlyCore } from '@ngx-formly/core';
 import { of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CoreFormService } from '../../editor/core-form.service';
+import { MouseInsideService } from '../../editor/mouse-inside.service';
 import { ValidationsTabContent } from './validations-tab-content';
 import { WorkspaceValidation } from '../../model/types';
 
@@ -29,6 +30,7 @@ describe('ValidationsTabContent', () => {
   beforeEach(() => {
     forms.validationStorageAvailable = true;
     forms.validations.set([rule]);
+    forms.validationsLoading.set(false);
     forms.validationsLoadError.set(null);
     forms.saveValidation$.mockReset().mockReturnValue(of(undefined));
     forms.deleteValidation$.mockReset().mockReturnValue(of(undefined));
@@ -37,6 +39,7 @@ describe('ValidationsTabContent', () => {
       providers: [
         provideNoopAnimations(),
         provideFormlyCore(),
+        MouseInsideService,
         { provide: CoreFormService, useValue: forms },
       ],
     });
@@ -103,5 +106,65 @@ describe('ValidationsTabContent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Saved validations unavailable');
     expect(fixture.nativeElement.querySelector('button')).toBeNull();
+  });
+
+  it('selects rules without editing and keeps selection across filtering', () => {
+    const fixture = TestBed.createComponent(ValidationsTabContent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    const select: HTMLButtonElement = fixture.nativeElement.querySelector(
+      'button[aria-label="Select validation adult"]',
+    );
+    select.click();
+    fixture.detectChanges();
+    expect(component.editing()).toBeNull();
+    expect(select.getAttribute('aria-pressed')).toBe('true');
+    component.filterValue.set('unknown');
+    fixture.detectChanges();
+    expect(component.selectedIds()).toEqual(['adult']);
+    expect(
+      fixture.nativeElement.querySelector('button[aria-label="Delete selected validations (1)"]'),
+    ).toBeTruthy();
+    component.filterValue.set('');
+    fixture.detectChanges();
+    forms.validationsLoading.set(true);
+    component.toggleSelection(rule.id);
+    expect(component.selectedIds()).toEqual(['adult']);
+    forms.validationsLoading.set(false);
+    component.toggleSelection(rule.id);
+    expect(component.selectedIds()).toEqual([]);
+  });
+
+  it('confirms bulk deletion, deletes sequentially and keeps failed rules selected', () => {
+    const other = { ...rule, id: 'other', name: 'other' };
+    forms.validations.set([rule, other]);
+    const fixture = TestBed.createComponent(ValidationsTabContent);
+    const component = fixture.componentInstance;
+    component.toggleSelection(rule.id);
+    component.toggleSelection(other.id);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    component.removeSelected();
+    expect(forms.deleteValidation$).not.toHaveBeenCalled();
+
+    confirm.mockReturnValue(true);
+    const pending = new Subject<void>();
+    forms.deleteValidation$.mockReturnValueOnce(pending);
+    forms.deleteValidation$.mockReturnValueOnce(throwError(() => new Error('Offline')));
+    component.removeSelected();
+    component.removeSelected();
+    expect(forms.deleteValidation$.mock.calls).toEqual([['adult']]);
+    expect(component.busy()).toBe(true);
+    forms.validations.set([other]);
+    pending.next();
+    pending.complete();
+    expect(forms.deleteValidation$.mock.calls).toEqual([['adult'], ['other']]);
+    expect(component.busy()).toBe(false);
+    expect(component.error()).toContain('Could not delete all');
+    expect(component.selectedIds()).toEqual(['other']);
+
+    component.removeSelected();
+    forms.validations.set([]);
+    expect(component.selectedIds()).toEqual([]);
+    expect(component.error()).toBe('');
   });
 });

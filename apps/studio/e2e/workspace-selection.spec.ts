@@ -34,12 +34,29 @@ for (const width of [1536, 390]) {
       const panel = page.locator('core-forms-panel:visible');
       const first = panel.getByRole('button', { name: 'Select form First form', exact: true });
       const second = panel.getByRole('button', { name: 'Select form Second form', exact: true });
+      const firstRow = panel.locator('core-tree-item').filter({
+        has: page.getByRole('button', { name: 'Select form First form', exact: true }),
+      });
+      const icon = firstRow.locator('[itemIcon]');
       const deleteButton = panel.getByRole('button', { name: /^Delete selected items/ });
       await expect(deleteButton).toHaveCount(0);
       await page.mouse.move(0, 0);
       await expect(first).toHaveCSS('opacity', width < 1024 ? '1' : '0');
+      await expect(icon).toHaveCSS('visibility', width < 1024 ? 'hidden' : 'visible');
+      await page.screenshot({
+        path: testInfo.outputPath(`workspace-icons-${width}.png`),
+        animations: 'disabled',
+      });
+      const iconBounds = (await icon.boundingBox())!;
       await panel.getByRole('button', { name: 'Open form First form', exact: true }).hover();
       await expect(first).toHaveCSS('opacity', '1');
+      await expect(icon).toHaveCSS('visibility', 'hidden');
+      const checkboxBounds = (await first.locator('i').boundingBox())!;
+      expect(iconBounds.x).toBeCloseTo(checkboxBounds.x, 0);
+      expect(iconBounds.y).toBeCloseTo(checkboxBounds.y, 0);
+      await page.mouse.move(0, 0);
+      await expect(first).toHaveCSS('opacity', width < 1024 ? '1' : '0');
+      await expect(icon).toHaveCSS('visibility', width < 1024 ? 'hidden' : 'visible');
       const selectionBounds = (await first.boundingBox())!;
       const rowBounds = (await panel
         .locator('core-tree-item')
@@ -50,6 +67,7 @@ for (const width of [1536, 390]) {
       expect(selectionBounds.height).toBeCloseTo(rowBounds.height, 0);
       await first.click({ position: { x: 4, y: 4 } });
       await expect(first).toHaveAttribute('aria-pressed', 'true');
+      await expect(icon).toHaveCSS('visibility', 'hidden');
       await first.click({
         position: { x: selectionBounds.width - 4, y: selectionBounds.height - 4 },
       });
@@ -62,6 +80,14 @@ for (const width of [1536, 390]) {
 
       await second.focus();
       await expect(second).toHaveCSS('opacity', '1');
+      await expect(
+        panel
+          .locator('core-tree-item')
+          .filter({
+            has: page.getByRole('button', { name: 'Select form Second form', exact: true }),
+          })
+          .locator('[itemIcon]'),
+      ).toHaveCSS('visibility', 'hidden');
       await page.keyboard.press('Space');
       await expect(deleteButton).toHaveAccessibleName('Delete selected items (2)');
       await expect(deleteButton.locator('[pButtonLabel]')).toHaveText('2');
@@ -110,6 +136,84 @@ for (const width of [1536, 390]) {
       await panel.getByRole('button', { name: 'Select form Keep form', exact: true }).click();
       await deleteButton.click();
       await expect(panel.getByText('No Forms Yet', { exact: true })).toBeVisible();
+    });
+
+    test(`selects and deletes validation rows at ${width}px`, async ({ page }, testInfo) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ colorScheme: width < 1024 ? 'dark' : 'light' });
+      await page.addInitScript(() => {
+        const key = 'formly-studio-validations-form-editor';
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(
+            key,
+            JSON.stringify(
+              ['First', 'Second', 'Keep'].map((name) => ({
+                id: name.toLowerCase(),
+                name,
+                expression: 'control.value >= 18',
+                message: 'Enter 18 or more.',
+              })),
+            ),
+          );
+        }
+      });
+      await page.goto('/workspaces/validations');
+      const panel = page.locator('core-validations-tab-content:visible');
+      const first = panel.getByRole('button', { name: 'Select validation First', exact: true });
+      const second = panel.getByRole('button', { name: 'Select validation Second', exact: true });
+      const firstRow = panel.locator('core-tree-item').filter({
+        has: page.getByRole('button', { name: 'Select validation First', exact: true }),
+      });
+      const icon = firstRow.locator('[itemIcon]');
+      const deleteButton = panel.getByRole('button', { name: /^Delete selected validations/ });
+      await page.mouse.move(0, 0);
+      await expect(first).toHaveCSS('opacity', width < 1024 ? '1' : '0');
+      await expect(icon).toHaveCSS('visibility', width < 1024 ? 'hidden' : 'visible');
+      await page.screenshot({
+        path: testInfo.outputPath(`validation-icons-${width}.png`),
+        animations: 'disabled',
+      });
+      const iconBounds = (await icon.boundingBox())!;
+      await firstRow.hover();
+      await expect(first).toHaveCSS('opacity', '1');
+      await expect(icon).toHaveCSS('visibility', 'hidden');
+      const checkboxBounds = (await first.locator('i').boundingBox())!;
+      expect(iconBounds.x).toBeCloseTo(checkboxBounds.x, 0);
+      expect(iconBounds.y).toBeCloseTo(checkboxBounds.y, 0);
+      await page.mouse.move(0, 0);
+      await expect(first).toHaveCSS('opacity', width < 1024 ? '1' : '0');
+      await expect(icon).toHaveCSS('visibility', width < 1024 ? 'hidden' : 'visible');
+      await first.click();
+      await page.mouse.move(0, 0);
+      await second.focus();
+      await expect(first).toHaveCSS('opacity', '1');
+      await expect(icon).toHaveCSS('visibility', 'hidden');
+      await expect(second).toHaveCSS('opacity', '1');
+      await page.keyboard.press('Space');
+      await expect(deleteButton).toHaveAccessibleName('Delete selected validations (2)');
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      await page.screenshot({ path: testInfo.outputPath(`validation-selection-${width}.png`) });
+      await panel.getByPlaceholder('Filter items...').fill('Keep');
+      page.once('dialog', (dialog) => dialog.dismiss());
+      await deleteButton.click();
+      await expect(deleteButton).toHaveAccessibleName('Delete selected validations (2)');
+      page.once('dialog', (dialog) => dialog.accept());
+      await deleteButton.click();
+      await expect(deleteButton).toHaveCount(0);
+      await panel.getByPlaceholder('Filter items...').fill('');
+      await expect(
+        panel.getByRole('button', { name: 'Edit validation First', exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        panel.getByRole('button', { name: 'Edit validation Keep', exact: true }),
+      ).toBeVisible();
+      await page.reload();
+      await expect(
+        panel.getByRole('button', { name: 'Edit validation First', exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        panel.getByRole('button', { name: 'Edit validation Keep', exact: true }),
+      ).toBeVisible();
     });
   });
 }

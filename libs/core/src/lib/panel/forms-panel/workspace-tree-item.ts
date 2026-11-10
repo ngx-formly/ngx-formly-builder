@@ -44,7 +44,10 @@ import { TreeItem } from '../../shared/tree-item';
             (click)="toggleFolder($event)"
             (toggleClicked)="toggleFolder($event)"
           >
-            <i class="material-symbols-outlined text-primary">
+            <i
+              itemIcon
+              class="material-symbols-outlined text-primary"
+            >
               {{ isExpanded() ? 'folder_open' : 'folder' }}
             </i>
             <span class="truncate font-medium">{{ workspaceNode.name }}</span>
@@ -132,6 +135,11 @@ import { TreeItem } from '../../shared/tree-item';
           (selectionToggled)="nodeSelectionToggled.emit(nodeId())"
           (click)="selectForm($event)"
         >
+          <i
+            itemIcon
+            class="material-symbols-outlined text-content-secondary"
+            >description</i
+          >
           <button
             type="button"
             class="flex min-w-0 flex-col gap-0.5 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -139,11 +147,8 @@ import { TreeItem } from '../../shared/tree-item';
             [attr.aria-pressed]="isActiveForm()"
             [disabled]="hasFormStorageRecoveryIssue()"
           >
-            <span class="flex items-center gap-1.5">
-              <i class="material-symbols-outlined text-content-secondary"> description </i>
-              <span class="truncate">{{ workspaceNode.name }}</span>
-            </span>
-            <span class="ml-8 flex items-center gap-1.5 text-sm text-muted-color">
+            <span class="max-w-full truncate">{{ workspaceNode.name }}</span>
+            <span class="flex items-center gap-1.5 text-sm text-muted-color">
               @if (uiConfigLabel()) {
                 <span>{{ uiConfigLabel() }}</span>
               }
