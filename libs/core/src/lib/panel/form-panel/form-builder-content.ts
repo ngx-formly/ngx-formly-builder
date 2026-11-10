@@ -12,6 +12,7 @@ import { FormlyConfigService } from '../../formly/formly-config.service';
 import { CORE_BUILDER_FORM } from '../../formly/types';
 import { DropAction } from '../../editor/types';
 import { CoreFormlyForm } from '../../formly/formly-form';
+import { PreviewViewportService } from './preview-viewport.service';
 
 @Component({
   selector: 'core-form-builder-content',
@@ -22,6 +23,10 @@ import { CoreFormlyForm } from '../../formly/formly-form';
     { provide: CORE_BUILDER_FORM, useValue: true },
   ],
   imports: [CoreFormlyForm, DndDropzoneDirective, EmptyNoField, AsyncPipe],
+  host: {
+    class: 'block mx-auto',
+    '[style.width.px]': 'viewport.targetWidth()',
+  },
   template: `
     @if (formFields$ | async; as formFields) {
       @if (formFields.length) {
@@ -44,6 +49,7 @@ import { CoreFormlyForm } from '../../formly/formly-form';
   `,
 })
 export class FormBuilderContent {
+  protected readonly viewport = inject(PreviewViewportService);
   protected formService = inject(CoreFormService);
   protected dndService = inject(DNDService);
   protected formlyConfig = inject(FormlyConfigService);

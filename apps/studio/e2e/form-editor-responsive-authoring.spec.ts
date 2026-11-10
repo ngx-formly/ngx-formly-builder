@@ -34,6 +34,64 @@ test.describe('Form Editor responsive authoring', () => {
     await createContactForm(page);
   });
 
+  test('keeps the selected width when switching between preview and builder', async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 1536, height: 900 });
+    await page.getByRole('button', { name: 'Preview', exact: true }).click();
+    const toolbar = page.locator('core-form-toolbar core-preview-device-toolbar');
+    await toolbar.getByRole('button', { name: 'SM', exact: true }).click();
+    await expect(page.locator('core-form-preview-content iframe')).toHaveCSS('width', '640px');
+
+    await page.getByRole('button', { name: 'Builder', exact: true }).click();
+    const builder = page.locator('core-form-builder-content');
+    await expect(builder).toHaveCSS('width', '640px');
+    await expect(toolbar.getByRole('button', { name: 'SM', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await toolbar.getByRole('button', { name: 'Custom', exact: true }).click();
+    await toolbar.getByRole('spinbutton').fill('480');
+    await toolbar.getByRole('button', { name: 'Confirm width' }).click();
+    await expect(builder).toHaveCSS('width', '480px');
+    await expect(toolbar).toContainText('480px · 100%');
+    const field = builder
+      .locator('core-field-wrapper')
+      .filter({
+        has: page
+          .locator('core-formly-field-header > div > span')
+          .getByText('reference', { exact: true }),
+      })
+      .last();
+    await field.locator('core-formly-field-header').click();
+    await expect(field).toHaveAttribute('aria-pressed', 'true');
+    await page.screenshot({ path: testInfo.outputPath('builder-custom-desktop.png') });
+
+    await page.getByRole('button', { name: 'Preview', exact: true }).click();
+    await expect(page.locator('core-form-preview-content iframe')).toHaveCSS('width', '480px');
+    await page.getByRole('button', { name: 'JSON', exact: true }).click();
+    await expect(toolbar).toBeHidden();
+    await page.getByRole('button', { name: 'Builder', exact: true }).click();
+    await expect(builder).toHaveCSS('width', '480px');
+
+    await toolbar.getByRole('button', { name: 'XL', exact: true }).click();
+    await expect(builder).toHaveCSS('width', '1280px');
+    await expect(toolbar).toContainText('1280px · 100%');
+    await expectNoDocumentOverflow(page);
+    await page.setViewportSize({ width: 375, height: 812 });
+    await expect(builder).toHaveCSS('width', '1280px');
+    await expectWithinViewport(page, 'Save Form');
+    await expectNoDocumentOverflow(page);
+
+    await toolbar.getByRole('button', { name: 'Auto', exact: true }).click();
+    await expect(builder).not.toHaveCSS('width', '1280px');
+    const box = await builder.boundingBox();
+    expect(box!.width).toBeLessThanOrEqual(375);
+    await expectNoDocumentOverflow(page);
+    await page.screenshot({ path: testInfo.outputPath('builder-auto-phone.png') });
+  });
+
   test('keeps primary toolbar actions reachable at phone width', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
 

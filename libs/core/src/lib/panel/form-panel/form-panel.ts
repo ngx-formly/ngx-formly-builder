@@ -95,10 +95,10 @@ import { FormToolbarComponent } from './toolbar';
     }
     @if (activeFormId()) {
       <core-form-toolbar class="shrink-0">
-        @if (activeFormDisplayMode() === 'preview') {
+        @if (activeFormDisplayMode() !== 'json') {
           <core-preview-device-toolbar
             class="md:mr-auto"
-            [scale]="previewContent()?.scale() ?? 1"
+            [scale]="activeFormDisplayMode() === 'preview' ? (previewContent()?.scale() ?? 1) : 1"
           />
         }
       </core-form-toolbar>
