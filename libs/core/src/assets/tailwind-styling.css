@@ -2,6 +2,7 @@
 
 /* Safelist specific classes */
 @source inline('{block,flex,grid}');
+@source inline('col-span-full min-w-0 [&>formly-field]:min-w-0 [&>formly-field]:flex-1');
 @source inline('{sm:,md:,lg:,xl:,}block');
 @source inline('items-{start,center,end}');
 @source inline('justify-{start,center,end,around,between,evenly}');

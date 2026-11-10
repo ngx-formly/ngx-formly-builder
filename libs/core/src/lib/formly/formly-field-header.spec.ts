@@ -143,4 +143,31 @@ describe('FormlyFieldHeader', () => {
 
     expect(header.areOptionsVisible()).toBe(true);
   });
+
+  it('offers horizontal movement and keyboard-accessible exits for a row child', () => {
+    const service = TestBed.inject(CoreFormService);
+    service.getField = () => ({
+      type: 'formly-group',
+      fieldGroupClassName: 'formly-builder-row',
+      _info: { ...fieldInfo, id: 'row', childIds: ['field-1', 'field-2'] },
+    });
+    service.getFieldIndex = () => 0;
+    service.dropField = vi.fn();
+    TestBed.inject(CoreFieldService).getChildIds = (info) => info.childIds;
+    const rowChild = TestBed.createComponent(FormlyFieldHeader);
+    rowChild.componentRef.setInput('field', field);
+    rowChild.componentRef.setInput('fieldInfo', {
+      ...fieldInfo,
+      isRoot: false,
+      idPath: ['row', 'field-1'],
+    });
+    rowChild.componentRef.setInput('isMouseInside', false);
+    const options = rowChild.componentInstance.otherOptions();
+    expect(options.map((option) => option.label)).toContain('Move right');
+    expect(options.map((option) => option.label)).not.toContain('Move down');
+    options.find((option) => option.label === 'Move above row')?.command?.({});
+    expect(service.dropField).toHaveBeenCalledWith('row', 'top', { fieldId: 'field-1' });
+    options.find((option) => option.label === 'Move below row')?.command?.({});
+    expect(service.dropField).toHaveBeenCalledWith('row', 'bottom', { fieldId: 'field-1' });
+  });
 });

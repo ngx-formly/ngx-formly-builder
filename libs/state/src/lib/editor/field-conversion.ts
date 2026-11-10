@@ -3,6 +3,7 @@ import { get, mergeWith, unset } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { EditorField, FieldInfo } from '../model/types';
 import { EngineFieldType } from './types';
+import { isLayoutRow } from './field-layout';
 const defaultTypeOption: EngineFieldType = {
   name: '',
   displayName: 'Unknown Field',
@@ -42,9 +43,11 @@ export function clearFieldModelValue(
 
     if (!hasKey) {
       // Groups without keys do not own a model property; continue through them.
-      if (!isTarget && currentField._info.isFieldArray && Array.isArray(container)) {
+      if (isTarget) {
+        currentField._info.childIds.forEach((id) => clearFieldModelValue(id, fieldMap, model));
+      } else if (currentField._info.isFieldArray && Array.isArray(container)) {
         container.forEach((item) => clearValue(item, pathIndex + 1));
-      } else if (!isTarget) {
+      } else {
         clearValue(container, pathIndex + 1);
       }
       return;
@@ -112,7 +115,8 @@ export function convertField(
   });
 
   const idPath = [...parentIdPath, fieldId];
-  const isParent = typeOption.isParent;
+  const layoutRow = isLayoutRow(sourceField);
+  const isParent = layoutRow || typeOption.isParent;
   const isFieldArray = typeOption.isFieldArray;
 
   // Recursively convert children
@@ -147,7 +151,7 @@ export function convertField(
 
   // Editor information
   const _info: FieldInfo = {
-    name: typeOption.displayName,
+    name: layoutRow ? 'Row' : typeOption.displayName,
     id: fieldId,
     formId,
     idPath,
@@ -161,7 +165,7 @@ export function convertField(
     _info,
     key:
       baseField.key ||
-      (typeOption.disableKeyGeneration
+      (layoutRow || typeOption.disableKeyGeneration
         ? undefined
         : generateFieldKey(typeOption.keyGenerationPrefix)),
     ...baseField,

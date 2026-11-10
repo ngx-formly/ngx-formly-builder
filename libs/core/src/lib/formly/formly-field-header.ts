@@ -15,6 +15,7 @@ import { TieredMenu } from 'primeng/tieredmenu';
 import { CoreFieldService } from '../config/core-field.service';
 import { CoreFormService } from '../editor/core-form.service';
 import { FieldPresetDialogService } from '../field-preset/field-preset-dialog.service';
+import { isLayoutRow } from '@ngx-formly/builder-state';
 import { EditorField, FieldInfo } from '../model/types';
 import { Tooltip } from '../shared';
 import { ChipStyleFix } from '../shared/chip-style-fix';
@@ -127,8 +128,10 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
               #item
               let-item
             >
-              <div
-                class="flex cursor-pointer items-center gap-2 px-3 py-1"
+              <button
+                type="button"
+                tabindex="-1"
+                class="flex w-full cursor-pointer items-center gap-2 px-3 py-1 text-start"
                 [class.text-button-text-danger]="item.warn"
               >
                 @if (item.matIcon) {
@@ -137,7 +140,7 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
                   </i>
                 }
                 {{ item.label }}
-              </div>
+              </button>
             </ng-template>
           </p-menu>
           <button
@@ -190,20 +193,37 @@ export class FormlyFieldHeader {
     const fieldInfo = this.fieldInfo();
     const fieldIndex = this.formService.getFieldIndex(fieldInfo.id);
     const siblingIds = this.siblingIds();
+    const parentId = fieldInfo.idPath.at(-2);
+    const inRow = !!parentId && isLayoutRow(this.formService.getField(parentId));
 
     if (fieldIndex > 0) {
       options.push({
-        label: 'Move up',
-        matIcon: 'arrow_upward',
+        label: inRow ? 'Move left' : 'Move up',
+        matIcon: inRow ? 'arrow_back' : 'arrow_upward',
         command: () => this.moveField(-1),
       });
     }
     if (fieldIndex >= 0 && fieldIndex < siblingIds.length - 1) {
       options.push({
-        label: 'Move down',
-        matIcon: 'arrow_downward',
+        label: inRow ? 'Move right' : 'Move down',
+        matIcon: inRow ? 'arrow_forward' : 'arrow_downward',
         command: () => this.moveField(1),
       });
+    }
+
+    if (inRow && parentId) {
+      options.push(
+        {
+          label: 'Move above row',
+          matIcon: 'arrow_upward',
+          command: () => this.formService.dropField(parentId, 'top', { fieldId: fieldInfo.id }),
+        },
+        {
+          label: 'Move below row',
+          matIcon: 'arrow_downward',
+          command: () => this.formService.dropField(parentId, 'bottom', { fieldId: fieldInfo.id }),
+        },
+      );
     }
 
     if (!this.fieldInfo().isRoot) {

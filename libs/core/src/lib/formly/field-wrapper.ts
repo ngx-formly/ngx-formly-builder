@@ -14,6 +14,7 @@ import { DndDraggableDirective, DndDropzoneDirective, DndHandleDirective } from 
 import { DNDService } from '../editor/dnd.service';
 import { EditorField, FieldInfo } from '../model/types';
 import { DropAction, FieldDropPosition } from '../editor/types';
+import { getDropPosition } from '../editor/drop-position';
 import { FormlyFieldHeader } from './formly-field-header';
 import { FormlyFieldOverlay } from './formly-field-overlay';
 
@@ -44,6 +45,7 @@ import { FormlyFieldOverlay } from './formly-field-overlay';
       dndDropzone
       [class]="'relative rounded-sm border-2 transition-[border-color] ' + this.borderColor()"
       (dndDragover)="onDragover($event)"
+      (dndDragleave)="onDragLeave()"
       (dndDrop)="onDrop()"
     >
       <div
@@ -74,6 +76,10 @@ import { FormlyFieldOverlay } from './formly-field-overlay';
           [hoverPosition]="hoverPosition()"
           [showCenter]="fieldInfo.isParent"
           [showSides]="!fieldInfo.isRoot"
+          [style.left.px]="rowIndicator()?.left"
+          [style.top.px]="rowIndicator()?.top"
+          [style.width.px]="rowIndicator()?.width"
+          [style.height.px]="rowIndicator()?.height"
         />
       </div>
     </div>
@@ -110,16 +116,19 @@ export class CoreFieldWrapper extends FieldWrapper<EditorField> implements OnIni
 
   readonly boundingRect = computed(() => {
     this.dndService.activeDragData();
+    this.dndService.activeDragOverData();
     return this.elementRef.nativeElement.getBoundingClientRect();
   });
 
   readonly canDrop = computed(() => {
     const activeDragData = this.dndService.activeDragData();
-    if (!activeDragData) return false;
-
-    if (activeDragData.action === DropAction.COPY) return true;
-
-    return !this.fieldInfo.idPath.includes(activeDragData.fieldId);
+    const position = this.hoverPosition();
+    if (!activeDragData || !position) return false;
+    return this.formService.canDropField(
+      activeDragData.action === DropAction.MOVE ? activeDragData.fieldId : undefined,
+      this.fieldInfo.id,
+      position,
+    );
   });
 
   readonly showExpandedDropzone = computed(() => {
@@ -139,16 +148,29 @@ export class CoreFieldWrapper extends FieldWrapper<EditorField> implements OnIni
       return null;
     }
 
-    const xDelta = activeDragOverData.clientX - this.boundingRect().x;
-    const xPercent = (xDelta / this.boundingRect().width) * 100;
+    if (this.fieldInfo.isRoot) return 'center';
+    return getDropPosition(
+      activeDragOverData.clientX,
+      activeDragOverData.clientY,
+      this.boundingRect(),
+      !!this.fieldInfo.isParent,
+    );
+  });
 
-    if (this.fieldInfo.isParent) {
-      if (this.fieldInfo.isRoot) {
-        return 'center';
-      }
-      return xPercent <= 33 ? 'left' : xPercent >= 67 ? 'right' : 'center';
-    }
-    return xPercent <= 50 ? 'left' : 'right';
+  readonly rowIndicator = computed(() => {
+    const position = this.hoverPosition();
+    if (position !== 'top' && position !== 'bottom') return null;
+    const element = this.elementRef.nativeElement;
+    const row = element.closest('.formly-builder-row');
+    if (!row) return null;
+    const bounds = element.getBoundingClientRect();
+    const rowBounds = row.getBoundingClientRect();
+    return {
+      left: rowBounds.left - bounds.left,
+      top: rowBounds.top - bounds.top,
+      width: rowBounds.width,
+      height: rowBounds.height,
+    };
   });
 
   ngOnInit(): void {
@@ -173,6 +195,7 @@ export class CoreFieldWrapper extends FieldWrapper<EditorField> implements OnIni
     this.dndService.setActiveDragOverData({
       fieldId: this.fieldInfo.id,
       clientX: event.clientX,
+      clientY: event.clientY,
     });
     event.preventDefault();
   }
@@ -183,31 +206,21 @@ export class CoreFieldWrapper extends FieldWrapper<EditorField> implements OnIni
       return;
     }
 
-    const index = this.formService.getFieldIndex(this.fieldInfo.id);
-    if (index < 0) {
-      throw new Error('Unable to determine field index');
-    }
+    const position = this.hoverPosition();
+    if (!position) return;
+    this.formService.dropField(
+      this.fieldInfo.id,
+      position,
+      dragData.action === DropAction.COPY
+        ? { fieldType: dragData.fieldType, preset: dragData.preset }
+        : { fieldId: dragData.fieldId },
+    );
+    this.onDragEnd();
+  }
 
-    let targetParentId: string | undefined;
-    let targetIndex: number | undefined;
-
-    if (this.hoverPosition() === 'center') {
-      targetParentId = this.fieldInfo.id;
-      targetIndex = undefined;
-    } else {
-      targetParentId = this.fieldInfo.idPath[this.fieldInfo.idPath.length - 2];
-      targetIndex = this.hoverPosition() === 'left' ? index : index + 1;
-    }
-
-    if (dragData.action === DropAction.COPY) {
-      this.formService.addField(dragData.fieldType, targetParentId, targetIndex, dragData.preset);
-    } else if (dragData.action === DropAction.MOVE) {
-      const sourceIndex = dragData.index;
-      if (typeof sourceIndex !== 'number') {
-        throw new Error('Unable to determine source field index');
-      }
-
-      this.formService.moveField(dragData.fieldId, sourceIndex, targetIndex, targetParentId);
+  onDragLeave() {
+    if (this.dndService.activeDragOverData()?.fieldId === this.fieldInfo.id) {
+      this.dndService.setActiveDragOverData(null);
     }
   }
 

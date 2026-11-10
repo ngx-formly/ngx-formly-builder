@@ -324,6 +324,13 @@ interface PropertyChange {
     value?: unknown;
 }
 export declare const modifyPropertyTarget: <T extends Record<string, unknown>>(target: T, { type, ...change }: PropertyChange) => T;
+type FieldDropPosition = 'bottom' | 'center' | 'left' | 'right' | 'top';
+export declare function isLayoutRow(field: FormlyFieldConfig | undefined): boolean;
+/** Only discard empty generated rows; a remaining field keeps its full row and original styles. */
+declare function removeEmptyRows(form: EditorForm): void;
+declare function canDropField(form: EditorForm, sourceId: string | undefined, targetId: string, position: FieldDropPosition): boolean;
+/** Mutates a draft after canDropField has validated the destination. */
+declare function placeField(form: EditorForm, sourceId: string, targetId: string, position: FieldDropPosition, rowId: string): void;
 export declare class BuilderEngineService {
     protected readonly editorConfig: BuilderEngineConfig;
     protected readonly formStoreService: FormStoreService;
@@ -430,6 +437,14 @@ export declare class BuilderEngineService {
     convertFromRawForm({ id, name, libraryId, fields, model, parentId }: DefaultForm): EditorForm;
     convertToRawForm({ id, libraryId, name, fieldMap, rootFieldIds, model, parentId }: EditorForm): DefaultForm;
     getFieldIndex(fieldId: string): number;
+    canDropField(sourceId: string | undefined, targetId: string, position: FieldDropPosition): boolean;
+    /** Adds or moves a field and updates its row in one document change. */
+    dropField(targetId: string, position: FieldDropPosition, source: {
+        fieldId: string;
+    } | {
+        fieldType: string;
+        preset?: EngineFieldPreset;
+    }): void;
     addField(fieldType: string, parentId?: string, index?: number, preset?: EngineFieldPreset): void;
     removeField(fieldId: string): void;
     moveField(fieldId: string, fromIndex: number, toIndex: number | undefined, toParentId?: string | undefined): void;
@@ -458,5 +473,5 @@ export declare function clearFieldModelValue(fieldId: string, fieldMap: Record<s
  * Converts a FormlyFieldConfig to an IEditorFormlyField, populating _info and generating ids.
  */
 export declare function convertField(sourceField: FormlyFieldConfig, fieldId: string, formId: string, parentIdPath: string[] | undefined, fieldMap: Record<string, EditorField>, typeOptions: EngineFieldType[], getDefaultField: (type: string) => FormlyFieldConfig): EditorField;
-export type { BaseEditorForm, BaseWorkspaceNode, BuilderEngineConfig, DefaultForm, EditorField, EditorForm, EngineFieldPreset, EngineFieldType, EngineLibrary, FieldInfo, FieldInfoBadge, FormLoadError, FormStoreDataKind, FormStoreRecoveryIssue, FormStoreService, PersistenceError, PropertyChange, WorkspaceFolderNode, WorkspaceFormNode, WorkspaceHierarchy, WorkspaceNode, WorkspaceNodeType, WorkspaceValidation };
+export type { BaseEditorForm, BaseWorkspaceNode, BuilderEngineConfig, DefaultForm, EditorField, EditorForm, EngineFieldPreset, EngineFieldType, EngineLibrary, FieldDropPosition, FieldInfo, FieldInfoBadge, FormLoadError, FormStoreDataKind, FormStoreRecoveryIssue, FormStoreService, PersistenceError, PropertyChange, WorkspaceFolderNode, WorkspaceFormNode, WorkspaceHierarchy, WorkspaceNode, WorkspaceNodeType, WorkspaceValidation };
 ```

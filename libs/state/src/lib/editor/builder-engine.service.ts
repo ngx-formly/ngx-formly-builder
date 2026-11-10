@@ -47,6 +47,7 @@ import {
   FormStoreService,
 } from '../persistence/types';
 import { modifyPropertyTarget, PropertyChange } from './property-change';
+import { canDropField, FieldDropPosition, placeField, removeEmptyRows } from './field-layout';
 import {
   clearFieldModelValue,
   convertField,
@@ -934,6 +935,47 @@ export class BuilderEngineService {
     if (!form) return -1;
     return form.rootFieldIds.indexOf(fieldId);
   }
+
+  canDropField(
+    sourceId: string | undefined,
+    targetId: string,
+    position: FieldDropPosition,
+  ): boolean {
+    const form = this.activeForm();
+    return !!form && canDropField(form, sourceId, targetId, position);
+  }
+
+  /** Adds or moves a field and updates its row in one document change. */
+  dropField(
+    targetId: string,
+    position: FieldDropPosition,
+    source: { fieldId: string } | { fieldType: string; preset?: EngineFieldPreset },
+  ): void {
+    const form = this.activeForm();
+    const sourceId = 'fieldId' in source ? source.fieldId : undefined;
+    if (!form || !canDropField(form, sourceId, targetId, position)) return;
+
+    const fieldId =
+      sourceId ?? generateFieldId('fieldType' in source ? source.fieldType : undefined);
+    const newForm = create(form, (draft) => {
+      if ('fieldType' in source) {
+        convertField(
+          source.preset?.field ?? this.getDefaultField(source.fieldType, form.libraryId),
+          fieldId,
+          form.id,
+          [],
+          draft.fieldMap as Record<string, EditorField>,
+          this.getTypeOptions(form.libraryId),
+          (type) => this.getDefaultField(type, form.libraryId),
+        );
+      }
+      placeField(draft as EditorForm, fieldId, targetId, position, generateFieldId('row'));
+    });
+    this.activeFormSrc.set(newForm);
+    this.markFormDirty();
+    this.activeFieldIdSrc.set(fieldId);
+  }
+
   addField(fieldType: string, parentId?: string, index?: number, preset?: EngineFieldPreset): void {
     const form = this.activeForm();
     if (!form) return;
@@ -1021,6 +1063,7 @@ export class BuilderEngineService {
         }
       };
       removeRecursively(fieldId);
+      removeEmptyRows(draft as EditorForm);
     });
 
     // Set active form
@@ -1028,7 +1071,11 @@ export class BuilderEngineService {
     this.markFormDirty();
 
     // Clear active field if it was removed directly or as part of a removed subtree
-    if (activeFieldId === fieldId || activeField?._info.idPath.includes(fieldId)) {
+    if (
+      activeFieldId === fieldId ||
+      activeField?._info.idPath.includes(fieldId) ||
+      (activeFieldId && !newForm.fieldMap[activeFieldId])
+    ) {
       this.activeFieldIdSrc.set(null);
     }
   }
@@ -1104,6 +1151,7 @@ export class BuilderEngineService {
       };
 
       updateIdPath(fieldId, targetParent ? targetParent._info.idPath : []);
+      removeEmptyRows(draft as EditorForm);
     });
 
     if (newForm === form) return;

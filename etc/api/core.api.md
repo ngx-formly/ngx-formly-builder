@@ -528,8 +528,8 @@ interface DragData {
 interface DragOverData {
     fieldId: string;
     clientX: number;
+    clientY: number;
 }
-type FieldDropPosition = 'center' | 'left' | 'right';
 type FormDisplayMode = 'form' | 'json' | 'preview';
 export declare class PanelService {
     protected readonly activePanelSrc: import("@angular/core").WritableSignal<LHSPanelType | RHSPanelType>;
@@ -728,7 +728,7 @@ declare class FormsPanel {
     readonly selectedNodeIds: import("@angular/core").WritableSignal<string[]>;
     readonly filterValue: import("@angular/core").WritableSignal<string>;
     readonly isFiltering: import("@angular/core").Signal<boolean>;
-    readonly showFilter: import("@angular/core").Signal<boolean>;
+    readonly showWorkspaceList: import("@angular/core").Signal<boolean>;
     readonly filteredVisibleNodeIds: import("@angular/core").Signal<string[]>;
     addNewForm(): void;
     selectTab(tab: number | string | undefined): void;
@@ -737,7 +737,6 @@ declare class FormsPanel {
     addNewFolder(): void;
     openImportDialog(): void;
     setMouseInside(isInside: boolean): void;
-    clearFilter(): void;
     downloadRecoveryBackup(): void;
     resetCorruptedStorage(): void;
     static ɵfac: i0.ɵɵFactoryDeclaration<FormsPanel, never>;

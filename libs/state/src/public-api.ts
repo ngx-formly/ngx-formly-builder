@@ -39,6 +39,7 @@ export {
 } from './lib/persistence/types';
 
 export { BuilderEngineService } from './lib/editor/builder-engine.service';
+export { isLayoutRow, type FieldDropPosition } from './lib/editor/field-layout';
 export { BuilderFieldStateService } from './lib/editor/builder-field-state.service';
 export { provideBuilderEngine } from './lib/editor/provider';
 export {

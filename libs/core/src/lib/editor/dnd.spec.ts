@@ -24,7 +24,7 @@ describe('DNDService', () => {
   });
 
   it('sets and gets active drag over data', () => {
-    const dragOverData = { fieldId: 'f-1', clientX: 100 };
+    const dragOverData = { fieldId: 'f-1', clientX: 100, clientY: 50 };
     service.setActiveDragOverData(dragOverData);
     expect(service.activeDragOverData()).toEqual(dragOverData);
 
