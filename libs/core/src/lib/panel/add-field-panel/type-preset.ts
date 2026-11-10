@@ -19,13 +19,11 @@ import { TypeContainer } from './type-option-container';
     >
       <span class="inline-flex items-center gap-2">
         <i
-          class="material-symbols-outlined pointer-events-none"
-          style="font-size: 16px;"
+          aria-hidden="true"
+          class="material-symbols-outlined pointer-events-none size-6 shrink-0"
           [class.opacity-30]="isMouseInside()"
-          [class.opacity-0]="!isMouseInside()"
-          >drag_indicator</i
+          >{{ isMouseInside() ? 'drag_indicator' : preset().typeOption!.materialSymbol }}</i
         >
-        <i class="material-symbols-outlined">{{ preset().typeOption!.materialSymbol }}</i>
         <span>{{ preset().displayName }}</span>
       </span>
     </core-type-container>

@@ -27,15 +27,9 @@ import { TypeContainer } from './type-option-container';
       >
         <i
           aria-hidden="true"
-          class="material-symbols-outlined pointer-events-none"
+          class="material-symbols-outlined pointer-events-none size-6 shrink-0"
           [class.opacity-30]="isMouseInside()"
-          [class.opacity-0]="!isMouseInside()"
-          >drag_indicator</i
-        >
-        <i
-          aria-hidden="true"
-          class="material-symbols-outlined size-7"
-          >{{ type().materialSymbol }}</i
+          >{{ isMouseInside() ? 'drag_indicator' : type().materialSymbol }}</i
         >
         {{ type().displayName }}
       </span>
