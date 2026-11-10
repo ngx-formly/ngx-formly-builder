@@ -11,7 +11,10 @@ export type {
   WorkspaceHierarchy,
   WorkspaceNode,
   WorkspaceNodeType,
+  WorkspaceValidation,
 } from './lib/model/types';
+
+export { isValidationRuleName } from './lib/model/workspace-validation';
 
 export {
   addNodeToHierarchy,

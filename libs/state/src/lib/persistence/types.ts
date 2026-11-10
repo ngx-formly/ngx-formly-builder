@@ -1,6 +1,11 @@
 import { InjectionToken } from '@angular/core';
 import { Observable } from 'rxjs';
-import { BaseEditorForm, DefaultForm, WorkspaceHierarchy } from '../model/types';
+import {
+  BaseEditorForm,
+  DefaultForm,
+  WorkspaceHierarchy,
+  WorkspaceValidation,
+} from '../model/types';
 
 /**
  * Form store interface describing persistence operations.
@@ -20,13 +25,16 @@ export interface FormStoreService {
   getHierarchy$(editorType: string): Observable<WorkspaceHierarchy>;
   /** Save the full workspace hierarchy structure. */
   saveHierarchy$(editorType: string, hierarchy: WorkspaceHierarchy): Observable<void>;
+  /** Catalog support requires both methods. Rules are shared within the editor namespace. */
+  getValidations$?(editorType: string): Observable<WorkspaceValidation[]>;
+  saveValidations$?(editorType: string, validations: WorkspaceValidation[]): Observable<void>;
   /** Report local data that could not be read without discarding the original value. */
   getRecoveryIssues$?(editorType: string): Observable<readonly FormStoreRecoveryIssue[]>;
   /** Explicitly remove corrupted local data for an editor namespace. */
-  resetCorruptedStorage$?(editorType: string): Observable<void>;
+  resetCorruptedStorage$?(editorType: string, kind?: FormStoreDataKind): Observable<void>;
 }
 
-export type FormStoreDataKind = 'forms' | 'hierarchy';
+export type FormStoreDataKind = 'forms' | 'hierarchy' | 'validations';
 
 export interface FormStoreRecoveryIssue {
   editorType: string;

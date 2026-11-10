@@ -32,7 +32,7 @@ describe('HomePage', () => {
 
     await component.createForm();
 
-    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/workspaces');
+    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/workspaces/forms');
     expect(mockCreateFormDialogService.open).toHaveBeenCalledOnce();
   });
 
@@ -41,7 +41,7 @@ describe('HomePage', () => {
 
     await component.importForm();
 
-    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/workspaces');
+    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/workspaces/forms');
     expect(mockImportDialogService.open).toHaveBeenCalledOnce();
   });
 

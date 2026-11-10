@@ -5,7 +5,7 @@ test('Open Form Editor opens the editor without a creation dialog', async ({ pag
 
   await page.getByRole('button', { name: 'Open Form Editor' }).click();
 
-  await expect(page).toHaveURL(/\/workspaces$/);
+  await expect(page).toHaveURL(/\/workspaces\/forms$/);
   await expect(page.locator('app-form-editor')).toBeVisible();
   await expect(page.locator('core-create-form-dialog')).toBeAttached();
   await expect(page.getByRole('dialog', { name: 'Create Form' })).toBeHidden();
@@ -21,7 +21,7 @@ test('Open Form Editor does not reopen a creation dialog after returning home', 
   await page.goBack();
   await page.getByRole('button', { name: 'Open Form Editor' }).click();
 
-  await expect(page).toHaveURL(/\/workspaces$/);
+  await expect(page).toHaveURL(/\/workspaces\/forms$/);
   await expect(page.locator('app-form-editor')).toBeVisible();
   await expect(page.locator('core-create-form-dialog')).toBeAttached();
   await expect(page.getByRole('dialog', { name: 'Create Form' })).toBeHidden();

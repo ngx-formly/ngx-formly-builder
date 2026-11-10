@@ -44,3 +44,24 @@ if (status === 'saved') {
 }
 // On error, keep the editor open and offer an explicit save retry.
 ```
+
+## Validation catalog
+
+Stores can implement both `getValidations$(editorType)` and `saveValidations$(editorType, validations)`
+to support the Workspace Validations tab. These optional methods follow the same snapshot and write
+completion rules as forms. Without both methods, the shell shows the catalog as unavailable;
+field-only custom validation remains available.
+
+`WorkspaceValidation` contains `id`, `name`, `expression`, and `message`. Rules belong to an editor
+namespace and are copied into fields when selected. The engine serializes catalog read/modify/write
+operations and updates its `validations()` signal only after a successful write. It exposes
+`validationsLoading()` and `validationsLoadError()`; retry loading with `loadValidations()`.
+`saveValidation$(draft, id?)` creates or updates a rule, and `deleteValidation$(id)` removes it.
+Subscribe to these operations and handle errors in the host. Expressions must use supported Formly
+syntax; the shell checks them with the Formly parser before saving.
+
+The local store uses `formly-studio-validations-${editorType}`. It preserves unreadable catalog data
+and reports a recovery issue with kind `validations`. `resetValidations$()` invokes
+`resetCorruptedStorage$(editorType, 'validations')`: stores supporting this recovery action must
+reset only the affected catalog. Omitting the optional kind retains the existing reset-all-affected-data
+behavior. Catalog load/write failures do not change the active form or its save status.

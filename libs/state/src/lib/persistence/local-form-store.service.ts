@@ -6,7 +6,9 @@ import {
   WorkspaceFormNode,
   WorkspaceHierarchy,
   WorkspaceNode,
+  WorkspaceValidation,
 } from '../model/types';
+import { isWorkspaceValidationList } from '../model/workspace-validation';
 import {
   FormStoreDataKind,
   FormStoreRecoveryIssue,
@@ -24,6 +26,7 @@ import {
 export class LocalFormStoreService implements FormStoreService {
   readonly storageKey = 'formly-studio-forms';
   readonly hierarchyStorageKey = 'formly-studio-hierarchy';
+  readonly validationsStorageKey = 'formly-studio-validations';
   private readonly recoveryIssues = new Map<
     string,
     BehaviorSubject<readonly FormStoreRecoveryIssue[]>
@@ -135,20 +138,65 @@ export class LocalFormStoreService implements FormStoreService {
   getRecoveryIssues$(editorType: string): Observable<readonly FormStoreRecoveryIssue[]> {
     this.getFormMap(editorType);
     this.getHierarchySync(editorType);
+    this.readValidations(editorType);
     return this.getRecoveryIssuesSubject(editorType).asObservable();
   }
 
-  resetCorruptedStorage$(editorType: string): Observable<void> {
+  getValidations$(editorType: string): Observable<WorkspaceValidation[]> {
+    const validations = this.readValidations(editorType);
+    const error = this.getRecoveryError(editorType, 'validations');
+    return error ? throwError(() => error) : of(validations);
+  }
+
+  saveValidations$(editorType: string, validations: WorkspaceValidation[]): Observable<void> {
+    this.readValidations(editorType);
+    const error = this.getRecoveryError(editorType, 'validations');
+    if (error) return throwError(() => error);
+    if (!isWorkspaceValidationList(validations)) {
+      return throwError(() => new Error('Validation names must be valid and unique.'));
+    }
+    localStorage.setItem(
+      `${this.validationsStorageKey}-${editorType}`,
+      JSON.stringify(validations),
+    );
+    return of(void 0);
+  }
+
+  private readValidations(editorType: string): WorkspaceValidation[] {
+    const raw = localStorage.getItem(`${this.validationsStorageKey}-${editorType}`);
+    if (raw === null) {
+      this.clearRecoveryIssue(editorType, 'validations');
+      return [];
+    }
+    try {
+      const value: unknown = JSON.parse(raw);
+      if (isWorkspaceValidationList(value)) {
+        this.clearRecoveryIssue(editorType, 'validations');
+        return value;
+      }
+      this.setRecoveryIssue(editorType, 'validations', 'invalid-shape', raw);
+    } catch {
+      this.setRecoveryIssue(editorType, 'validations', 'invalid-json', raw);
+    }
+    return [];
+  }
+
+  resetCorruptedStorage$(editorType: string, kind?: FormStoreDataKind): Observable<void> {
     this.getFormMap(editorType);
     this.getHierarchySync(editorType);
-    const issues = this.getRecoveryIssuesSubject(editorType).value;
+    this.readValidations(editorType);
+    const subject = this.getRecoveryIssuesSubject(editorType);
+    const issues = subject.value.filter((issue) => !kind || issue.kind === kind);
     if (issues.some((issue) => issue.kind === 'forms')) {
       localStorage.removeItem(`${this.storageKey}-${editorType}`);
       localStorage.removeItem(`${this.hierarchyStorageKey}-${editorType}`);
     } else if (issues.some((issue) => issue.kind === 'hierarchy')) {
       localStorage.removeItem(`${this.hierarchyStorageKey}-${editorType}`);
     }
-    this.getRecoveryIssuesSubject(editorType).next([]);
+    if (issues.some((issue) => issue.kind === 'validations')) {
+      localStorage.removeItem(`${this.validationsStorageKey}-${editorType}`);
+    }
+    subject.next(subject.value.filter((issue) => !issues.includes(issue)));
     return of(void 0);
   }
 
@@ -227,8 +275,13 @@ export class LocalFormStoreService implements FormStoreService {
     return subject;
   }
 
-  private getRecoveryError(editorType: string): FormStoreRecoveryRequiredError | undefined {
-    const issues = this.getRecoveryIssuesSubject(editorType).value;
+  private getRecoveryError(
+    editorType: string,
+    kind?: 'validations',
+  ): FormStoreRecoveryRequiredError | undefined {
+    const issues = this.getRecoveryIssuesSubject(editorType).value.filter((issue) =>
+      kind ? issue.kind === kind : issue.kind !== 'validations',
+    );
     return issues.length ? new FormStoreRecoveryRequiredError(issues) : undefined;
   }
 
@@ -247,7 +300,9 @@ export class LocalFormStoreService implements FormStoreService {
       storageKey:
         kind === 'forms'
           ? `${this.storageKey}-${editorType}`
-          : `${this.hierarchyStorageKey}-${editorType}`,
+          : kind === 'validations'
+            ? `${this.validationsStorageKey}-${editorType}`
+            : `${this.hierarchyStorageKey}-${editorType}`,
     };
     if (kind === 'forms') {
       const storageKey = `${this.hierarchyStorageKey}-${editorType}`;

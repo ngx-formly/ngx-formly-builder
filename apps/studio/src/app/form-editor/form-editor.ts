@@ -17,7 +17,7 @@ export class FormEditorApp {
   private readonly forms = inject(CoreFormService);
   private readonly panels = inject(PanelService);
   private readonly pendingRoute = signal<{
-    workspaceId: string;
+    formId: string;
     panel: 'forms' | 'fields' | 'add-field';
   } | null>(null);
 
@@ -35,30 +35,31 @@ export class FormEditorApp {
       });
 
     effect(() => {
-      const workspaceId = this.forms.activeFormId();
+      const formId = this.forms.activeFormId();
       const panel = this.panels.activeLHSPanel();
       const activePanel = this.panels.activePanel();
       const addFieldTab = this.panels.activeAddFieldTab();
+      const workspaceTab = this.panels.activeWorkspaceTab();
       const pending = this.pendingRoute();
       if (this.router.currentNavigation()) return;
 
       if (pending) {
-        if (workspaceId === pending.workspaceId) {
+        if (formId === pending.formId) {
           this.pendingRoute.set(null);
           this.panels.setActiveLHSPanel(pending.panel);
           this.restoreFieldPanel();
         } else if (
-          this.forms.formLoadError()?.formId === pending.workspaceId ||
+          this.forms.formLoadError()?.formId === pending.formId ||
           this.forms.saveStatus() === 'error'
         ) {
           this.pendingRoute.set(null);
           this.panels.setActiveLHSPanel('forms');
-          void this.router.navigateByUrl('/workspaces', { replaceUrl: true });
+          void this.router.navigateByUrl('/workspaces/forms', { replaceUrl: true });
         }
         return;
       }
 
-      if (!workspaceId && panel !== 'forms') {
+      if (!formId && panel !== 'forms') {
         this.panels.setActiveLHSPanel('forms');
         return;
       }
@@ -70,11 +71,12 @@ export class FormEditorApp {
             ? activePanel
             : this.fieldQuery();
       const url = this.router.createUrlTree(
-        panel === 'forms' || !workspaceId
-          ? ['/workspaces']
+        panel === 'forms' || !formId
+          ? ['/workspaces', workspaceTab]
           : [
               '/workspaces',
-              workspaceId,
+              'forms',
+              formId,
               panel === 'fields' ? 'fields' : addFieldTab === 'presets' ? 'preset' : 'field',
             ],
         { queryParams: { field }, queryParamsHandling: 'merge', preserveFragment: true },
@@ -95,19 +97,24 @@ export class FormEditorApp {
   private restoreRoute(): void {
     const route = this.route.snapshot.firstChild;
     const panel = route?.data['panel'] as 'forms' | 'fields' | 'add-field';
-    const workspaceId = route?.paramMap.get('workspaceId');
+    const formId = route?.paramMap.get('formId');
+    this.panels.activeWorkspaceTab.set(route?.data['workspaceTab'] ?? 'forms');
     if (panel === 'add-field') {
       this.panels.activeAddFieldTab.set(route!.data['addFieldTab']);
     }
     this.pendingRoute.set(null);
-    if (workspaceId && workspaceId !== this.forms.activeFormId()) {
-      this.pendingRoute.set({ workspaceId, panel });
-      this.forms.setActiveForm(workspaceId);
+    if (formId && formId !== this.forms.activeFormId()) {
+      this.pendingRoute.set({ formId, panel });
+      this.forms.setActiveForm(formId);
     }
-    if (workspaceId || this.panels.activePanel() !== panel) {
+    if (
+      formId ||
+      this.panels.activePanel() !== panel ||
+      route?.data['workspaceTab'] === 'validations'
+    ) {
       this.panels.setActiveLHSPanel(panel);
     }
-    this.restoreFieldPanel();
+    if (panel !== 'forms') this.restoreFieldPanel();
   }
 
   private restoreFieldPanel(): void {

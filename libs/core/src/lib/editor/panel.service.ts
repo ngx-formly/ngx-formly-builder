@@ -11,6 +11,7 @@ export class PanelService {
   readonly activeLHSPanel = this.activeLHSPanelSrc.asReadonly();
 
   readonly activeAddFieldTab = signal<'fields' | 'presets'>('fields');
+  readonly activeWorkspaceTab = signal<'forms' | 'validations'>('forms');
 
   protected readonly activeRHSPanelSrc = signal<RHSPanelType>('field-edit');
   readonly activeRHSPanel = this.activeRHSPanelSrc.asReadonly();
@@ -27,6 +28,7 @@ export class PanelService {
   }
 
   setActiveLHSPanel(panel: LHSPanelType) {
+    if (panel !== 'forms') this.activeWorkspaceTab.set('forms');
     this.activeLHSPanelSrc.set(panel);
     this.activePanelSrc.set(panel);
     this.highlightPanelSrc$.next(panel);

@@ -53,6 +53,15 @@ describe('FieldValidationEditor', () => {
     expect(fixture.nativeElement.querySelector('core-other-validation-messages')).toBeNull();
   });
 
+  it('offers custom rule creation even when the library has no registered validators', () => {
+    fixture.componentRef.setInput('config', { rules: [] });
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('core-field-custom-validation-property'),
+    ).not.toBeNull();
+    expect(fixture.componentInstance['customValidators']().validationOptions).toEqual([]);
+  });
+
   it('shows a fixed-rule message only when the rule has a value', () => {
     const property = fixture.componentInstance.config().rules[0].property;
 

@@ -10,6 +10,7 @@ import {
   defer,
   EMPTY,
   first,
+  finalize,
   forkJoin,
   from,
   map,
@@ -29,7 +30,9 @@ import {
   EditorForm,
   WorkspaceFolderNode,
   WorkspaceHierarchy,
+  WorkspaceValidation,
 } from '../model/types';
+import { isWorkspaceValidationList } from '../model/workspace-validation';
 import {
   BUILDER_ENGINE_CONFIG,
   BuilderEngineConfig,
@@ -37,7 +40,12 @@ import {
   FormLoadError,
   PersistenceError,
 } from './types';
-import { CORE_FORM_STORE, FormStoreRecoveryIssue, FormStoreService } from '../persistence/types';
+import {
+  CORE_FORM_STORE,
+  FormStoreDataKind,
+  FormStoreRecoveryIssue,
+  FormStoreService,
+} from '../persistence/types';
 import { modifyPropertyTarget, PropertyChange } from './property-change';
 import {
   clearFieldModelValue,
@@ -83,6 +91,16 @@ export class BuilderEngineService {
   readonly hasStorageRecoveryIssues = computed(() => this.storageRecoveryIssues().length > 0);
   readonly hasFormStorageRecoveryIssue = computed(() =>
     this.storageRecoveryIssues().some((issue) => issue.kind === 'forms'),
+  );
+  readonly validationStorageAvailable: boolean;
+  private readonly validationsSrc = signal<WorkspaceValidation[]>([]);
+  readonly validations = this.validationsSrc.asReadonly();
+  private readonly validationsLoadingSrc = signal(false);
+  readonly validationsLoading = this.validationsLoadingSrc.asReadonly();
+  private readonly validationsLoadErrorSrc = signal<string | null>(null);
+  readonly validationsLoadError = this.validationsLoadErrorSrc.asReadonly();
+  readonly validationRecoveryIssues = computed(() =>
+    this.storageRecoveryIssues().filter((issue) => issue.kind === 'validations'),
   );
 
   protected readonly formListSrc = signal<BaseEditorForm[]>([]);
@@ -135,6 +153,7 @@ export class BuilderEngineService {
   ) {
     this.editorConfig = config;
     this.formStoreService = store;
+    this.validationStorageAvailable = !!(store.getValidations$ && store.saveValidations$);
     this.autosaveEnabled = config.autoSave ?? true;
     this.autosaveDelay = config.autoSaveDelay ?? 3000;
     this.hierarchySrc.set(createEmptyWorkspaceHierarchy(config.editorType));
@@ -154,6 +173,8 @@ export class BuilderEngineService {
         next: (issues) => this.storageRecoveryIssuesSrc.set(issues),
         error: (error) => this.handlePersistenceError('load recovery state', error),
       });
+
+    this.loadValidations();
 
     if (this.autosaveEnabled) {
       this.autosaveTrigger$
@@ -209,6 +230,90 @@ export class BuilderEngineService {
         }
       }),
       map(() => undefined),
+    );
+  }
+
+  loadValidations(): void {
+    if (!this.validationStorageAvailable) return;
+    this.validationsLoadingSrc.set(true);
+    this.validationsLoadErrorSrc.set(null);
+    this.enqueue$(() => this.readValidations$())
+      .pipe(finalize(() => this.validationsLoadingSrc.set(false)))
+      .subscribe({
+        next: (rules) => this.validationsSrc.set(rules),
+        error: () =>
+          this.validationsLoadErrorSrc.set(
+            'Saved validations could not be loaded. Try again or recover the affected data.',
+          ),
+      });
+  }
+
+  private readValidations$(): Observable<WorkspaceValidation[]> {
+    return this.snapshot$(() => {
+      if (!this.validationStorageAvailable) throw new Error('Validation storage is unavailable.');
+      return this.formStoreService.getValidations$!(this.editorConfig.editorType);
+    }).pipe(
+      map((rules) => {
+        if (!isWorkspaceValidationList(rules)) throw new Error('Invalid validation catalog.');
+        return rules.map((rule) => ({ ...rule }));
+      }),
+    );
+  }
+
+  saveValidation$(draft: Omit<WorkspaceValidation, 'id'>, id?: string): Observable<void> {
+    const rule: WorkspaceValidation = {
+      id: id ?? uuidv4(),
+      name: draft.name.trim(),
+      expression: draft.expression.trim(),
+      message: draft.message.trim(),
+    };
+    return this.mutateValidations$((rules) => {
+      if (id && !rules.some((entry) => entry.id === id))
+        throw new Error('This validation no longer exists.');
+      return id ? rules.map((entry) => (entry.id === id ? rule : entry)) : [...rules, rule];
+    });
+  }
+
+  deleteValidation$(id: string): Observable<void> {
+    return this.mutateValidations$((rules) => rules.filter((rule) => rule.id !== id));
+  }
+
+  private mutateValidations$(
+    change: (rules: WorkspaceValidation[]) => WorkspaceValidation[],
+  ): Observable<void> {
+    return this.enqueue$(() =>
+      this.readValidations$().pipe(
+        map(change),
+        switchMap((rules) => {
+          if (!isWorkspaceValidationList(rules))
+            throw new Error('Validation names must be valid and unique.');
+          return this.snapshot$(() =>
+            this.formStoreService.saveValidations$!(this.editorConfig.editorType, rules),
+          ).pipe(
+            tap(() => {
+              this.validationsSrc.set(rules);
+              this.validationsLoadErrorSrc.set(null);
+            }),
+          );
+        }),
+      ),
+    );
+  }
+
+  resetValidations$(): Observable<void> {
+    return this.enqueue$(() =>
+      this.snapshot$(() => {
+        const reset = this.formStoreService.resetCorruptedStorage$;
+        if (!reset) throw new Error('Validation recovery is unavailable.');
+        return reset.call(this.formStoreService, this.editorConfig.editorType, 'validations');
+      }).pipe(
+        switchMap(() => this.readValidations$()),
+        tap((rules) => {
+          this.validationsSrc.set(rules);
+          this.validationsLoadErrorSrc.set(null);
+        }),
+        map(() => undefined),
+      ),
     );
   }
 
@@ -301,6 +406,7 @@ export class BuilderEngineService {
         this.snapshot$(() => reset.call(this.formStoreService, this.editorConfig.editorType)).pipe(
           switchMap(() => this.refreshWorkspace$()),
           tap(() => {
+            this.loadValidations();
             if (!this.formList().some((form) => form.id === this.activeFormId())) {
               this.setActiveForm(null);
             }
@@ -310,12 +416,12 @@ export class BuilderEngineService {
     );
   }
 
-  getStorageRecoveryBackup(): string {
+  getStorageRecoveryBackup(kind?: FormStoreDataKind): string {
     return JSON.stringify(
       {
         exportedAt: new Date().toISOString(),
         editorType: this.editorConfig.editorType,
-        entries: this.storageRecoveryIssues(),
+        entries: this.storageRecoveryIssues().filter((issue) => !kind || issue.kind === kind),
       },
       null,
       2,
@@ -634,7 +740,7 @@ export class BuilderEngineService {
   }
 
   private isStorageMutationBlocked(): boolean {
-    if (!this.hasStorageRecoveryIssues()) {
+    if (!this.storageRecoveryIssues().some((issue) => issue.kind !== 'validations')) {
       return false;
     }
     this.saveStatusSrc.set('error');

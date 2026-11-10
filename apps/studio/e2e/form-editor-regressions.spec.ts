@@ -5,7 +5,9 @@ test('reopens a saved form using only the keyboard', async ({ page }) => {
   await page.goto('/form-editor');
   await createMaterialForm(page);
   await page.reload();
+  await expect(page.locator('core-form-builder-content')).toContainText('supportRequest');
   await page.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
+  await expect(page).toHaveURL(/\/workspaces\/forms$/);
 
   const openForm = page.getByRole('button', { name: /^Open form / });
   await page.getByPlaceholder('Filter items...').focus();

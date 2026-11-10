@@ -11,4 +11,5 @@ export type {
   WorkspaceHierarchy,
   WorkspaceNode,
   WorkspaceNodeType,
+  WorkspaceValidation,
 } from '@ngx-formly/builder-state';

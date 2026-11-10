@@ -13,6 +13,7 @@ import type { FormStoreRecoveryIssue } from '../../persistence/types';
 import { Tooltip } from '../../shared';
 import { Filter } from '../../shared/filter';
 import { FormsPanel } from './forms-panel';
+import { PanelService } from '../../editor/panel.service';
 
 describe('FormsPanel', () => {
   let fixture: ComponentFixture<FormsPanel>;
@@ -65,6 +66,7 @@ describe('FormsPanel', () => {
     await TestBed.configureTestingModule({
       imports: [FormsPanel],
       providers: [
+        PanelService,
         {
           provide: CoreFormService,
           useValue: {

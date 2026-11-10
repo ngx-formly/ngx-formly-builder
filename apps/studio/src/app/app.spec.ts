@@ -60,7 +60,7 @@ describe('App', () => {
     );
   });
 
-  it.each(['/workspaces', '/form-editor', '/form-editor/unknown', '/unknown'])(
+  it.each(['/workspaces/forms', '/form-editor', '/form-editor/unknown', '/unknown'])(
     'resolves %s to the editor with its route title',
     async (url) => {
       const fixture = TestBed.createComponent(App);
@@ -71,7 +71,7 @@ describe('App', () => {
       await fixture.whenStable();
       fixture.detectChanges();
 
-      expect(router.url).toBe('/workspaces');
+      expect(router.url).toBe('/workspaces/forms');
       const root = fixture.nativeElement as HTMLElement;
       expect(root.querySelector(':scope > main > app-form-editor')).not.toBeNull();
       expect(TestBed.inject(Title).getTitle()).toBe('Form Editor | ngx-formly Builder');

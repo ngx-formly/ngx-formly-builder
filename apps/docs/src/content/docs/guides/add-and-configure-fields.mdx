@@ -68,6 +68,33 @@ Use the validation controls available for the field:
 Write validation messages that tell users how to correct the value. Test each rule in
 [Preview](/guides/previewing-and-testing/).
 
+To add a validation, open **Validation** and click **+** beside **Custom Validation**.
+Choose a registered validator, a rule saved in **Workspace → Validations**, or **+ Create validation**. Validators already applied to
+the field are omitted from the picker. For a new rule, enter a unique name, a **Valid when**
+condition, and an **Error message**, then select **Save validation**. For example, `minimumAge` with
+`control.value >= 18` and “Enter an age of at least 18.” rejects values below 18.
+
+Conditions use Formly's expression syntax: comparisons, arithmetic, and boolean operators
+such as `&&`, `||`, and `!`. Use `control.value` for the current value and `model.fieldKey`
+for values in the current model. Function calls and assignments are not supported. For
+regular expressions, use **Pattern**. Empty values are checked too; use a condition such
+as `control.value == null || control.value === '' || control.value >= 18` if an empty
+value should pass. To compare two fields, use a condition such as
+`control.value === model.password` on a confirmation field. The builder rechecks the rule
+when either value changes.
+
+Selecting a workspace rule creates an independent copy. Later changes to the saved rule do not
+change this field. **Create validation** here creates a field-only rule.
+
+Rules can be edited or removed from **Custom Validation**. They are saved with the field
+and included in JSON exports as `validators.<ruleName>.expression` and
+`validators.<ruleName>.message`; the consuming app needs Formly 11 or later. For rules that
+compare fields, also register `withValidationExpressions()` from `@ngx-formly/builder` in
+the consuming app's Formly configuration, for example
+`provideFormlyCore([withValidationExpressions(), ...yourOtherConfig])`. The builder already
+registers it. Use a
+[field preset](#use-a-field-preset) to reuse a configured field and its rules.
+
 ## Use a field preset
 
 A preset adds one preconfigured field to an existing form. This differs from a template, which

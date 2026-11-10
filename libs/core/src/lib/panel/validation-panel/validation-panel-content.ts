@@ -1,5 +1,5 @@
 import { CoreFieldService } from '../../config/core-field.service';
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { get } from 'lodash-es';
 import { Panel, PanelPassThrough } from 'primeng/panel';
 import { FieldProperty } from '../../properties/field-property';
@@ -7,6 +7,7 @@ import { FieldCustomValidationProperty } from '../../properties/custom-validatio
 import { PropertyChange, PropertyChangeType, PropertyConfig } from '../../properties/types';
 import { ValidationMessageInput } from '../../properties/validation-messages/validation-message-input';
 import type { FieldValidationConfig } from '../../properties/validation-messages/validation.types';
+import { createCustomValidationProperty } from '../../properties/custom-validation/custom-validation.config';
 
 @Component({
   selector: 'core-validation-panel-content',
@@ -58,7 +59,7 @@ import type { FieldValidationConfig } from '../../properties/validation-messages
       </p-panel>
     }
 
-    @if (config().customValidators; as property) {
+    @if (customValidators(); as property) {
       <core-field-custom-validation-property
         [property]="property"
         [path]="propertyPath(property)"
@@ -81,6 +82,15 @@ export class ValidationPanelContent {
   readonly config = input.required<FieldValidationConfig>();
   readonly target = input.required<Record<string, unknown>>();
   readonly targetChanged = output<PropertyChange>();
+  protected readonly customValidators = computed(
+    () =>
+      this.config().customValidators ??
+      createCustomValidationProperty({
+        label: 'Custom Validation',
+        key: 'validators.validation',
+        validationOptions: [],
+      }),
+  );
 
   protected fieldService = inject(CoreFieldService);
 

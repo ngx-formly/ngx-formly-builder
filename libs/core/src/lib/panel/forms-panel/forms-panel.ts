@@ -19,6 +19,9 @@ import { PanelHeader } from '../../shared/panel-header';
 import { Tooltip } from '../../shared/tooltip';
 import { WorkspaceTreeItem } from './workspace-tree-item';
 import type { WorkspaceNode } from '../../model/types';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { PanelService } from '../../editor/panel.service';
+import { ValidationsTabContent } from './validations-tab-content';
 
 @Component({
   selector: 'core-forms-panel',
@@ -34,6 +37,12 @@ import type { WorkspaceNode } from '../../model/types';
     Filter,
     PanelHeader,
     WorkspaceTreeItem,
+    Tab,
+    TabList,
+    TabPanel,
+    TabPanels,
+    Tabs,
+    ValidationsTabContent,
   ],
   host: {
     class: 'overflow-hidden h-full block',
@@ -42,179 +51,224 @@ import type { WorkspaceNode } from '../../model/types';
     <core-panel-header
       class="[--panel-header-height:auto]"
       header="Workspace"
-      subHeader="Create and manage forms"
+      subHeader="Create and manage forms and validations"
     />
-    <div class="flex items-center gap-2 px-4 pb-2">
-      <p-buttongroup
-        class="min-w-0 [&>span]:flex"
-        aria-label="Workspace actions"
-      >
-        <button
-          pButton
-          severity="secondary"
-          aria-label="New folder"
-          coreTooltip="New folder"
-          tooltipPosition="top"
-          [disabled]="hasStorageRecoveryIssues()"
-          (click)="addNewFolder()"
+    <p-tabs
+      class="flex min-h-0 flex-1 flex-col"
+      [value]="activeTab()"
+      (valueChange)="selectTab($event)"
+    >
+      <p-tablist class="min-h-12.5 shrink-0 px-4">
+        <p-tab
+          class="flex items-center gap-1 px-2!"
+          value="forms"
         >
           <i
-            pButtonIcon
-            class="material-symbols-outlined"
-          >
-            create_new_folder
-          </i>
-        </button>
-        <button
-          pButton
-          severity="secondary"
-          aria-label="Import Form"
-          coreTooltip="Import Form"
-          tooltipPosition="top"
-          [disabled]="hasStorageRecoveryIssues()"
-          (click)="openImportDialog()"
-        >
-          <i
-            pButtonIcon
-            class="material-symbols-outlined"
-          >
-            upload
-          </i>
-        </button>
-        <button
-          pButton
-          class="min-w-0"
-          aria-label="Create Form"
-          coreTooltip="Create Form"
-          tooltipPosition="top"
-          [disabled]="hasStorageRecoveryIssues()"
-          (click)="addNewForm()"
-        >
-          <i
-            pButtonIcon
-            class="material-symbols-outlined"
-          >
-            add
-          </i>
-          <span
-            pButtonLabel
-            class="truncate"
-            >Create Form</span
-          >
-        </button>
-      </p-buttongroup>
-      @if (selectedNodeIds().length) {
-        <button
-          pButton
-          type="button"
-          class="ml-auto shrink-0 px-2"
-          severity="danger"
-          text
-          coreTooltip="Delete selected items"
-          tooltipPosition="top"
-          [attr.aria-label]="'Delete selected items (' + selectedNodeIds().length + ')'"
-          [disabled]="hasStorageRecoveryIssues()"
-          (click)="deleteSelectedNodes()"
-        >
-          <i
-            pButtonIcon
             class="material-symbols-outlined"
             aria-hidden="true"
-          >
-            delete
-          </i>
-          <span
-            pButtonLabel
-            class="tabular-nums"
-            >{{ selectedNodeIds().length }}</span
-          >
-        </button>
-      }
-    </div>
-
-    @if (hasStorageRecoveryIssues()) {
-      <div
-        role="alert"
-        class="m-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
-      >
-        <strong>Saved workspace data could not be read.</strong>
-        <p class="mt-1">
-          Download a backup before resetting the affected local data. Other editor workspaces will
-          not be changed.
-        </p>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <button
-            pButton
-            severity="secondary"
-            outlined
-            (click)="downloadRecoveryBackup()"
-          >
-            Download backup
-          </button>
-          <button
-            pButton
-            severity="danger"
-            (click)="resetCorruptedStorage()"
-          >
-            Reset local data
-          </button>
-        </div>
-      </div>
-    }
-
-    @if (showFilter()) {
-      <div class="flex min-h-0 flex-1 flex-col">
-        <div class="min-h-(--sub-panel-header-height) shrink-0 px-4">
-          <core-filter
-            [(value)]="filterValue"
-            (clear)="clearFilter()"
-          />
-        </div>
-
-        @if (isFiltering() && !filteredVisibleNodeIds().length) {
-          <core-empty
-            label="No forms or folders found"
-            description="Try adjusting your filter criteria."
-          />
-        } @else if (hierarchyRootNodeIds().length) {
-          <ul
-            class="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4"
-            (mouseenter)="setMouseInside(true)"
-            (mouseleave)="setMouseInside(false)"
-          >
-            @for (nodeId of hierarchyRootNodeIds(); track nodeId) {
-              <li [class.hidden]="isFiltering() && !filteredVisibleNodeIds().includes(nodeId)">
-                <core-workspace-tree-item
-                  [nodeId]="nodeId"
-                  [isFiltering]="isFiltering()"
-                  [filteredVisibleNodeIds]="filteredVisibleNodeIds()"
-                  [selectedNodeIds]="selectedNodeIds()"
-                  (nodeSelectionToggled)="toggleNodeSelection($event)"
-                />
-              </li>
-            }
-          </ul>
-        }
-      </div>
-    } @else {
-      <core-empty
-        label="No Forms Yet"
-        description="Click the + button to add a new form. You can also add the default form"
-      >
-        <button
-          pButton
-          text
-          [disabled]="hasStorageRecoveryIssues()"
-          (click)="addNewForm()"
+            >description</i
+          ><span>Forms</span>
+        </p-tab>
+        <p-tab
+          class="flex items-center gap-1 px-2!"
+          value="validations"
         >
-          <i class="material-symbols-outlined">assignment</i>
-          Create Form
-        </button>
-      </core-empty>
-    }
+          <i
+            class="material-symbols-outlined"
+            aria-hidden="true"
+            >rule</i
+          ><span>Validations</span>
+        </p-tab>
+      </p-tablist>
+      <p-tabpanels class="flex min-h-0 flex-1 flex-col px-0 pb-0">
+        <p-tabpanel
+          class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          value="forms"
+        >
+          <div class="flex items-center gap-2 px-4 pb-2">
+            <p-buttongroup
+              class="min-w-0 [&>span]:flex"
+              aria-label="Workspace actions"
+            >
+              <button
+                pButton
+                severity="secondary"
+                aria-label="New folder"
+                coreTooltip="New folder"
+                tooltipPosition="top"
+                [disabled]="hasStorageRecoveryIssues()"
+                (click)="addNewFolder()"
+              >
+                <i
+                  pButtonIcon
+                  class="material-symbols-outlined"
+                >
+                  create_new_folder
+                </i>
+              </button>
+              <button
+                pButton
+                severity="secondary"
+                aria-label="Import Form"
+                coreTooltip="Import Form"
+                tooltipPosition="top"
+                [disabled]="hasStorageRecoveryIssues()"
+                (click)="openImportDialog()"
+              >
+                <i
+                  pButtonIcon
+                  class="material-symbols-outlined"
+                >
+                  upload
+                </i>
+              </button>
+              <button
+                pButton
+                class="min-w-0"
+                aria-label="Create Form"
+                coreTooltip="Create Form"
+                tooltipPosition="top"
+                [disabled]="hasStorageRecoveryIssues()"
+                (click)="addNewForm()"
+              >
+                <i
+                  pButtonIcon
+                  class="material-symbols-outlined"
+                >
+                  add
+                </i>
+                <span
+                  pButtonLabel
+                  class="truncate"
+                  >Create Form</span
+                >
+              </button>
+            </p-buttongroup>
+            @if (selectedNodeIds().length) {
+              <button
+                pButton
+                type="button"
+                class="ml-auto shrink-0 px-2"
+                severity="danger"
+                text
+                coreTooltip="Delete selected items"
+                tooltipPosition="top"
+                [attr.aria-label]="'Delete selected items (' + selectedNodeIds().length + ')'"
+                [disabled]="hasStorageRecoveryIssues()"
+                (click)="deleteSelectedNodes()"
+              >
+                <i
+                  pButtonIcon
+                  class="material-symbols-outlined"
+                  aria-hidden="true"
+                >
+                  delete
+                </i>
+                <span
+                  pButtonLabel
+                  class="tabular-nums"
+                  >{{ selectedNodeIds().length }}</span
+                >
+              </button>
+            }
+          </div>
+
+          @if (hasStorageRecoveryIssues()) {
+            <div
+              role="alert"
+              class="m-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
+            >
+              <strong>Saved workspace data could not be read.</strong>
+              <p class="mt-1">
+                Download a backup before resetting the affected local data. Other editor workspaces
+                will not be changed.
+              </p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button
+                  pButton
+                  severity="secondary"
+                  outlined
+                  (click)="downloadRecoveryBackup()"
+                >
+                  Download backup
+                </button>
+                <button
+                  pButton
+                  severity="danger"
+                  (click)="resetCorruptedStorage()"
+                >
+                  Reset local data
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (showFilter()) {
+            <div class="flex min-h-0 flex-1 flex-col">
+              <div class="min-h-(--sub-panel-header-height) shrink-0 px-4">
+                <core-filter
+                  [(value)]="filterValue"
+                  (clear)="clearFilter()"
+                />
+              </div>
+
+              @if (isFiltering() && !filteredVisibleNodeIds().length) {
+                <core-empty
+                  label="No forms or folders found"
+                  description="Try adjusting your filter criteria."
+                />
+              } @else if (hierarchyRootNodeIds().length) {
+                <ul
+                  class="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4"
+                  (mouseenter)="setMouseInside(true)"
+                  (mouseleave)="setMouseInside(false)"
+                >
+                  @for (nodeId of hierarchyRootNodeIds(); track nodeId) {
+                    <li
+                      [class.hidden]="isFiltering() && !filteredVisibleNodeIds().includes(nodeId)"
+                    >
+                      <core-workspace-tree-item
+                        [nodeId]="nodeId"
+                        [isFiltering]="isFiltering()"
+                        [filteredVisibleNodeIds]="filteredVisibleNodeIds()"
+                        [selectedNodeIds]="selectedNodeIds()"
+                        (nodeSelectionToggled)="toggleNodeSelection($event)"
+                      />
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          } @else {
+            <core-empty
+              label="No Forms Yet"
+              description="Click the + button to add a new form. You can also add the default form"
+            >
+              <button
+                pButton
+                text
+                [disabled]="hasStorageRecoveryIssues()"
+                (click)="addNewForm()"
+              >
+                <i class="material-symbols-outlined">assignment</i>
+                Create Form
+              </button>
+            </core-empty>
+          }
+        </p-tabpanel>
+        <p-tabpanel
+          class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          value="validations"
+        >
+          <core-validations-tab-content />
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
   `,
 })
 export class FormsPanel {
+  private readonly panels = inject(PanelService);
+  readonly activeTab = this.panels.activeWorkspaceTab;
   protected formService = inject(CoreFormService);
   protected mouseInsideService = inject(MouseInsideService);
   protected createFormDialogService = inject(CreateFormDialogService);
@@ -224,7 +278,9 @@ export class FormsPanel {
   formList = this.formService.formList;
   hierarchyRootNodeIds = this.formService.hierarchyRootNodeIds;
   hierarchyNodeMap = this.formService.hierarchyNodeMap;
-  hasStorageRecoveryIssues = this.formService.hasStorageRecoveryIssues;
+  readonly hasStorageRecoveryIssues = computed(() =>
+    this.formService.storageRecoveryIssues().some((issue) => issue.kind !== 'validations'),
+  );
 
   readonly selectedNodeIds = linkedSignal<Record<string, WorkspaceNode>, string[]>({
     source: this.hierarchyNodeMap,
@@ -269,6 +325,12 @@ export class FormsPanel {
 
   addNewForm(): void {
     this.createFormDialogService.open();
+  }
+
+  selectTab(tab: string | number | undefined): void {
+    if (tab !== 'forms' && tab !== 'validations') return;
+    this.activeTab.set(tab);
+    this.panels.setActiveLHSPanel('forms');
   }
 
   toggleNodeSelection(nodeId: string): void {

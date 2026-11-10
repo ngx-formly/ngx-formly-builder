@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
@@ -12,6 +13,21 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./form-editor/form-editor.routes').then((module) => module.formEditorRoutes),
   },
-  { path: 'form-editor', pathMatch: 'full', redirectTo: 'workspaces' },
-  { path: '**', redirectTo: 'workspaces' },
+  {
+    path: 'form-editor',
+    pathMatch: 'full',
+    redirectTo: ({ queryParams, fragment }) =>
+      inject(Router).createUrlTree(['/workspaces/forms'], {
+        queryParams,
+        fragment: fragment ?? undefined,
+      }),
+  },
+  {
+    path: '**',
+    redirectTo: ({ queryParams, fragment }) =>
+      inject(Router).createUrlTree(['/workspaces/forms'], {
+        queryParams,
+        fragment: fragment ?? undefined,
+      }),
+  },
 ];

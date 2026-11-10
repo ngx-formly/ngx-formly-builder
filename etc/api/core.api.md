@@ -24,7 +24,7 @@ Generated declarations for review. Update with `pnpm run update:api`.
 
 ```ts
 // types/ngx-formly-builder.d.ts
-import { BaseEditorForm, BaseWorkspaceNode, BuilderEngineService, BuilderFieldStateService as BuilderFieldStateService$1, CORE_FORM_STORE, DefaultForm, EditorField, EditorForm, FieldInfo, FieldInfoBadge, FormStoreDataKind, FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, FormStoreService, PropertyChange, PropertyChangeType, WorkspaceFolderNode, WorkspaceFormNode, WorkspaceHierarchy, WorkspaceNode, WorkspaceNodeType, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion } from "@ngx-formly/builder-state";
+import { BaseEditorForm, BaseWorkspaceNode, BuilderEngineService, BuilderFieldStateService as BuilderFieldStateService$1, CORE_FORM_STORE, DefaultForm, EditorField, EditorForm, FieldInfo, FieldInfoBadge, FormStoreDataKind, FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, FormStoreService, PropertyChange, PropertyChangeType, WorkspaceFolderNode, WorkspaceFormNode, WorkspaceHierarchy, WorkspaceNode, WorkspaceNodeType, WorkspaceValidation, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion } from "@ngx-formly/builder-state";
 import * as i0 from "@angular/core";
 import { EnvironmentProviders, InjectionToken, TrackByFunction, Type, WritableSignal } from "@angular/core";
 import * as z$1 from "zod";
@@ -537,6 +537,7 @@ export declare class PanelService {
     protected readonly activeLHSPanelSrc: import("@angular/core").WritableSignal<LHSPanelType>;
     readonly activeLHSPanel: import("@angular/core").Signal<LHSPanelType>;
     readonly activeAddFieldTab: import("@angular/core").WritableSignal<"fields" | "presets">;
+    readonly activeWorkspaceTab: import("@angular/core").WritableSignal<"forms" | "validations">;
     protected readonly activeRHSPanelSrc: import("@angular/core").WritableSignal<RHSPanelType>;
     readonly activeRHSPanel: import("@angular/core").Signal<RHSPanelType>;
     protected highlightPanelSrc$: Subject<LHSPanelType | RHSPanelType>;
@@ -713,6 +714,8 @@ export declare class CreateFormDialogService {
     static ɵprov: i0.ɵɵInjectableDeclaration<any>;
 }
 declare class FormsPanel {
+    private readonly panels;
+    readonly activeTab: import("@angular/core").WritableSignal<"forms" | "validations">;
     protected formService: CoreFormService;
     protected mouseInsideService: MouseInsideService;
     protected createFormDialogService: CreateFormDialogService;
@@ -720,13 +723,17 @@ declare class FormsPanel {
     private readonly document;
     formList: import("@angular/core").Signal<import("@ngx-formly/builder").BaseEditorForm[]>;
     hierarchyRootNodeIds: import("@angular/core").Signal<string[]>;
-    hierarchyNodeMap: import("@angular/core").Signal<Record<string, import("@ngx-formly/builder").WorkspaceNode>>;
-    hasStorageRecoveryIssues: import("@angular/core").Signal<boolean>;
+    hierarchyNodeMap: import("@angular/core").Signal<Record<string, WorkspaceNode>>;
+    readonly hasStorageRecoveryIssues: import("@angular/core").Signal<boolean>;
+    readonly selectedNodeIds: import("@angular/core").WritableSignal<string[]>;
     readonly filterValue: import("@angular/core").WritableSignal<string>;
     readonly isFiltering: import("@angular/core").Signal<boolean>;
     readonly showFilter: import("@angular/core").Signal<boolean>;
     readonly filteredVisibleNodeIds: import("@angular/core").Signal<string[]>;
     addNewForm(): void;
+    selectTab(tab: number | string | undefined): void;
+    toggleNodeSelection(nodeId: string): void;
+    deleteSelectedNodes(): void;
     addNewFolder(): void;
     openImportDialog(): void;
     setMouseInside(isInside: boolean): void;
@@ -914,5 +921,7 @@ export declare function createLibrary(config: Omit<LibraryConfig, 'defaultTypeOp
 /** Portable file and demo-submit controls that do not require a UI adapter. */
 export declare const nativeFieldTypes: FieldTypeOption[];
 export declare const nativeFieldConfig: ConfigOption;
-export { type BaseEditorForm, type BasePropertyConfig, type BaseWorkspaceNode, CORE_FORM_STORE, FormlyBuilder as Core, type CoreAddFieldOption, type CoreEditorConfig, type DefaultForm, type EditorForm, type FieldCategoryOption, type FieldInfo, type FieldInfoBadge, type FieldTypeOption, type FieldTypePreset, type FieldValidationConfig, type FieldWrapperOption, type FormStoreDataKind, type FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, type FormStoreService, type FormTemplate, type FormlyBuilderConfig, type GroupChildPropertyConfig, type GroupPropertyConfig, type PropertyConfig as IProperty, type PropertyConfig, type LibraryConfig, type MarkdownPropertyConfig, type PropertyChange, PropertyChangeType, type PropertyCreator, type ValidationRuleConfig, type ValidationRulePropertyConfig, type WorkspaceFolderNode, type WorkspaceFormNode, type WorkspaceHierarchy, type WorkspaceNode, type WorkspaceNodeType, type WrappersPropertyConfig, type WrappersPropertyOption, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion };
+/** Recheck expression validators when another field changes their model. */
+export declare function withValidationExpressions(): ConfigOption;
+export { type BaseEditorForm, type BasePropertyConfig, type BaseWorkspaceNode, CORE_FORM_STORE, FormlyBuilder as Core, type CoreAddFieldOption, type CoreEditorConfig, type DefaultForm, type EditorForm, type FieldCategoryOption, type FieldInfo, type FieldInfoBadge, type FieldTypeOption, type FieldTypePreset, type FieldValidationConfig, type FieldWrapperOption, type FormStoreDataKind, type FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, type FormStoreService, type FormTemplate, type FormlyBuilderConfig, type GroupChildPropertyConfig, type GroupPropertyConfig, type PropertyConfig as IProperty, type PropertyConfig, type LibraryConfig, type MarkdownPropertyConfig, type PropertyChange, PropertyChangeType, type PropertyCreator, type ValidationRuleConfig, type ValidationRulePropertyConfig, type WorkspaceFolderNode, type WorkspaceFormNode, type WorkspaceHierarchy, type WorkspaceNode, type WorkspaceNodeType, type WorkspaceValidation, type WrappersPropertyConfig, type WrappersPropertyOption, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion };
 ```

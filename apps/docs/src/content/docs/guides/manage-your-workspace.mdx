@@ -1,9 +1,9 @@
 ---
 title: Manage your workspace
-description: Create, organize, find, rename, and remove forms and folders.
+description: Manage forms, folders, and reusable validation rules.
 ---
 
-**Workspace** organizes complete form documents. Use the **Fields** panel instead when you need to
+**Workspace** has **Forms** and **Validations** tabs. **Forms** organizes complete form documents. Use the **Fields** panel instead when you need to
 reorder or group fields inside the active form.
 
 ## Create a form
@@ -55,3 +55,25 @@ folder it contains, so review its contents before confirming.
 Forms and folders are stored in the current browser. See
 [Save, import, and export](/guides/save-import-and-export/) before clearing browser data or moving to
 another device.
+
+## Reuse validations
+
+1. Open **Workspace → Validations** and select **Create validation**.
+2. Enter a unique **Rule name**, a **Valid when** condition, and an **Error message**.
+3. Select **Save validation**.
+4. Select a field, open **Validation**, and choose the saved rule from the **+** menu beside **Custom Validation**.
+
+For example, `minimumAge` with `control.value >= 18` and “Enter 18 or more.” can be used on
+number fields in several forms. Saved rules are available across UI libraries in this workspace.
+You can create them before creating a form.
+
+Selecting a saved rule copies it into the field. Editing or deleting the saved rule leaves existing
+field copies unchanged. You can still create a rule just for one field from **Custom Validation**.
+Rules whose names conflict with a field's registered or applied validators are omitted from its picker.
+
+Use the filter to find saved rules, select a row to edit one, or use its delete button to remove it.
+The dialog keeps your draft if saving fails. Validations are stored in this browser; clearing browser
+data removes the catalog. Rules already copied onto fields remain part of those forms' JSON exports.
+
+The tabs use `/workspaces/forms` and `/workspaces/validations`. Form editor links use
+`/workspaces/forms/:formId/fields`, `/field`, or `/preset`. Older Studio links redirect automatically.

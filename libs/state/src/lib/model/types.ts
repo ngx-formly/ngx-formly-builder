@@ -1,5 +1,13 @@
 import { FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core';
 
+/** A reusable expression copied into a field when selected. */
+export interface WorkspaceValidation {
+  id: string;
+  name: string;
+  expression: string;
+  message: string;
+}
+
 /**
  * Metadata about a field used by the editor to track relationships and UI state.
  */

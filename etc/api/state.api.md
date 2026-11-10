@@ -24,6 +24,13 @@ import { FormlyFieldConfig, FormlyFieldProps } from "@ngx-formly/core";
 import { Observable, Subject } from "rxjs";
 import * as i0 from "@angular/core";
 import { EnvironmentProviders, InjectionToken, Type } from "@angular/core";
+/** A reusable expression copied into a field when selected. */
+interface WorkspaceValidation {
+    id: string;
+    name: string;
+    expression: string;
+    message: string;
+}
 /**
  * Metadata about a field used by the editor to track relationships and UI state.
  */
@@ -137,6 +144,10 @@ interface WorkspaceHierarchy {
     rootNodeIds: string[];
     nodeMap: Record<string, WorkspaceNode>;
 }
+/** Whether a name can safely identify a custom expression validator. */
+export declare function isValidationRuleName(name: string): boolean;
+declare function isWorkspaceValidation(value: unknown): value is WorkspaceValidation;
+declare function isWorkspaceValidationList(value: unknown): value is WorkspaceValidation[];
 /**
  * Creates a clean, empty workspace hierarchy structure.
  */
@@ -199,12 +210,15 @@ interface FormStoreService {
     getHierarchy$(editorType: string): Observable<WorkspaceHierarchy>;
     /** Save the full workspace hierarchy structure. */
     saveHierarchy$(editorType: string, hierarchy: WorkspaceHierarchy): Observable<void>;
+    /** Catalog support requires both methods. Rules are shared within the editor namespace. */
+    getValidations$?(editorType: string): Observable<WorkspaceValidation[]>;
+    saveValidations$?(editorType: string, validations: WorkspaceValidation[]): Observable<void>;
     /** Report local data that could not be read without discarding the original value. */
     getRecoveryIssues$?(editorType: string): Observable<readonly FormStoreRecoveryIssue[]>;
     /** Explicitly remove corrupted local data for an editor namespace. */
-    resetCorruptedStorage$?(editorType: string): Observable<void>;
+    resetCorruptedStorage$?(editorType: string, kind?: FormStoreDataKind): Observable<void>;
 }
-type FormStoreDataKind = 'forms' | 'hierarchy';
+type FormStoreDataKind = 'forms' | 'hierarchy' | 'validations';
 interface FormStoreRecoveryIssue {
     editorType: string;
     kind: FormStoreDataKind;
@@ -225,6 +239,7 @@ export declare const CORE_FORM_STORE: InjectionToken<FormStoreService>;
 export declare class LocalFormStoreService implements FormStoreService {
     readonly storageKey = "formly-studio-forms";
     readonly hierarchyStorageKey = "formly-studio-hierarchy";
+    readonly validationsStorageKey = "formly-studio-validations";
     private readonly recoveryIssues;
     addForm$(editorType: string, newForm: DefaultForm): Observable<undefined>;
     updateForm$(editorType: string, newForm: DefaultForm): Observable<undefined>;
@@ -234,7 +249,10 @@ export declare class LocalFormStoreService implements FormStoreService {
     getHierarchy$(editorType: string): Observable<WorkspaceHierarchy>;
     saveHierarchy$(editorType: string, hierarchy: WorkspaceHierarchy): Observable<void>;
     getRecoveryIssues$(editorType: string): Observable<readonly FormStoreRecoveryIssue[]>;
-    resetCorruptedStorage$(editorType: string): Observable<void>;
+    getValidations$(editorType: string): Observable<WorkspaceValidation[]>;
+    saveValidations$(editorType: string, validations: WorkspaceValidation[]): Observable<void>;
+    private readValidations;
+    resetCorruptedStorage$(editorType: string, kind?: FormStoreDataKind): Observable<void>;
     protected getHierarchySync(editorType: string): WorkspaceHierarchy;
     protected storeHierarchy(editorType: string, hierarchy: WorkspaceHierarchy): void;
     protected getFormMap(editorType: string): Record<string, DefaultForm>;
@@ -332,6 +350,14 @@ export declare class BuilderEngineService {
     readonly storageRecoveryIssues: import("@angular/core").Signal<readonly FormStoreRecoveryIssue[]>;
     readonly hasStorageRecoveryIssues: import("@angular/core").Signal<boolean>;
     readonly hasFormStorageRecoveryIssue: import("@angular/core").Signal<boolean>;
+    readonly validationStorageAvailable: boolean;
+    private readonly validationsSrc;
+    readonly validations: import("@angular/core").Signal<WorkspaceValidation[]>;
+    private readonly validationsLoadingSrc;
+    readonly validationsLoading: import("@angular/core").Signal<boolean>;
+    private readonly validationsLoadErrorSrc;
+    readonly validationsLoadError: import("@angular/core").Signal<null | string>;
+    readonly validationRecoveryIssues: import("@angular/core").Signal<FormStoreRecoveryIssue[]>;
     protected readonly formListSrc: import("@angular/core").WritableSignal<BaseEditorForm[]>;
     protected readonly hierarchySrc: import("@angular/core").WritableSignal<WorkspaceHierarchy>;
     protected readonly activeFieldIdSrc: import("@angular/core").WritableSignal<null | string>;
@@ -364,12 +390,18 @@ export declare class BuilderEngineService {
     private enqueue$;
     private snapshot$;
     private refreshWorkspace$;
+    loadValidations(): void;
+    private readValidations$;
+    saveValidation$(draft: Omit<WorkspaceValidation, 'id'>, id?: string): Observable<void>;
+    deleteValidation$(id: string): Observable<void>;
+    private mutateValidations$;
+    resetValidations$(): Observable<void>;
     private runMutation;
     private requestSave;
     protected markFormDirty(): void;
     protected refreshHierarchy(): void;
     resetCorruptedStorage(): void;
-    getStorageRecoveryBackup(): string;
+    getStorageRecoveryBackup(kind?: FormStoreDataKind): string;
     setActiveField(fieldId: null | string): void;
     setActiveFormName(newName: string): void;
     setWorkspaceNodeName(nodeId: string, newName: string): void;
@@ -426,5 +458,5 @@ export declare function clearFieldModelValue(fieldId: string, fieldMap: Record<s
  * Converts a FormlyFieldConfig to an IEditorFormlyField, populating _info and generating ids.
  */
 export declare function convertField(sourceField: FormlyFieldConfig, fieldId: string, formId: string, parentIdPath: string[] | undefined, fieldMap: Record<string, EditorField>, typeOptions: EngineFieldType[], getDefaultField: (type: string) => FormlyFieldConfig): EditorField;
-export type { BaseEditorForm, BaseWorkspaceNode, BuilderEngineConfig, DefaultForm, EditorField, EditorForm, EngineFieldPreset, EngineFieldType, EngineLibrary, FieldInfo, FieldInfoBadge, FormLoadError, FormStoreDataKind, FormStoreRecoveryIssue, FormStoreService, PersistenceError, PropertyChange, WorkspaceFolderNode, WorkspaceFormNode, WorkspaceHierarchy, WorkspaceNode, WorkspaceNodeType };
+export type { BaseEditorForm, BaseWorkspaceNode, BuilderEngineConfig, DefaultForm, EditorField, EditorForm, EngineFieldPreset, EngineFieldType, EngineLibrary, FieldInfo, FieldInfoBadge, FormLoadError, FormStoreDataKind, FormStoreRecoveryIssue, FormStoreService, PersistenceError, PropertyChange, WorkspaceFolderNode, WorkspaceFormNode, WorkspaceHierarchy, WorkspaceNode, WorkspaceNodeType, WorkspaceValidation };
 ```

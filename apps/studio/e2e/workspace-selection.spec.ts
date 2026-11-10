@@ -27,7 +27,7 @@ for (const width of [1536, 390]) {
           );
         }
       });
-      await page.goto('/workspaces/first/fields');
+      await page.goto('/workspaces/forms/first/fields');
       const navigation =
         width < 1024 ? page.getByRole('complementary') : page.locator('core-lhs-sidebar');
       await navigation.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
@@ -58,7 +58,7 @@ for (const width of [1536, 390]) {
       await page.mouse.move(0, 0);
       await expect(first).toHaveCSS('opacity', '1');
       await expect(first).toHaveAttribute('aria-pressed', 'true');
-      await expect(page).toHaveURL(/\/workspaces$/);
+      await expect(page).toHaveURL(/\/workspaces\/forms$/);
 
       await second.focus();
       await expect(second).toHaveCSS('opacity', '1');

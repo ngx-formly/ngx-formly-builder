@@ -20,7 +20,6 @@ describe('CustomValidationItem', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(CustomValidationItem);
-    fixture.componentRef.setInput('index', 0);
     fixture.componentRef.setInput('path', ['validators', 'validation', '0']);
     fixture.componentRef.setInput('target', {
       validators: { validation: [{ name: 'externalValidator', options: { mode: 'strict' } }] },
@@ -42,5 +41,14 @@ describe('CustomValidationItem', () => {
 
     fixture.nativeElement.querySelector('button[aria-label="Remove validation"]').click();
     expect(remove).toHaveBeenCalledOnce();
+  });
+
+  it('shows the selected validator by name without another selector', () => {
+    fixture.componentRef.setInput('name', 'ip');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('IP Address');
+    expect(fixture.nativeElement.querySelector('core-field-select-property')).toBeNull();
+    expect(fixture.nativeElement.querySelector('core-validation-message-input')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Unavailable');
   });
 });

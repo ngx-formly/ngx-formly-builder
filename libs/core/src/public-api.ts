@@ -32,6 +32,7 @@ export {
   type WorkspaceHierarchy,
   type WorkspaceNode,
   type WorkspaceNodeType,
+  type WorkspaceValidation,
 } from './lib/model/types';
 export {
   CORE_FORM_STORE,
@@ -78,3 +79,4 @@ export { primengPreset } from './lib/primeng';
 
 export { createLibrary } from './lib/config/library';
 export { nativeFieldConfig, nativeFieldTypes } from './lib/config/native-fields';
+export { withValidationExpressions } from './lib/formly/validation-expressions';

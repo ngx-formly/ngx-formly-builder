@@ -35,7 +35,7 @@ for (const width of [1440, 390]) {
     }, testInfo) => {
       await page.setViewportSize({ width, height: 1000 });
       await page.emulateMedia({ colorScheme: theme });
-      await page.goto('/workspaces/readonly-test/fields');
+      await page.goto('/workspaces/forms/readonly-test/fields');
       if (width < 1024) {
         await page.locator('.p-drawer-close-button').click();
         await expect(page.getByRole('complementary')).toBeHidden();
@@ -100,7 +100,7 @@ for (const width of [1440, 390]) {
 
 test('updates readonly opacity when the property is toggled', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto('/workspaces/readonly-test/fields');
+  await page.goto('/workspaces/forms/readonly-test/fields');
   const builder = page.locator('core-form-builder-content');
   await builder.getByRole('textbox', { name: 'Reference', exact: true }).click();
   await page.getByRole('button', { name: 'Open Field Edit panel', exact: true }).click();
