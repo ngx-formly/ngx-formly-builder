@@ -19,7 +19,10 @@ for (const viewport of [
     const options = dialog.getByRole('listbox');
     await expect(library).toBeFocused();
     await expect(options.getByRole('option')).toHaveText(['Material', 'Ng Zorro', 'Bootstrap']);
-    await dialog.screenshot({ path: testInfo.outputPath('ui-library-open.png'), animations: 'disabled' });
+    await dialog.screenshot({
+      path: testInfo.outputPath('ui-library-open.png'),
+      animations: 'disabled',
+    });
     await library.press('Escape');
     await expect(options).toBeHidden();
     await expect(name).toBeVisible();

@@ -104,6 +104,7 @@ test.describe('Form Editor tablet composition', () => {
 
   test('preserves the active panel when switching to desktop composition', async ({ page }) => {
     await page.setViewportSize({ width: 1535, height: 900 });
+    await createContactForm(page);
     await page.getByRole('button', { name: 'Open Model panel' }).click();
     await expect(page.locator('core-model-edit-panel')).toBeVisible();
 

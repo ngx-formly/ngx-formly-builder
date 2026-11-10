@@ -2,6 +2,7 @@ import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgForm } from '@angular/forms';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { Select } from 'primeng/select';
 import { of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CoreFormService } from '../../editor/core-form.service';
@@ -149,7 +150,11 @@ describe('CreateFormDialog', () => {
     fixture.autoDetectChanges();
   }
 
-  beforeEach(() => setup());
+  beforeEach(() => {
+    // Chromium tests cover the PrimeNG overlay, which stalls jsdom.
+    vi.spyOn(Select.prototype, 'show').mockImplementation(() => undefined);
+    return setup();
+  });
   afterEach(() => vi.restoreAllMocks());
 
   it('shows the primary border and download icon only while files are dragged over the card', async () => {

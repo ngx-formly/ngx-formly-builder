@@ -100,6 +100,7 @@ interface FormTemplate {
                 optionLabel="label"
                 optionValue="id"
                 ariaLabel="UI Library"
+                [focusOnHover]="false"
                 [showClear]="true"
                 [pt]="{ label: { 'aria-describedby': 'create-form-library-help' } }"
                 [inputId]="selectedLibraryInputId"

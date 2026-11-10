@@ -31,6 +31,10 @@ for (const width of [1536, 1024, 390]) {
   test(`navigates workspace panels and tabs with history at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/workspaces/forms');
+    const launchers = page.getByRole('main').locator('core-panel-option');
+    await expect(launchers.getByRole('button', { name: 'Open Workspace panel' })).toBeEnabled();
+    await expect(launchers.getByRole('button', { disabled: true })).toHaveCount(6);
+
     if (width < 1024) {
       await page
         .getByRole('main')
@@ -41,6 +45,9 @@ for (const width of [1536, 1024, 390]) {
     await page.getByRole('button', { name: 'Open form First form', exact: true }).click();
     await expect(page).toHaveURL(/\/workspaces\/forms\/first\/fields$/);
     await expect(page.locator('core-fields-panel')).toBeVisible();
+    await expect(
+      navigation.locator('core-panel-option').getByRole('button', { disabled: false }),
+    ).toHaveCount(7);
 
     await navigation.getByRole('button', { name: 'Open Add Field panel', exact: true }).click();
     await expect(page).toHaveURL(/\/workspaces\/forms\/first\/field$/);

@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
 import { Divider } from 'primeng/divider';
+import { CoreFormService } from '../editor/core-form.service';
 import { PanelOptionConfig } from '../panel';
 import { PanelOption } from './panel-option';
 
@@ -33,6 +34,7 @@ import { PanelOption } from './panel-option';
             [label]="option.label"
             [value]="option.value"
             [isActive]="option.value === value()"
+            [disabled]="option.value !== 'forms' && !activeFormId()"
             [position]="position()"
             (selected)="selectOption(option.value)"
           />
@@ -48,6 +50,8 @@ import { PanelOption } from './panel-option';
   `,
 })
 export class PanelOptionList {
+  protected readonly activeFormId = inject(CoreFormService).activeFormId;
+
   readonly options = input.required<PanelOptionConfig[]>();
   readonly position = input.required<'left' | 'right'>();
   readonly value = model.required<string>();

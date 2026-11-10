@@ -20,6 +20,7 @@ import { Tooltip } from '../shared';
       class="flex size-18 flex-col items-center justify-center rounded-none px-0.5"
       pButton
       text
+      [disabled]="disabled()"
       [attr.aria-label]="'Open ' + label() + ' panel'"
       [coreTooltip]="label()"
       [tooltipPosition]="position() === 'right' ? 'left' : 'right'"
@@ -50,6 +51,7 @@ export class PanelOption {
   readonly value = input<string>();
   readonly matIcon = input<string>();
   readonly isActive = input(false, { transform: booleanAttribute });
+  readonly disabled = input(false, { transform: booleanAttribute });
   readonly position = input<'left' | 'right'>('left');
 
   selected = output();

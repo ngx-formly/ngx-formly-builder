@@ -11,8 +11,13 @@ for (const viewport of [
     await page.goto('/form-editor');
     await page.getByRole('button', { name: 'Create Form' }).first().click();
     const dialog = page.getByRole('dialog', { name: 'Create Form' });
+    const library = dialog.getByRole('combobox', { name: 'UI Library' });
     const button = dialog.getByRole('button', { name: 'Import form file', exact: true });
     const input = dialog.locator('input[type="file"]');
+    await expect(library).toBeFocused();
+    await dialog.getByRole('option', { name: 'Material', exact: true }).hover();
+    await library.press('Tab');
+    await expect(dialog.getByRole('listbox')).toBeHidden();
     await expect(button).toBeEnabled();
     await page.screenshot({
       path: testInfo.outputPath('create-form-import.png'),
