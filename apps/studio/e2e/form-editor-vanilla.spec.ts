@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './helpers/workspace-tab';
 import { expect, test } from '@playwright/test';
 
 for (const viewport of [
@@ -103,7 +104,7 @@ test('creates, edits, previews, and reopens a form without a UI library', async 
   ).toBeEnabled();
   await dialog.getByRole('button', { name: 'Start with a blank form', exact: true }).click();
 
-  await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
+  await openWorkspaceTab(page, 'Add Field');
   const inputSource = page.locator('core-type-container').filter({ hasText: 'Input' }).first();
   await inputSource.hover();
   await inputSource.getByRole('button', { name: 'Add Field' }).click();
@@ -121,8 +122,9 @@ test('creates, edits, previews, and reopens a form without a UI library', async 
     .poll(() => page.evaluate(() => localStorage.getItem('formly-studio-forms-form-editor')))
     .toContain('Vanilla value');
   await page.reload();
-  await page.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
+  await openWorkspaceTab(page, 'Forms');
   await page.getByRole('button', { name: 'Open form Vanilla form', exact: true }).click();
+  await page.getByRole('button', { name: 'Builder', exact: true }).click();
   await expect(
     page.locator('core-form-builder-content').getByRole('textbox', { name: 'Input', exact: true }),
   ).toHaveValue('Vanilla value');
@@ -172,7 +174,7 @@ for (const [startingPoint, savedName] of [
     await expect(dialog).toBeHidden();
 
     await page.reload();
-    await page.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
+    await openWorkspaceTab(page, 'Forms');
     await expect(
       page.getByRole('button', { name: `Open form ${savedName}`, exact: true }),
     ).toBeVisible();

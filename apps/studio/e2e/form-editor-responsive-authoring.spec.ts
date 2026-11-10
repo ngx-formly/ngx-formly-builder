@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './helpers/workspace-tab';
 import { loadMaterialFixture as createContactForm } from './helpers/material-fixture';
 import { expect, Page, test } from '@playwright/test';
 
@@ -6,7 +7,7 @@ async function createTemplateForm(page: Page, libraryName: string) {
   const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
   await page.getByRole('option', { name: libraryName, exact: true }).click();
   await createFormDialog.getByRole('button', { name: 'Starter Form', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Builder' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
 }
 
 async function expectNoDocumentOverflow(page: Page) {
@@ -18,7 +19,9 @@ async function expectNoDocumentOverflow(page: Page) {
 }
 
 async function expectWithinViewport(page: Page, selector: string) {
-  const box = await page.getByRole('button', { name: selector }).boundingBox();
+  const button = page.getByRole('button', { name: selector, exact: true });
+  await expect(button).toBeVisible();
+  const box = await button.boundingBox();
   expect(box).not.toBeNull();
   const viewport = page.viewportSize();
   expect(viewport).not.toBeNull();
@@ -98,7 +101,7 @@ test.describe('Form Editor responsive authoring', () => {
     await expect(page.getByRole('button', { name: 'Open preview' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Export Form' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Save Form' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Builder' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
     await expectWithinViewport(page, 'Open preview');
     await expectWithinViewport(page, 'Export Form');
     await expectWithinViewport(page, 'Save Form');
@@ -134,7 +137,7 @@ test.describe('Form Editor responsive authoring', () => {
     await page.getByRole('button', { name: 'JSON' }).click();
 
     await expect(page.locator('core-json-content .cm-content')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Builder' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
     await expectNoDocumentOverflow(page);
   });
 
@@ -174,17 +177,20 @@ test.describe('Form Editor responsive authoring', () => {
 
   test('adds a root field when no field is selected', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
+    await openWorkspaceTab(page, 'Forms');
     await page.getByRole('complementary').getByRole('button', { name: 'Create Form' }).click();
     const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
     await createFormDialog
       .getByRole('button', { name: 'Start with a blank form', exact: true })
       .click();
     await page.keyboard.press('Escape');
-    await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
+    await expect(page.getByRole('complementary')).toBeHidden();
+    await openWorkspaceTab(page, 'Add Field');
 
-    const inputSource = page.locator('core-type-container').filter({ hasText: 'Input' }).first();
-    await inputSource.getByRole('button', { name: 'Add Field' }).click();
+    const checkbox = page.locator('core-type-container').filter({
+      has: page.getByText('Checkbox', { exact: true }),
+    });
+    await checkbox.getByRole('button', { name: 'Add Field' }).click();
     await expect(page.getByRole('menuitem', { name: 'Add to form' })).toBeVisible();
 
     await page.getByRole('menuitem', { name: 'Add to form' }).click();
@@ -194,7 +200,7 @@ test.describe('Form Editor responsive authoring', () => {
 
   test('adds fields from contextual palette actions without dragging', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
+    await openWorkspaceTab(page, 'Add Field');
 
     const formContent = page.locator('core-form-builder-content');
     const inputSource = page.locator('core-type-container').filter({ hasText: 'Input' }).first();
@@ -209,22 +215,24 @@ test.describe('Form Editor responsive authoring', () => {
     await expect(formContent.locator('[aria-label^="Field "]')).toHaveCount(initialFieldCount + 1);
 
     await page.keyboard.press('Escape');
+    await expect(page.getByRole('complementary')).toBeHidden();
     await formContent
       .locator('core-formly-field-header')
       .filter({ hasText: 'supportRequest' })
       .click();
-    await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
+    await openWorkspaceTab(page, 'Add Field');
     await inputSource.getByRole('button', { name: 'Add Field' }).click();
     await page.getByRole('menuitem', { name: 'Add after supportRequest' }).click();
     await expect(formContent.locator('[aria-label^="Field "]')).toHaveCount(initialFieldCount + 2);
     await expect(formContent.locator('[aria-pressed="true"]')).toHaveCount(1);
 
     await page.keyboard.press('Escape');
+    await expect(page.getByRole('complementary')).toBeHidden();
     await formContent
       .locator('core-formly-field-header')
       .filter({ hasText: 'supportRequest' })
       .click();
-    await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
+    await openWorkspaceTab(page, 'Add Field');
     const refreshedInputSource = page
       .locator('core-type-container')
       .filter({ hasText: 'Input' })
@@ -239,7 +247,7 @@ test.describe('Form Editor responsive authoring', () => {
 
     const addFieldPanel = page.getByRole('complementary');
     await expect(addFieldPanel).toBeHidden();
-    await page.getByRole('main').getByRole('button', { name: 'Open Add Field panel' }).click();
+    await openWorkspaceTab(page, 'Add Field');
     await expect(addFieldPanel).toBeVisible();
     const currentAddButton = page
       .locator('core-add-field-panel core-type-container')
@@ -258,14 +266,15 @@ test.describe('Form Editor responsive authoring', () => {
 
   test('moves fields up and down within the root', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
+    await openWorkspaceTab(page, 'Forms');
     await page.getByRole('complementary').getByRole('button', { name: 'Create Form' }).click();
     const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
     await createFormDialog
       .getByRole('button', { name: 'Start with a blank form', exact: true })
       .click();
     await page.keyboard.press('Escape');
-    await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
+    await expect(page.getByRole('complementary')).toBeHidden();
+    await openWorkspaceTab(page, 'Add Field');
 
     const inputSource = page.locator('core-type-container').filter({ hasText: 'Input' }).first();
     const addField = async (label: string) => {
@@ -297,8 +306,7 @@ test.describe('Form Editor responsive authoring', () => {
 
   test('uses the same contextual destinations for presets', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
-    await page.getByRole('tab', { name: /Preset/ }).click();
+    await openWorkspaceTab(page, 'Preset');
 
     const presetSource = page.locator('core-type-container').filter({ hasText: 'Email' }).first();
     await presetSource.getByRole('button', { name: 'Add Field' }).click();

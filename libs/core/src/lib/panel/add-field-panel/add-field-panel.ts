@@ -42,14 +42,22 @@ import { PanelService } from '../../editor/panel.service';
             class="flex items-center gap-2"
             value="fields"
           >
-            <i class="material-symbols-outlined">ad</i>
+            <i
+              class="material-symbols-outlined size-6 shrink-0 overflow-hidden"
+              aria-hidden="true"
+              >ad</i
+            >
             <span>Field</span>
           </p-tab>
           <p-tab
             class="flex items-center gap-2"
             value="presets"
           >
-            <i class="material-symbols-outlined">tune</i>
+            <i
+              class="material-symbols-outlined size-6 shrink-0 overflow-hidden"
+              aria-hidden="true"
+              >tune</i
+            >
             <span>Preset</span>
           </p-tab>
         </p-tablist>

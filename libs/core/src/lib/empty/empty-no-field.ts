@@ -16,7 +16,11 @@ import { Empty } from './empty';
         pButton
         (click)="openAddFieldPanel()"
       >
-        <i class="material-symbols-outlined">open_in_new</i>
+        <i
+          class="material-symbols-outlined"
+          aria-hidden="true"
+          >open_in_new</i
+        >
         Open Add Field Panel
       </button>
     </core-empty>
@@ -26,6 +30,7 @@ export class EmptyNoField {
   protected panelService = inject(PanelService);
 
   openAddFieldPanel() {
+    this.panelService.activeAddFieldTab.set('fields');
     this.panelService.setActiveLHSPanel('add-field');
   }
 }

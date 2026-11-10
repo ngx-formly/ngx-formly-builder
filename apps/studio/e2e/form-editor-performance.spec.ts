@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './helpers/workspace-tab';
 import { loadMaterialFixture as createContactForm } from './helpers/material-fixture';
 import { expect, Page, test } from '@playwright/test';
 
@@ -24,7 +25,7 @@ test('Form Editor interaction performance smoke', async ({ page }) => {
 
   measurements.fieldEditMs = (
     await measure(page, async () => {
-      await page.getByRole('button', { name: 'Builder' }).click();
+      await page.getByRole('button', { name: 'Builder', exact: true }).click();
       await page
         .locator('core-formly-field-header')
         .filter({ hasText: 'customerName' })
@@ -45,7 +46,7 @@ test('Form Editor interaction performance smoke', async ({ page }) => {
 
   measurements.panelSwitchBuilderMs = (
     await measure(page, async () => {
-      await page.getByRole('button', { name: 'Builder' }).click();
+      await page.getByRole('button', { name: 'Builder', exact: true }).click();
       await expect(page.locator('core-json-content .cm-content')).toBeHidden();
       await expect(page.locator('core-form-builder-content')).toBeVisible();
     })
@@ -62,7 +63,7 @@ test('Form Editor interaction performance smoke', async ({ page }) => {
 
   measurements.importFormMs = (
     await measure(page, async () => {
-      await page.getByRole('button', { name: 'Open Workspace panel' }).click();
+      await openWorkspaceTab(page, 'Forms');
       await expect(page.locator('core-forms-panel')).toBeVisible();
       await page.getByRole('button', { name: 'Import Form' }).click();
       const dialog = page.getByRole('dialog', { name: 'Import Form' });

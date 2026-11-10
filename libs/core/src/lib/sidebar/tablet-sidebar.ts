@@ -45,7 +45,7 @@ export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
       position="left"
       [options]="panelOptions"
       [value]="activePanel()"
-      (valueChange)="setActivePanel($event)"
+      (selected)="setActivePanel($event)"
     />
     <div class="min-h-0 min-w-0 grow">
       @switch (activePanel()) {
@@ -56,12 +56,6 @@ export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
           @if (panelService.showSettings) {
             <core-settings-panel class="panel" />
           }
-        }
-        @case ('fields') {
-          <core-fields-panel class="panel" />
-        }
-        @case ('add-field') {
-          <core-add-field-panel class="panel" />
         }
         @case ('field-edit') {
           <core-field-edit-panel class="panel" />
@@ -74,6 +68,12 @@ export const TABLET_PANEL_OPTIONS: PanelOptionConfig[] = [
         }
         @case ('model') {
           <core-model-edit-panel class="panel" />
+        }
+        @case ('fields') {
+          <core-fields-panel class="panel" />
+        }
+        @case ('add-field') {
+          <core-add-field-panel class="panel" />
         }
       }
     </div>

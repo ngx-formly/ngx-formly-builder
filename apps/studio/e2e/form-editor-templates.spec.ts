@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './helpers/workspace-tab';
 import { expect, test } from '@playwright/test';
 
 for (const library of ['Vanilla', 'Material', 'Bootstrap', 'Ng Zorro']) {
@@ -105,10 +106,11 @@ for (const library of ['Vanilla', 'Material', 'Bootstrap', 'Ng Zorro']) {
         await page.setViewportSize({ width: 1280, height: 720 });
       }
       await page.reload();
-      await page.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
+      await openWorkspaceTab(page, 'Forms');
       await page
         .getByRole('button', { name: `Open form ${library} ${template}`, exact: true })
         .click();
+      await page.getByRole('button', { name: 'Builder', exact: true }).click();
       await expect(content.getByRole('textbox', { name: label })).toHaveValue(
         'Updated shared example',
       );

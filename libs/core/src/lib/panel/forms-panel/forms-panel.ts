@@ -64,7 +64,7 @@ import { ValidationsTabContent } from './validations-tab-content';
           value="forms"
         >
           <i
-            class="material-symbols-outlined"
+            class="material-symbols-outlined size-6 shrink-0 overflow-hidden"
             aria-hidden="true"
             >description</i
           ><span>Forms</span>
@@ -74,7 +74,7 @@ import { ValidationsTabContent } from './validations-tab-content';
           value="validations"
         >
           <i
-            class="material-symbols-outlined"
+            class="material-symbols-outlined size-6 shrink-0 overflow-hidden"
             aria-hidden="true"
             >rule</i
           ><span>Validations</span>

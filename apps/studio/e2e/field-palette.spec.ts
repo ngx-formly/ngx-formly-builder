@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './helpers/workspace-tab';
 import { expect, test } from '@playwright/test';
 
 for (const width of [1536, 375]) {
@@ -13,7 +14,10 @@ for (const width of [1536, 375]) {
       .getByRole('button', { name: 'Start with a blank form', exact: true })
       .click();
     await page.setViewportSize({ width, height: 900 });
-    await page.getByRole('button', { name: 'Open Add Field panel', exact: true }).first().click();
+    await page
+      .locator('core-form-panel')
+      .getByRole('button', { name: 'Open Add Field Panel', exact: true })
+      .click();
     if (width === 375) {
       await expect
         .poll(async () => (await page.getByRole('complementary').boundingBox())?.x)
@@ -44,8 +48,8 @@ for (const width of [1536, 375]) {
     await expect(page.locator('core-form-builder-content [aria-label^="Field "]')).toHaveCount(1);
 
     await page.keyboard.press('Escape');
-    await page.getByRole('button', { name: 'Open Add Field panel', exact: true }).first().click();
-    await panel.getByRole('tab', { name: 'Preset' }).click();
+    if (width === 375) await expect(page.getByRole('complementary')).toBeHidden();
+    await openWorkspaceTab(page, 'Preset');
     const email = panel.locator('core-add-field-type-preset').filter({
       has: page.getByText('Email', { exact: true }),
     });

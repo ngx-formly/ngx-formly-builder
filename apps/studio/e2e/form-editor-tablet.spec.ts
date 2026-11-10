@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './helpers/workspace-tab';
 import { loadMaterialFixture as createContactForm } from './helpers/material-fixture';
 import { expect, test } from '@playwright/test';
 
@@ -17,7 +18,7 @@ test.describe('Form Editor tablet composition', () => {
     await expect(splitter.locator('.p-splitterpanel')).toHaveCount(2);
     await expect(page.locator('core-tablet-sidebar')).toBeVisible();
     await expect(page.locator('core-lhs-sidebar, core-rhs-sidebar')).toHaveCount(0);
-    await expect(page.locator('core-panel-option')).toHaveCount(7);
+    await expect(page.locator('core-panel-option')).toHaveCount(8);
     await expect(page.locator('core-form-panel')).toBeVisible();
 
     expect(
@@ -29,7 +30,7 @@ test.describe('Form Editor tablet composition', () => {
 
   test('switches the unified panel body while keeping the canvas visible', async ({ page }) => {
     await createContactForm(page);
-    await page.getByRole('button', { name: 'Open Fields panel' }).click();
+    await openWorkspaceTab(page, 'Fields');
     await expect(page.locator('core-fields-panel')).toBeVisible();
     await expect(page.locator('core-forms-panel')).toHaveCount(0);
     await expect(page.locator('core-form-panel')).toBeVisible();
@@ -42,10 +43,18 @@ test.describe('Form Editor tablet composition', () => {
   test('reaches each unified panel workflow', async ({ page }) => {
     await createContactForm(page);
     const panelNavigation = page.locator('core-tablet-sidebar');
-    const panels = [
-      ['Workspace', 'core-forms-panel'],
+    for (const [label, selector] of [
+      ['Forms', 'core-forms-panel'],
+      ['Validations', 'core-validations-tab-content'],
       ['Fields', 'core-fields-panel'],
-      ['Add Field', 'core-add-field-panel'],
+      ['Add Field', 'core-fields-tab-content'],
+      ['Preset', 'core-presets-tab-content'],
+    ] as const) {
+      await openWorkspaceTab(page, label);
+      await expect(page.locator(selector)).toBeVisible();
+    }
+
+    const panels = [
       ['Field Edit', 'core-field-edit-panel'],
       ['Styling', 'core-styling-panel'],
       ['Model', 'core-model-edit-panel'],

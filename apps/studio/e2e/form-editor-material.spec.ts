@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './helpers/workspace-tab';
 import { expect, test } from '@playwright/test';
 
 test('offers one Material library with the complete field catalog', async ({ page }) => {
@@ -13,7 +14,7 @@ test('offers one Material library with the complete field catalog', async ({ pag
   await page.getByRole('option', { name: 'Material', exact: true }).click();
   await dialog.getByRole('button', { name: 'Start with a blank form', exact: true }).click();
   await expect(dialog).toBeHidden();
-  await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
+  await openWorkspaceTab(page, 'Add Field');
 
   for (const name of ['Input', 'Postal Code', 'Card', 'Tabs', 'Stepper']) {
     await expect(

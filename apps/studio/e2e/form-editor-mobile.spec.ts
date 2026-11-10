@@ -12,7 +12,7 @@ test.describe('Form Editor mobile composition', () => {
     await page.goto('/form-editor');
 
     await expect(page.locator('core-empty-no-form')).toBeVisible();
-    await expect(page.locator('core-panel-option')).toHaveCount(7);
+    await expect(page.locator('core-panel-option')).toHaveCount(8);
     await page
       .locator('core-empty-no-form')
       .getByRole('button', { name: /Open Workspace Panel/ })
@@ -27,19 +27,19 @@ test.describe('Form Editor mobile composition', () => {
 
     await expect(page.locator('core-form-panel')).toBeVisible();
     await expect(page.locator('p-splitter')).toHaveCount(0);
-    await expect(page.locator('core-panel-option')).toHaveCount(7);
+    await expect(page.locator('core-panel-option')).toHaveCount(8);
 
-    await page.getByRole('main').getByRole('button', { name: 'Open Fields panel' }).click();
+    await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
     await expect(page.getByRole('complementary')).toBeVisible();
     await expect(page.getByText('Editor panels')).toBeVisible();
     await expect(page.locator('core-tablet-sidebar')).toBeVisible();
-    await expect(page.locator('core-panel-option')).toHaveCount(14);
+    await expect(page.locator('core-panel-option')).toHaveCount(16);
   });
 
   test('switches panels without losing the canvas or document context', async ({ page }) => {
     await createContactForm(page);
     await page.setViewportSize({ width: 430, height: 932 });
-    const launcher = page.getByRole('main').getByRole('button', { name: 'Open Fields panel' });
+    const launcher = page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' });
 
     await launcher.click();
     await page.getByRole('complementary').getByRole('button', { name: 'Open Model panel' }).click();
@@ -57,13 +57,13 @@ test.describe('Form Editor mobile composition', () => {
   test('keeps touch-sized panel launchers in the drawer', async ({ page }) => {
     await createContactForm(page);
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole('main').getByRole('button', { name: 'Open Fields panel' }).click();
+    await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
 
     const drawer = page.getByRole('complementary');
     await expect(drawer).toBeVisible();
 
     const panelLaunchers = drawer.locator('core-panel-option button');
-    await expect(panelLaunchers).toHaveCount(7);
+    await expect(panelLaunchers).toHaveCount(8);
     for (let index = 0; index < (await panelLaunchers.count()); index++) {
       const box = await panelLaunchers.nth(index).boundingBox();
       expect(box).not.toBeNull();
@@ -75,7 +75,7 @@ test.describe('Form Editor mobile composition', () => {
   test('closes when the modal backdrop is clicked', async ({ page }) => {
     await createContactForm(page);
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.getByRole('main').getByRole('button', { name: 'Open Fields panel' }).click();
+    await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
 
     await expect(page.getByRole('complementary')).toBeVisible();
     await page.locator('.p-drawer-mask').click({ position: { x: 370, y: 400 } });
@@ -86,7 +86,7 @@ test.describe('Form Editor mobile composition', () => {
     await createContactForm(page);
     await page.setViewportSize({ width: 390, height: 844 });
 
-    const launcher = page.getByRole('main').getByRole('button', { name: 'Open Fields panel' });
+    const launcher = page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' });
     await launcher.click();
     await expect(page.getByRole('complementary')).toBeVisible();
 
@@ -100,7 +100,7 @@ test.describe('Form Editor mobile composition', () => {
     await createContactForm(page);
     await page.setViewportSize({ width: 390, height: 844 });
 
-    const launcher = page.getByRole('main').getByRole('button', { name: 'Open Fields panel' });
+    const launcher = page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' });
     await launcher.focus();
     await page.keyboard.press('Enter');
 
@@ -116,7 +116,7 @@ test.describe('Form Editor mobile composition', () => {
   test('prevents document-level horizontal overflow', async ({ page }) => {
     await createContactForm(page);
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.getByRole('main').getByRole('button', { name: 'Open Fields panel' }).click();
+    await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
 
     expect(
       await page.evaluate(

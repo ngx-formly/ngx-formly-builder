@@ -126,6 +126,7 @@ import { TreeItem } from '../../shared/tree-item';
       } @else if (workspaceNode.type === 'form') {
         <core-tree-item
           #formTreeItem
+          iconTile
           [level]="level()"
           [isActive]="isActiveForm()"
           [alwaysShowActions]="formNamePopoverVisible()"
@@ -137,18 +138,22 @@ import { TreeItem } from '../../shared/tree-item';
         >
           <i
             itemIcon
-            class="material-symbols-outlined text-content-secondary"
+            class="material-symbols-outlined"
             >description</i
           >
           <button
             type="button"
-            class="flex min-w-0 flex-col gap-0.5 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            class="flex min-w-0 flex-col gap-1 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             [attr.aria-label]="'Open form ' + workspaceNode.name"
             [attr.aria-pressed]="isActiveForm()"
             [disabled]="hasFormStorageRecoveryIssue()"
           >
-            <span class="max-w-full truncate">{{ workspaceNode.name }}</span>
-            <span class="flex items-center gap-1.5 text-sm text-muted-color">
+            <span class="leading-snug font-semibold [overflow-wrap:anywhere]">{{
+              workspaceNode.name
+            }}</span>
+            <span
+              class="flex flex-wrap items-center gap-x-1.5 text-sm leading-snug text-muted-color"
+            >
               @if (uiConfigLabel()) {
                 <span>{{ uiConfigLabel() }}</span>
               }

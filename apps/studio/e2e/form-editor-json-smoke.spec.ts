@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './helpers/workspace-tab';
 import { loadMaterialFixture as createContactForm } from './helpers/material-fixture';
 import { expect, test } from '@playwright/test';
 
@@ -6,7 +7,7 @@ test('Form Editor import: imports supported field configuration into the builder
 }) => {
   await page.goto('/form-editor');
 
-  await page.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
+  await openWorkspaceTab(page, 'Forms');
   await page.getByRole('button', { name: 'Import Form' }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Import Form' });
@@ -39,7 +40,7 @@ test('Form Editor JSON smoke: shows field configuration and returns to component
   await expect(jsonEditor).toHaveAttribute('contenteditable', 'false');
   await expect(jsonEditor).toContainText('"label": "Customer name"');
 
-  await page.getByRole('button', { name: 'Builder' }).click();
+  await page.getByRole('button', { name: 'Builder', exact: true }).click();
   await expect(jsonEditor).toBeHidden();
   await expect(
     page.locator('core-form-builder-content').getByText('supportRequest', { exact: true }),
@@ -49,7 +50,7 @@ test('Form Editor JSON smoke: shows field configuration and returns to component
 test('Form Editor JSON validation: rejects invalid import JSON', async ({ page }) => {
   await page.goto('/form-editor');
 
-  await page.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
+  await openWorkspaceTab(page, 'Forms');
   await page.getByRole('button', { name: 'Import Form' }).click();
 
   const importDialog = page.getByRole('dialog', { name: 'Import Form' });
@@ -97,11 +98,11 @@ test('Form Editor authoring: adds a group and a nested field', async ({ page }) 
   await createContactForm(page);
   const formContent = page.locator('core-form-builder-content');
   const initialFieldCount = await formContent.locator('core-formly-field-header').count();
-  await page.getByRole('button', { name: 'Open Add Field panel' }).first().click();
+  await openWorkspaceTab(page, 'Add Field');
 
   const groupSource = page
     .locator('core-type-container')
-    .filter({ hasText: /\bGroup\b/, hasNotText: 'Button Group' });
+    .filter({ has: page.getByText('Group', { exact: true }) });
   await groupSource.dragTo(formContent);
 
   await expect(formContent).toContainText('Group');

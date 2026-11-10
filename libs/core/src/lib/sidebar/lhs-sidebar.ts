@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { PanelService } from '../editor/panel.service';
 import { LHSPanelType } from '../editor/types';
-import { FieldsPanel, PanelOptionConfig } from '../panel';
-import { AddFieldPanel } from '../panel/add-field-panel/add-field-panel';
-import { FormsPanel } from '../panel/forms-panel/forms-panel';
+import { AddFieldPanel, FieldsPanel, FormsPanel, PanelOptionConfig } from '../panel';
 import { SettingsPanel } from '../panel/settings-panel/settings-panel';
 import { PanelOptionList } from './panel-option-list';
 
@@ -42,21 +40,9 @@ export class LHSSidebar {
 
   activePanel = this.panelService.activeLHSPanel;
   panelOptions: PanelOptionConfig[] = [
-    {
-      label: 'Workspace',
-      value: 'forms',
-      matIcon: 'assignment',
-    },
-    {
-      label: 'Fields',
-      value: 'fields',
-      matIcon: 'lists',
-    },
-    {
-      label: 'Add Field',
-      value: 'add-field',
-      matIcon: 'add',
-    },
+    { label: 'Workspace', value: 'forms', matIcon: 'assignment' },
+    { label: 'Fields', value: 'fields', matIcon: 'lists' },
+    { label: 'Add Field', value: 'add-field', matIcon: 'add' },
     { label: 'Builder settings', value: 'settings', matIcon: 'settings' },
   ];
 

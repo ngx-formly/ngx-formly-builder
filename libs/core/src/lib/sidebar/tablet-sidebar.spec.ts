@@ -27,7 +27,7 @@ describe('TabletSidebar', () => {
     fixture.detectChanges();
   });
 
-  it('defines all eight tablet panel workflows', () => {
+  it('keeps Workspace, Fields, and Add Field alongside the editing panels', () => {
     const options = fixture.componentInstance['panelOptions'];
 
     expect(options.map((option) => option.value)).toEqual([

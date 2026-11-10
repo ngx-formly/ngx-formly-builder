@@ -17,8 +17,9 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ButtonDirective, ButtonIcon],
   host: {
-    class:
-      'group/tree-item relative flex items-center rounded-lg py-1.5 transition-colors select-none',
+    class: 'group/tree-item relative flex items-center rounded-lg transition-colors select-none',
+    '[class.py-2]': 'iconTile()',
+    '[class.py-1.5]': '!iconTile()',
     '[class.bg-primary/20]': 'isActive()',
     '[class.bg-content-hover-background]': '!isActive() && alwaysShowActions()',
     '[class.hover:bg-content-hover-background]': '!isActive() && canInteract()',
@@ -46,7 +47,9 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
         pButton
         type="button"
         text
-        class="touch-actions-visible absolute inset-y-0 w-10 rounded-l-lg opacity-0 group-focus-within/tree-item:opacity-100"
+        class="touch-actions-visible absolute inset-y-0 z-10 rounded-l-lg opacity-0 group-focus-within/tree-item:opacity-100"
+        [class.w-14]="iconTile()"
+        [class.w-10]="!iconTile()"
         [style.left]="'calc(var(--spacing) * 4 * ' + level() + ')'"
         [class.opacity-100]="isMouseInside() || isSelected()"
         [attr.aria-label]="selectionLabel()"
@@ -68,14 +71,23 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
       class="flex min-w-0 grow items-center justify-between gap-2 pr-1"
       [style.paddingLeft]="paddingLeft()"
     >
-      <div class="flex min-w-0 items-center gap-2 overflow-hidden">
+      <div
+        class="flex min-w-0 items-center overflow-hidden"
+        [class.gap-3]="iconTile()"
+        [class.gap-2]="!iconTile()"
+      >
         @if (selectionLabel()) {
           <span
-            class="tree-item-icon pointer-events-none flex w-8 shrink-0 items-center justify-center group-focus-within/tree-item:invisible"
+            class="pointer-events-none flex shrink-0 items-center justify-center"
             aria-hidden="true"
-            [class.invisible]="isMouseInside() || isSelected()"
+            [class]="iconTile() ? 'size-12 rounded-xl border border-surface bg-emphasis' : 'w-8'"
           >
-            <ng-content select="[itemIcon]" />
+            <span
+              class="tree-item-icon flex group-focus-within/tree-item:invisible"
+              [class.invisible]="isMouseInside() || isSelected()"
+            >
+              <ng-content select="[itemIcon]" />
+            </span>
           </span>
         }
         @if (isParent() || !selectionLabel()) {
@@ -127,6 +139,7 @@ export class TreeItem {
   readonly canInteract = input(true, { transform: booleanAttribute });
   readonly alwaysShowActions = input(false, { transform: booleanAttribute });
   readonly selectionLabel = input('');
+  readonly iconTile = input(false, { transform: booleanAttribute });
   readonly isSelected = input(false);
   readonly selectionDisabled = input(false);
 

@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './workspace-tab';
 import type { DefaultForm } from '@ngx-formly/builder';
 import type { FormlyFieldConfig } from '@ngx-formly/core';
 import { expect, Page } from '@playwright/test';
@@ -145,7 +146,7 @@ export async function loadMaterialFixture(page: Page) {
     { ...materialFixture, id: 'material-test-fixture', name: 'New Form' },
   );
   await page.reload();
-  await page.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
+  await openWorkspaceTab(page, 'Forms');
   await page.getByRole('button', { name: 'Open form New Form', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
   await expect(page.locator('core-form-builder-content')).toContainText('supportRequest');

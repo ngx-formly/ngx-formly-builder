@@ -1,3 +1,4 @@
+import { openWorkspaceTab } from './helpers/workspace-tab';
 import { expect, test } from '@playwright/test';
 
 for (const width of [1536, 390]) {
@@ -29,9 +30,8 @@ for (const width of [1536, 390]) {
         }
       });
       await page.goto('/workspaces/forms/first/fields');
-      const navigation =
-        width < 1024 ? page.getByRole('complementary') : page.locator('core-lhs-sidebar');
-      await navigation.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
+      if (width < 1024) await expect(page.getByRole('complementary')).toBeVisible();
+      await openWorkspaceTab(page, 'Forms');
       const panel = page.locator('core-forms-panel:visible');
       const first = panel.getByRole('button', { name: 'Select form First form', exact: true });
       const second = panel.getByRole('button', { name: 'Select form Second form', exact: true });
@@ -111,7 +111,9 @@ for (const width of [1536, 390]) {
       await expect(filter).toBeFocused();
       await expect(create).toBeHidden();
       const filterBounds = (await panel.locator('core-filter p-inputgroup').boundingBox())!;
-      const tabBounds = (await panel.getByRole('tabpanel', { name: 'Forms' }).boundingBox())!;
+      const tabBounds = (await page
+        .getByRole('tabpanel', { name: 'Forms', exact: true })
+        .boundingBox())!;
       expect(filterBounds.y - tabBounds.y).toBeGreaterThanOrEqual(2);
       expect(filterBounds.x).toBeCloseTo(createBounds.x, 0);
       expect(filterBounds.y + filterBounds.height / 2).toBeCloseTo(
@@ -145,12 +147,7 @@ for (const width of [1536, 390]) {
       await expect(page.locator('core-form-builder-content')).toHaveCount(0);
 
       await page.reload();
-      if (width < 1024) {
-        await page
-          .getByRole('main')
-          .getByRole('button', { name: 'Open Workspace panel', exact: true })
-          .click();
-      }
+      await openWorkspaceTab(page, 'Forms');
       await expect(
         panel.getByRole('button', { name: 'Open form Keep form', exact: true }),
       ).toBeVisible();
