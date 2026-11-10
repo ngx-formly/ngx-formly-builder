@@ -54,7 +54,7 @@ describe('ValidationsTabContent', () => {
     fixture.componentInstance.filterValue.set('ADULT');
     fixture.detectChanges();
     expect(
-      fixture.nativeElement.querySelector('button[aria-label="Edit validation adult"]'),
+      fixture.nativeElement.querySelector('button[actions][aria-label="Edit validation adult"]'),
     ).toBeTruthy();
   });
 

@@ -97,13 +97,22 @@ for (const width of [1536, 1024, 390]) {
       .getByRole('button', { name: 'Open Workspace panel', exact: true })
       .click();
     await page.getByRole('tab', { name: 'Validations', exact: true }).click();
-    await catalog.getByRole('button', { name: 'Edit validation minimumAge', exact: true }).click();
+    await catalog
+      .getByRole('button', { name: 'Edit validation minimumAge', exact: true })
+      .press('Enter');
     const edit = page.getByRole('dialog', { name: 'Edit validation', exact: true });
-    await edit
-      .getByRole('textbox', { name: 'Valid when', exact: true })
-      .fill('control.value >= 21');
+    await expect(edit.getByRole('textbox', { name: 'Rule name', exact: true })).toHaveValue(
+      'minimumAge',
+    );
+    const expression = edit.getByRole('textbox', { name: 'Valid when', exact: true });
+    await expect(expression).toHaveValue('control.value >= 18');
+    await expression.fill('control.value >= 21');
+    const message = edit.getByRole('textbox', { name: 'Error message', exact: true });
+    await expect(message).toHaveValue('Enter 18 or more.');
+    await message.fill('Enter 21 or more.');
     await edit.getByRole('button', { name: 'Save validation', exact: true }).click();
     await expect(edit).toBeHidden();
+    await expect(catalog).toContainText('Enter 21 or more.');
     page.once('dialog', (confirmation) => confirmation.accept());
     await catalog
       .getByRole('button', { name: 'Delete validation minimumAge', exact: true })

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, model, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  input,
+  model,
+  output,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { InputGroup } from 'primeng/inputgroup';
@@ -25,8 +33,8 @@ import { InputText } from 'primeng/inputtext';
       <p-inputgroup-addon>
         <button
           pButton
-          aria-label="Clear filter"
           severity="secondary"
+          [attr.aria-label]="clearLabel()"
           (click)="clear.emit()"
         >
           <i
@@ -42,5 +50,11 @@ import { InputText } from 'primeng/inputtext';
 })
 export class Filter {
   readonly value = model.required<string>();
+  readonly clearLabel = input('Clear filter');
   clear = output();
+  private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
+
+  focus(): void {
+    this.input().nativeElement.focus();
+  }
 }

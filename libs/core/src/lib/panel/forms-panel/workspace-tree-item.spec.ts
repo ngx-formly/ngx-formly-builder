@@ -310,11 +310,15 @@ describe('WorkspaceTreeItem', () => {
       const openButton: HTMLButtonElement = fixture.nativeElement.querySelector(
         'button[aria-label="Open form Child Form"]',
       );
-      const optionsButton: HTMLButtonElement = fixture.nativeElement.querySelector(
-        'button[aria-label="Options"]',
+      const editButton: HTMLButtonElement = fixture.nativeElement.querySelector(
+        'button[aria-label="Edit form name Child Form"]',
+      );
+      const deleteButton: HTMLButtonElement = fixture.nativeElement.querySelector(
+        'button[aria-label="Delete form Child Form"]',
       );
       expect(openButton.disabled).toBe(true);
-      expect(optionsButton.disabled).toBe(true);
+      expect(editButton.disabled).toBe(true);
+      expect(deleteButton.disabled).toBe(true);
     });
 
     it('selects form when clicked', () => {
@@ -328,18 +332,36 @@ describe('WorkspaceTreeItem', () => {
       expect(setActiveForm).toHaveBeenCalledWith('form-child');
     });
 
-    it('deletes form via form menu', () => {
+    it('opens the name editor directly without opening or selecting the form', () => {
+      fixture = TestBed.createComponent(WorkspaceTreeItem);
+      fixture.componentRef.setInput('nodeId', 'form-child');
+      fixture.detectChanges();
+      const show = vi.spyOn(fixture.componentInstance.formNamePopover()!, 'show');
+      const selectionChanged = vi.fn();
+      fixture.componentInstance.nodeSelectionToggled.subscribe(selectionChanged);
+
+      fixture.nativeElement.querySelector('button[aria-label="Edit form name Child Form"]').click();
+
+      expect(fixture.componentInstance.formNameEditValue()).toBe('Child Form');
+      expect(show).toHaveBeenCalledWith(fixture.nativeElement.querySelector('core-tree-item'));
+      expect(setActiveForm).not.toHaveBeenCalled();
+      expect(selectionChanged).not.toHaveBeenCalled();
+      expect(fixture.nativeElement.querySelector('button[aria-label="Options"]')).toBeNull();
+    });
+
+    it('deletes form directly without opening or selecting it', () => {
       fixture = TestBed.createComponent(WorkspaceTreeItem);
       fixture.componentRef.setInput('nodeId', 'form-child');
       fixture.detectChanges();
 
-      const deleteItem = fixture.componentInstance.formMenuItems.find(
-        (item) => item.label === 'Delete',
-      );
-      expect(deleteItem).toBeTruthy();
+      const selectionChanged = vi.fn();
+      fixture.componentInstance.nodeSelectionToggled.subscribe(selectionChanged);
 
-      deleteItem?.command?.({});
+      fixture.nativeElement.querySelector('button[aria-label="Delete form Child Form"]').click();
+
       expect(deleteWorkspaceNode).toHaveBeenCalledWith('form-child');
+      expect(setActiveForm).not.toHaveBeenCalled();
+      expect(selectionChanged).not.toHaveBeenCalled();
     });
   });
 });

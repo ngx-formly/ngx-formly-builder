@@ -63,6 +63,8 @@ interface FormTemplate {
         maxHeight: 'calc(100dvh - 32px)',
       }"
       [visible]="dialogService.isOpen()"
+      [focusOnShow]="libraryOptions.length === 0"
+      (onShow)="libraryOptions.length > 0 && librarySelect.show(true)"
       (visibleChange)="onVisibilityChange($event)"
     >
       <form
@@ -91,6 +93,7 @@ interface FormTemplate {
           <div class="min-w-0">
             <p-floatlabel variant="on">
               <p-select
+                #librarySelect
                 class="w-full"
                 name="formlyUI"
                 checkmark

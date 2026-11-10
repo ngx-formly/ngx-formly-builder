@@ -20,9 +20,9 @@ import {
   ValidationExpression,
   ValidationExpressionEditor,
 } from '../../properties/custom-validation/validation-expression-editor';
-import { Filter } from '../../shared/filter';
 import { Tooltip } from '../../shared/tooltip';
 import { TreeItem } from '../../shared/tree-item';
+import { WorkspaceToolbar } from './workspace-toolbar';
 
 @Component({
   selector: 'core-validations-tab-content',
@@ -33,10 +33,10 @@ import { TreeItem } from '../../shared/tree-item';
     ButtonLabel,
     Dialog,
     Empty,
-    Filter,
     Tooltip,
     TreeItem,
     ValidationExpressionEditor,
+    WorkspaceToolbar,
   ],
   host: { class: 'flex min-h-0 flex-1 flex-col gap-2 overflow-hidden' },
   template: `
@@ -46,10 +46,24 @@ import { TreeItem } from '../../shared/tree-item';
         description="This editor's storage provider does not support saved validations."
       />
     } @else {
-      <div class="flex items-center gap-2 px-4">
+      @let catalogReady = !forms.validationsLoadError() && !forms.validationsLoading();
+      @let showValidationList = forms.validations().length > 0 || !!filterValue();
+      <core-workspace-toolbar
+        searchLabel="Search validations"
+        deleteLabel="Delete selected validations"
+        [canSearch]="catalogReady && showValidationList"
+        [selectedCount]="selectedIds().length"
+        [deleteUnavailable]="unavailable()"
+        [(filterValue)]="filterValue"
+        (deleteSelected)="removeSelected()"
+      >
         <button
+          #createButton
           pButton
-          class="min-w-0"
+          class="min-w-0 @max-[13.5rem]:w-10 @max-[13.5rem]:px-1"
+          aria-label="Create validation"
+          coreTooltip="Create validation"
+          tooltipPosition="top"
           [disabled]="unavailable()"
           (click)="open('new')"
         >
@@ -61,37 +75,11 @@ import { TreeItem } from '../../shared/tree-item';
           >
           <span
             pButtonLabel
-            class="truncate"
+            class="truncate @max-[13.5rem]:hidden"
             >Create validation</span
           >
         </button>
-        @if (selectedIds().length) {
-          <button
-            pButton
-            type="button"
-            class="ml-auto shrink-0 px-2"
-            severity="danger"
-            text
-            coreTooltip="Delete selected validations"
-            tooltipPosition="top"
-            [attr.aria-label]="'Delete selected validations (' + selectedIds().length + ')'"
-            [disabled]="unavailable()"
-            (click)="removeSelected()"
-          >
-            <i
-              pButtonIcon
-              class="material-symbols-outlined"
-              aria-hidden="true"
-              >delete</i
-            >
-            <span
-              pButtonLabel
-              class="tabular-nums"
-              >{{ selectedIds().length }}</span
-            >
-          </button>
-        }
-      </div>
+      </core-workspace-toolbar>
       @if (forms.validationsLoading()) {
         <p
           role="status"
@@ -151,14 +139,8 @@ import { TreeItem } from '../../shared/tree-item';
           {{ error() }}
         </p>
       }
-      @if (!forms.validationsLoadError() && !forms.validationsLoading()) {
-        @if (forms.validations().length || filterValue()) {
-          <div class="px-4">
-            <core-filter
-              [(value)]="filterValue"
-              (clear)="filterValue.set('')"
-            />
-          </div>
+      @if (catalogReady) {
+        @if (showValidationList) {
           <ul class="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             @for (rule of filteredValidations(); track rule.id) {
               <li>
@@ -173,17 +155,31 @@ import { TreeItem } from '../../shared/tree-item';
                     class="material-symbols-outlined text-content-secondary"
                     >rule</i
                   >
-                  <button
-                    type="button"
-                    class="flex min-w-0 flex-col gap-0.5 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                    [disabled]="busy()"
-                    [attr.aria-label]="'Edit validation ' + rule.name"
-                    (click)="open(rule)"
-                  >
+                  <div class="flex min-w-0 flex-col gap-0.5">
                     <span class="max-w-full truncate">{{ rule.name }}</span>
                     <span class="max-w-full truncate text-sm text-muted-color">{{
                       rule.message
                     }}</span>
+                  </div>
+                  <button
+                    actions
+                    pButton
+                    type="button"
+                    text
+                    rounded
+                    class="size-8"
+                    coreTooltip="Edit validation"
+                    tooltipPosition="top"
+                    [disabled]="busy()"
+                    [attr.aria-label]="'Edit validation ' + rule.name"
+                    (click)="open(rule)"
+                  >
+                    <i
+                      pButtonIcon
+                      class="material-symbols-outlined"
+                      aria-hidden="true"
+                      >edit</i
+                    >
                   </button>
                   <button
                     actions

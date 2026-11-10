@@ -16,6 +16,12 @@ for (const viewport of [
     const dialog = page.getByRole('dialog', { name: 'Create Form' });
     const library = dialog.getByRole('combobox', { name: 'UI Library', exact: true });
     const name = dialog.getByRole('textbox', { name: 'Name', exact: true });
+    const options = dialog.getByRole('listbox');
+    await expect(library).toBeFocused();
+    await expect(options.getByRole('option')).toHaveText(['Material', 'Ng Zorro', 'Bootstrap']);
+    await dialog.screenshot({ path: testInfo.outputPath('ui-library-open.png'), animations: 'disabled' });
+    await library.press('Escape');
+    await expect(options).toBeHidden();
     await expect(name).toBeVisible();
     await name.fill('Quick start test');
     await expect(dialog.getByRole('heading', { name: 'Quick Start' })).toBeVisible();
@@ -125,7 +131,6 @@ test('allows clearing a chosen library and leaving the form name blank', async (
   await page.goto('/form-editor');
   await page.getByRole('button', { name: 'Create Form' }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Create Form' });
-  await dialog.getByRole('combobox').click();
   await page.getByRole('option', { name: 'Material', exact: true }).click();
   await dialog.locator('[data-pc-section="clearicon"]').click();
   await expect(dialog.locator('[data-pc-section="clearicon"]')).toBeHidden();

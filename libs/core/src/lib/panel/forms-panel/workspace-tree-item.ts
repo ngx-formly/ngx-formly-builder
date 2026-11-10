@@ -128,7 +128,7 @@ import { TreeItem } from '../../shared/tree-item';
           #formTreeItem
           [level]="level()"
           [isActive]="isActiveForm()"
-          [alwaysShowActions]="alwaysShowFormActions()"
+          [alwaysShowActions]="formNamePopoverVisible()"
           [selectionLabel]="'Select form ' + workspaceNode.name"
           [isSelected]="selectedNodeIds().includes(nodeId())"
           [selectionDisabled]="hasStorageRecoveryIssues()"
@@ -162,50 +162,47 @@ import { TreeItem } from '../../shared/tree-item';
           <ng-container actions>
             <button
               pButton
+              type="button"
               text
               class="size-8"
               rounded
-              aria-label="Options"
-              coreTooltip="Options"
+              coreTooltip="Edit name"
               tooltipPosition="top"
+              [attr.aria-label]="'Edit form name ' + workspaceNode.name"
               [disabled]="hasStorageRecoveryIssues()"
-              (click)="$event.preventDefault(); formMenu.toggle($event)"
+              (click)="$event.preventDefault(); editFormName()"
             >
               <i
                 pButtonIcon
                 class="material-symbols-outlined"
+                aria-hidden="true"
               >
-                more_vert
+                edit
+              </i>
+            </button>
+            <button
+              pButton
+              type="button"
+              text
+              class="size-8"
+              rounded
+              severity="danger"
+              coreTooltip="Delete form"
+              tooltipPosition="top"
+              [attr.aria-label]="'Delete form ' + workspaceNode.name"
+              [disabled]="hasStorageRecoveryIssues()"
+              (click)="$event.preventDefault(); deleteNode()"
+            >
+              <i
+                pButtonIcon
+                class="material-symbols-outlined"
+                aria-hidden="true"
+              >
+                delete
               </i>
             </button>
           </ng-container>
         </core-tree-item>
-
-        <p-menu
-          #formMenu
-          [model]="formMenuItems"
-          [popup]="true"
-          (onShow)="formNameMenuVisible.set(true)"
-          (onHide)="formNameMenuVisible.set(false)"
-        >
-          <ng-template
-            #item
-            let-item
-          >
-            <div
-              class="flex cursor-pointer items-center gap-2 px-3 py-1"
-              [class.text-button-text-danger]="item.warn"
-            >
-              <i
-                class="material-symbols-outlined"
-                aria-hidden="true"
-              >
-                {{ item.matIcon }}
-              </i>
-              {{ item.label }}
-            </div>
-          </ng-template>
-        </p-menu>
 
         <core-name-edit-popover
           #formNamePopover
@@ -256,30 +253,13 @@ export class WorkspaceTreeItem {
     { label: 'Delete', command: () => this.deleteNode() },
   ];
 
-  formMenuItems: MenuItem[] = [
-    {
-      label: 'Edit Name',
-      matIcon: 'edit',
-      command: () => {
-        this.formNameEditValue.set(this.node()?.name ?? '');
-        this.formNamePopover()?.show(this.formTreeItemRef()?.nativeElement);
-      },
-    },
-    { label: 'Delete', matIcon: 'delete', warn: true, command: () => this.deleteNode() },
-  ];
-
   readonly isMouseInside = signal(false);
   readonly formNameEditValue = signal('');
-  readonly formNameMenuVisible = signal(false);
   readonly formNamePopoverVisible = signal(false);
 
   readonly folderNameEditValue = signal('');
   readonly folderMenuVisible = signal(false);
   readonly folderPopoverVisible = signal(false);
-
-  readonly alwaysShowFormActions = computed(
-    () => this.formNameMenuVisible() || this.formNamePopoverVisible(),
-  );
 
   readonly alwaysShowFolderActions = computed(
     () => this.folderMenuVisible() || this.folderPopoverVisible(),
@@ -359,6 +339,11 @@ export class WorkspaceTreeItem {
 
   deleteNode() {
     this.formService.deleteWorkspaceNode(this.nodeId());
+  }
+
+  editFormName() {
+    this.formNameEditValue.set(this.node()?.name ?? '');
+    this.formNamePopover()?.show(this.formTreeItemRef()?.nativeElement);
   }
 
   setFormName() {

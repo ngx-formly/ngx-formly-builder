@@ -14,9 +14,9 @@ import { Empty } from '../../empty/empty';
 import { CreateFormDialogService } from './create-form-dialog.service';
 import { ImportDialogService } from './import-dialog.service';
 import { MouseInsideService } from '../../editor/mouse-inside.service';
-import { Filter } from '../../shared/filter';
 import { PanelHeader } from '../../shared/panel-header';
 import { Tooltip } from '../../shared/tooltip';
+import { WorkspaceToolbar } from './workspace-toolbar';
 import { WorkspaceTreeItem } from './workspace-tree-item';
 import type { WorkspaceNode } from '../../model/types';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
@@ -34,7 +34,7 @@ import { ValidationsTabContent } from './validations-tab-content';
     ButtonLabel,
     ButtonGroup,
     Tooltip,
-    Filter,
+    WorkspaceToolbar,
     PanelHeader,
     WorkspaceTreeItem,
     Tab,
@@ -85,13 +85,23 @@ import { ValidationsTabContent } from './validations-tab-content';
           class="flex min-h-0 flex-1 flex-col overflow-hidden"
           value="forms"
         >
-          <div class="flex items-center gap-2 px-4 pb-2">
+          <core-workspace-toolbar
+            class="pb-2"
+            searchLabel="Search forms and folders"
+            deleteLabel="Delete selected items"
+            [canSearch]="showWorkspaceList()"
+            [selectedCount]="selectedNodeIds().length"
+            [deleteUnavailable]="hasStorageRecoveryIssues()"
+            [(filterValue)]="filterValue"
+            (deleteSelected)="deleteSelectedNodes()"
+          >
             <p-buttongroup
               class="min-w-0 [&>span]:flex"
               aria-label="Workspace actions"
             >
               <button
                 pButton
+                class="shrink-0"
                 severity="secondary"
                 aria-label="New folder"
                 coreTooltip="New folder"
@@ -108,6 +118,7 @@ import { ValidationsTabContent } from './validations-tab-content';
               </button>
               <button
                 pButton
+                class="shrink-0"
                 severity="secondary"
                 aria-label="Import Form"
                 coreTooltip="Import Form"
@@ -123,8 +134,9 @@ import { ValidationsTabContent } from './validations-tab-content';
                 </i>
               </button>
               <button
+                #createButton
                 pButton
-                class="min-w-0"
+                class="min-w-0 @max-[17.5rem]:w-10 @max-[17.5rem]:px-1"
                 aria-label="Create Form"
                 coreTooltip="Create Form"
                 tooltipPosition="top"
@@ -139,39 +151,12 @@ import { ValidationsTabContent } from './validations-tab-content';
                 </i>
                 <span
                   pButtonLabel
-                  class="truncate"
+                  class="truncate @max-[17.5rem]:hidden"
                   >Create Form</span
                 >
               </button>
             </p-buttongroup>
-            @if (selectedNodeIds().length) {
-              <button
-                pButton
-                type="button"
-                class="ml-auto shrink-0 px-2"
-                severity="danger"
-                text
-                coreTooltip="Delete selected items"
-                tooltipPosition="top"
-                [attr.aria-label]="'Delete selected items (' + selectedNodeIds().length + ')'"
-                [disabled]="hasStorageRecoveryIssues()"
-                (click)="deleteSelectedNodes()"
-              >
-                <i
-                  pButtonIcon
-                  class="material-symbols-outlined"
-                  aria-hidden="true"
-                >
-                  delete
-                </i>
-                <span
-                  pButtonLabel
-                  class="tabular-nums"
-                  >{{ selectedNodeIds().length }}</span
-                >
-              </button>
-            }
-          </div>
+          </core-workspace-toolbar>
 
           @if (hasStorageRecoveryIssues()) {
             <div
@@ -203,15 +188,8 @@ import { ValidationsTabContent } from './validations-tab-content';
             </div>
           }
 
-          @if (showFilter()) {
+          @if (showWorkspaceList()) {
             <div class="flex min-h-0 flex-1 flex-col">
-              <div class="min-h-(--sub-panel-header-height) shrink-0 px-4">
-                <core-filter
-                  [(value)]="filterValue"
-                  (clear)="clearFilter()"
-                />
-              </div>
-
               @if (isFiltering() && !filteredVisibleNodeIds().length) {
                 <core-empty
                   label="No forms or folders found"
@@ -289,7 +267,7 @@ export class FormsPanel {
 
   readonly filterValue = signal('');
   readonly isFiltering = computed(() => !!this.filterValue().trim());
-  readonly showFilter = computed(
+  readonly showWorkspaceList = computed(
     () => this.isFiltering() || this.hierarchyRootNodeIds().length > 0,
   );
   readonly filteredVisibleNodeIds = computed(
@@ -360,10 +338,6 @@ export class FormsPanel {
 
   setMouseInside(isInside: boolean) {
     this.mouseInsideService.setMouseInside(isInside);
-  }
-
-  clearFilter() {
-    this.filterValue.set('');
   }
 
   downloadRecoveryBackup(): void {

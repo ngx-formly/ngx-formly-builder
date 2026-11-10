@@ -11,9 +11,9 @@ import { MouseInsideService } from '../../editor/mouse-inside.service';
 import type { BaseEditorForm, WorkspaceNode } from '../../model/types';
 import type { FormStoreRecoveryIssue } from '../../persistence/types';
 import { Tooltip } from '../../shared';
-import { Filter } from '../../shared/filter';
 import { FormsPanel } from './forms-panel';
 import { PanelService } from '../../editor/panel.service';
+import { WorkspaceToolbar } from './workspace-toolbar';
 
 describe('FormsPanel', () => {
   let fixture: ComponentFixture<FormsPanel>;
@@ -42,7 +42,15 @@ describe('FormsPanel', () => {
     TestBed.resetTestingModule();
     TestBed.overrideComponent(FormsPanel, {
       set: {
-        imports: [Empty, ButtonDirective, ButtonIcon, ButtonLabel, ButtonGroup, Tooltip, Filter],
+        imports: [
+          Empty,
+          ButtonDirective,
+          ButtonIcon,
+          ButtonLabel,
+          ButtonGroup,
+          Tooltip,
+          WorkspaceToolbar,
+        ],
         schemas: [NO_ERRORS_SCHEMA],
         providers: [
           MouseInsideService,
@@ -96,7 +104,7 @@ describe('FormsPanel', () => {
     expect(fixture.nativeElement.querySelector('button[aria-label="Create Form"]')).toBeTruthy();
   });
 
-  it('renders the shared filter when forms exist', () => {
+  it('opens the shared filter and clears the query when search closes', () => {
     hierarchyRootNodeIds.set(['form-1']);
     hierarchyNodeMap.set({
       'form-1': {
@@ -112,9 +120,24 @@ describe('FormsPanel', () => {
 
     fixture.detectChanges();
 
-    expect(
-      fixture.nativeElement.querySelector('input[placeholder="Filter items..."]'),
-    ).toBeTruthy();
+    const filterInput = () =>
+      fixture.nativeElement.querySelector('input[placeholder="Filter items..."]');
+    const search = fixture.nativeElement.querySelector(
+      'button[aria-label="Search forms and folders"]',
+    );
+    expect(filterInput()).toBeNull();
+
+    search.click();
+    fixture.detectChanges();
+    expect(filterInput()).toBeTruthy();
+
+    fixture.componentInstance.filterValue.set('zzz');
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('button[aria-label="Close search"]').click();
+    fixture.detectChanges();
+
+    expect(filterInput()).toBeNull();
+    expect(fixture.componentInstance.filterValue()).toBe('');
   });
 
   it('shows an empty filter state when no forms or folders match', () => {
@@ -251,19 +274,22 @@ describe('FormsPanel', () => {
       fixture.detectChanges();
     });
 
-    it('shows the delete action only while items are selected and supports deselection', () => {
+    it('shows the selected count and disables deletion when nothing is selected', () => {
       const panel = fixture.componentInstance;
       const deleteButton = () =>
         fixture.nativeElement.querySelector('button[aria-label^="Delete selected items"]');
-      expect(deleteButton()).toBeNull();
+      expect(deleteButton().disabled).toBe(true);
+      expect(deleteButton().querySelector('[pButtonLabel]').textContent).toBe('0');
 
       panel.toggleNodeSelection('child');
       fixture.detectChanges();
       expect(deleteButton().getAttribute('aria-label')).toBe('Delete selected items (1)');
+      expect(deleteButton().disabled).toBe(false);
 
       panel.toggleNodeSelection('child');
       fixture.detectChanges();
-      expect(deleteButton()).toBeNull();
+      expect(deleteButton().disabled).toBe(true);
+      expect(deleteButton().querySelector('[pButtonLabel]').textContent).toBe('0');
     });
 
     it('deletes selected items across filters and retains only selections still in storage', () => {
@@ -288,8 +314,9 @@ describe('FormsPanel', () => {
       fixture.detectChanges();
       expect(panel.selectedNodeIds()).toEqual([]);
       expect(
-        fixture.nativeElement.querySelector('button[aria-label^="Delete selected items"]'),
-      ).toBeNull();
+        fixture.nativeElement.querySelector('button[aria-label="Delete selected items (0)"]')
+          .disabled,
+      ).toBe(true);
     });
 
     it('deletes a selected folder once when its child is also selected', () => {

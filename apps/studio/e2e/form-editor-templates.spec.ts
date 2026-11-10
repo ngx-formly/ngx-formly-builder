@@ -9,7 +9,6 @@ for (const library of ['Vanilla', 'Material', 'Bootstrap', 'Ng Zorro']) {
       await page.getByRole('button', { name: 'Create Form' }).first().click();
       const dialog = page.getByRole('dialog', { name: 'Create Form' });
       if (library !== 'Vanilla') {
-        await dialog.getByRole('combobox', { name: 'UI Library', exact: true }).click();
         await page.getByRole('option', { name: library, exact: true }).click();
       }
       await dialog

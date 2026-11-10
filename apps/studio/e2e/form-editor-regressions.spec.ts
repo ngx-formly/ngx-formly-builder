@@ -10,7 +10,8 @@ test('reopens a saved form using only the keyboard', async ({ page }) => {
   await expect(page).toHaveURL(/\/workspaces\/forms$/);
 
   const openForm = page.getByRole('button', { name: /^Open form / });
-  await page.getByPlaceholder('Filter items...').focus();
+  await page.getByRole('button', { name: 'Search forms and folders' }).press('Enter');
+  await expect(page.getByPlaceholder('Filter items...')).toBeFocused();
   for (let i = 0; i < 5 && !(await openForm.evaluate((el) => el === document.activeElement)); i++) {
     await page.keyboard.press('Tab');
   }

@@ -4,7 +4,6 @@ import { expect, Page, test } from '@playwright/test';
 async function createTemplateForm(page: Page, libraryName: string) {
   await page.getByRole('button', { name: 'Create Form' }).first().click();
   const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
-  await createFormDialog.getByRole('combobox', { name: 'UI Library', exact: true }).click();
   await page.getByRole('option', { name: libraryName, exact: true }).click();
   await createFormDialog.getByRole('button', { name: 'Starter Form', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Builder' })).toBeVisible();

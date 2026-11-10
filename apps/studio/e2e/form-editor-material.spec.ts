@@ -4,7 +4,10 @@ test('offers one Material library with the complete field catalog', async ({ pag
   await page.goto('/form-editor');
   await page.getByRole('button', { name: 'Create Form' }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Create Form' });
-  await dialog.getByRole('combobox', { name: 'UI Library', exact: true }).click();
+  await expect(dialog.getByRole('combobox', { name: 'UI Library' })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
   await expect(page.getByRole('option', { name: 'Material', exact: true })).toHaveCount(1);
   await expect(page.getByRole('option', { name: 'Studio Material', exact: true })).toHaveCount(0);
   await page.getByRole('option', { name: 'Material', exact: true }).click();

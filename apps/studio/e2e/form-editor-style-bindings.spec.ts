@@ -25,7 +25,6 @@ for (const viewport of [
     await expect(
       createDialog.getByRole('button', { name: 'Start with a blank form', exact: true }),
     ).toBeInViewport();
-    await createDialog.getByRole('combobox', { name: 'UI Library', exact: true }).click();
     await page.getByRole('option', { name: 'Material', exact: true }).click();
     await createDialog.getByRole('button', { name: 'Expense Report', exact: true }).click();
     await expect(createDialog).toBeHidden();
