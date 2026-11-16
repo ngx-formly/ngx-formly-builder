@@ -6,9 +6,6 @@
     "outDir": "../../out-tsc/lib",
     "declaration": true,
     "declarationMap": true,
-    "paths": {
-      "@ngx-formly/builder-state": ["../../dist/state"]
-    },
     "types": []
   },
   "include": ["src/**/*.ts"],

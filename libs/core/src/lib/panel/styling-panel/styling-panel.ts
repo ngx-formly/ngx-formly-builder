@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { get } from 'lodash-es';
-import { Panel } from 'primeng/panel';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { Panel } from '../../ui/panel';
+import { MatTabsModule } from '@angular/material/tabs';
 import { CoreFieldService } from '../../config/core-field.service';
 import { CoreFormService } from '../../editor/core-form.service';
 import { EmptyNoFieldSelected } from '../../empty';
@@ -33,11 +33,7 @@ import { hasClass } from './utils';
   selector: 'core-styling-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    Tabs,
-    TabList,
-    Tab,
-    TabPanels,
-    TabPanel,
+    MatTabsModule,
     FormsModule,
     StylingClassType,
     EmptyNoFieldSelected,
@@ -51,32 +47,18 @@ import { hasClass } from './utils';
       subHeader="Edit responsive classes for the selected field"
     />
     @if (activeField()) {
-      <p-tabs
-        class="flex min-h-0 flex-1 flex-col"
-        [(value)]="activeTab"
-      >
-        <p-tablist class="min-h-12.5 shrink-0 px-4">
-          <p-tab
-            class="flex items-center gap-2"
-            value="self"
-          >
+      <mat-tab-group
+        class="core-tabs min-h-0 flex-1"
+        animationDuration="0ms"
+        [preserveContent]="true"
+        [selectedIndex]="['self', 'children'].indexOf(activeTab())"
+        (selectedTabChange)="activeTab.set($event.index === 0 ? 'self' : 'children')"
+        ><mat-tab
+          ><ng-template mat-tab-label>
             <i class="material-symbols-outlined">person</i>
             <span>Self</span>
-          </p-tab>
-          <p-tab
-            class="flex items-center gap-2"
-            value="children"
-            [disabled]="!isParent()"
-          >
-            <i class="material-symbols-outlined">groups</i>
-            <span>Children</span>
-          </p-tab>
-        </p-tablist>
-        <p-tabpanels class="flex min-h-0 flex-1 flex-col px-0 pb-0">
-          <p-tabpanel
-            class="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4"
-            value="self"
-          >
+          </ng-template>
+          <div class="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4">
             <core-styling-class-type
               [classType]="typeOfClassType.CLASS_NAME"
               [classNameMap]="classNameMap()"
@@ -84,20 +66,21 @@ import { hasClass } from './utils';
               (fieldChange)="onFieldChanged($event)"
             />
             @if (activeField(); as field) {
-              <p-panel header="CSS Class Names">
+              <core-property-panel header="CSS Class Names">
                 <core-field-chips-property
                   [property]="classNameProperty"
                   [path]="classNamePath"
                   [target]="field"
                   (targetChanged)="onFieldChanged($event)"
                 />
-              </p-panel>
-            }
-          </p-tabpanel>
-          <p-tabpanel
-            class="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4"
-            value="children"
-          >
+              </core-property-panel>
+            }</div></mat-tab
+        ><mat-tab [disabled]="!isParent()"
+          ><ng-template mat-tab-label>
+            <i class="material-symbols-outlined">groups</i>
+            <span>Children</span>
+          </ng-template>
+          <div class="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4">
             <core-styling-class-type
               [classType]="typeOfClassType.FIELD_GROUP_CLASS_NAME"
               [classNameMap]="classNameMap()"
@@ -105,18 +88,16 @@ import { hasClass } from './utils';
               (fieldChange)="onFieldChanged($event)"
             />
             @if (activeField(); as field) {
-              <p-panel header="CSS Class Names">
+              <core-property-panel header="CSS Class Names">
                 <core-field-chips-property
                   [property]="fieldGroupClassNameProperty"
                   [path]="fieldGroupClassNamePath"
                   [target]="field"
                   (targetChanged)="onFieldChanged($event)"
                 />
-              </p-panel>
-            }
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
+              </core-property-panel>
+            }</div></mat-tab
+      ></mat-tab-group>
     } @else {
       <core-empty-no-field-selected />
     }

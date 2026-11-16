@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import 'tailwindcss-primeui';
+
 @import './assets/styles.css';
 
 @source './fesm2022';

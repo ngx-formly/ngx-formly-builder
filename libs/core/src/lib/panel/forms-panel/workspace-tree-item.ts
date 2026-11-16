@@ -13,9 +13,9 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { MenuItem } from 'primeng/api';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Menu } from 'primeng/menu';
+
+import { Menu } from '../../ui/menu';
+import { MenuItem } from '../../ui/menu-item';
 import { CoreLibraryService } from '../../config/core-library.service';
 import { CreateFormDialogService } from './create-form-dialog.service';
 import { MouseInsideService } from '../../editor/mouse-inside.service';
@@ -26,7 +26,7 @@ import { TreeItem } from '../../shared/tree-item';
 @Component({
   selector: 'core-workspace-tree-item',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, Tooltip, TreeItem, Menu, NameEditPopover],
+  imports: [Tooltip, TreeItem, Menu, NameEditPopover],
   template: `
     @if (node(); as workspaceNode) {
       @if (workspaceNode.type === 'folder') {
@@ -54,18 +54,18 @@ import { TreeItem } from '../../shared/tree-item';
 
             <ng-container actions>
               <button
-                pButton
+                coreButton
                 text
                 class="size-8"
                 rounded
                 aria-label="Options"
                 coreTooltip="Options"
-                tooltipPosition="top"
+                tooltipPosition="above"
                 [disabled]="hasStorageRecoveryIssues()"
                 (click)="$event.preventDefault(); folderMenu.toggle($event)"
               >
                 <i
-                  pButtonIcon
+                  coreButtonIcon
                   class="material-symbols-outlined"
                 >
                   more_vert
@@ -74,12 +74,11 @@ import { TreeItem } from '../../shared/tree-item';
             </ng-container>
           </core-tree-item>
 
-          <p-menu
+          <core-menu
             #folderMenu
             [model]="folderMenuItems"
-            [popup]="true"
-            (onShow)="folderMenuVisible.set(true)"
-            (onHide)="folderMenuVisible.set(false)"
+            (opened)="folderMenuVisible.set(true)"
+            (dismissed)="folderMenuVisible.set(false)"
           >
             <ng-template
               #item
@@ -100,7 +99,7 @@ import { TreeItem } from '../../shared/tree-item';
                 {{ item.label }}
               </button>
             </ng-template>
-          </p-menu>
+          </core-menu>
 
           <core-name-edit-popover
             #folderNamePopover
@@ -186,19 +185,19 @@ import { TreeItem } from '../../shared/tree-item';
 
           <ng-container actions>
             <button
-              pButton
+              coreButton
               type="button"
               text
               class="size-8"
               rounded
               coreTooltip="Edit name"
-              tooltipPosition="top"
+              tooltipPosition="above"
               [attr.aria-label]="'Edit form name ' + workspaceNode.name"
               [disabled]="hasStorageRecoveryIssues()"
               (click)="$event.preventDefault(); editFormName()"
             >
               <i
-                pButtonIcon
+                coreButtonIcon
                 class="material-symbols-outlined"
                 aria-hidden="true"
               >
@@ -206,20 +205,20 @@ import { TreeItem } from '../../shared/tree-item';
               </i>
             </button>
             <button
-              pButton
+              coreButton
               type="button"
               text
               class="size-8"
               rounded
               severity="danger"
               coreTooltip="Delete form"
-              tooltipPosition="top"
+              tooltipPosition="above"
               [attr.aria-label]="'Delete form ' + workspaceNode.name"
               [disabled]="hasStorageRecoveryIssues()"
               (click)="$event.preventDefault(); deleteNode()"
             >
               <i
-                pButtonIcon
+                coreButtonIcon
                 class="material-symbols-outlined"
                 aria-hidden="true"
               >

@@ -1,11 +1,10 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Tooltip } from '../shared';
 
 @Component({
   selector: 'core-panel-option',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, Tooltip, ButtonLabel],
+  imports: [Tooltip],
   host: {
     class: 'flex',
   },
@@ -18,7 +17,7 @@ import { Tooltip } from '../shared';
     }
     <button
       class="flex size-18 flex-col items-center justify-center rounded-none px-0.5"
-      pButton
+      coreButton
       text
       [disabled]="disabled()"
       [attr.aria-label]="'Open ' + label() + ' panel'"
@@ -27,12 +26,12 @@ import { Tooltip } from '../shared';
       (click)="selected.emit()"
     >
       <i
-        pButtonIcon
+        coreButtonIcon
         class="material-symbols-outlined"
         >{{ matIcon() }}</i
       >
       <span
-        pButtonLabel
+        coreButtonLabel
         class="text-xs"
       >
         {{ label() }}

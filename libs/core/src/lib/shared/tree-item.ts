@@ -9,13 +9,12 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { MouseInsideService } from '../editor/mouse-inside.service';
 
 @Component({
   selector: 'core-tree-item',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon],
+  imports: [],
   host: {
     class: 'group/tree-item relative flex items-center rounded-lg transition-colors select-none',
     '[class.py-2]': 'iconTile()',
@@ -44,7 +43,7 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
 
     @if (selectionLabel()) {
       <button
-        pButton
+        coreButton
         type="button"
         text
         class="touch-actions-visible absolute inset-y-0 z-10 rounded-l-lg opacity-0 group-focus-within/tree-item:opacity-100"
@@ -58,7 +57,7 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
         (click)="$event.preventDefault(); $event.stopPropagation(); selectionToggled.emit()"
       >
         <i
-          pButtonIcon
+          coreButtonIcon
           class="material-symbols-outlined"
           aria-hidden="true"
         >
@@ -92,7 +91,7 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
         }
         @if (isParent() || !selectionLabel()) {
           <button
-            pButton
+            coreButton
             text
             class="size-8 shrink-0"
             rounded
@@ -102,7 +101,7 @@ import { MouseInsideService } from '../editor/mouse-inside.service';
             (click)="toggleClicked.emit($event)"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
               style="font-size: 24px;"
               [class.rotate-90]="isExpanded()"

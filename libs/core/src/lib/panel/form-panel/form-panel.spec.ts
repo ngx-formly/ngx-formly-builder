@@ -1,7 +1,6 @@
 import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { FormLoadError, PersistenceError } from '@ngx-formly/builder-state';
-import { ButtonDirective } from 'primeng/button';
+import type { FormLoadError, PersistenceError } from '../../state';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CoreFormService } from '../../editor/core-form.service';
 import { FormPanel } from './form-panel';
@@ -19,7 +18,7 @@ describe('FormPanel load feedback', () => {
     setActiveForm.mockReset();
     TestBed.overrideComponent(FormPanel, {
       set: {
-        imports: [ButtonDirective],
+        imports: [],
         schemas: [NO_ERRORS_SCHEMA],
       },
     });

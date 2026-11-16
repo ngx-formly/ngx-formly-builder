@@ -113,7 +113,9 @@ for (const width of [1536, 1024, 390]) {
     await expect(page.locator('core-add-field-panel')).toBeVisible();
     await expect(presetTab).toHaveAttribute('aria-selected', 'true');
     await expect(
-      page.locator('core-form-builder-content').getByRole('textbox', { name: 'Name', exact: true }),
+      page
+        .locator('core-form-builder-content')
+        .getByRole('textbox', { name: 'Name', exact: true, includeHidden: true }),
     ).toHaveValue('Saved value');
 
     await fieldTab.click();

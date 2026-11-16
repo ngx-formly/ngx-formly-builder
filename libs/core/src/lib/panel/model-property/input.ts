@@ -1,9 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, numberAttribute } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { InputText } from 'primeng/inputtext';
-import { KeyFilter } from 'primeng/keyfilter';
 import { InputProperty } from '../../properties/input/input.directive';
 import { Tooltip } from '../../shared/tooltip';
 import { ModelPropertyKey } from './property-key';
@@ -12,16 +9,7 @@ import { ModelPropertyWrapper } from './property-wrapper';
 @Component({
   selector: 'core-model-input-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ModelPropertyKey,
-    InputText,
-    KeyFilter,
-    FormsModule,
-    ButtonDirective,
-    ButtonIcon,
-    ModelPropertyWrapper,
-    Tooltip,
-  ],
+  imports: [ModelPropertyKey, FormsModule, ModelPropertyWrapper, Tooltip],
   template: `
     <core-model-property-wrapper [level]="level()">
       <span class="inline-flex min-w-0 grow items-center gap-2">
@@ -38,8 +26,7 @@ import { ModelPropertyWrapper } from './property-wrapper';
           <input
             #input
             class="h-9 min-w-0 grow truncate"
-            pInputText
-            pKeyFilter="num"
+            coreInput
             type="number"
             [id]="inputId"
             [placeholder]="property().placeholder || ''"
@@ -50,7 +37,7 @@ import { ModelPropertyWrapper } from './property-wrapper';
           <input
             #input
             class="h-9 min-w-0 grow truncate"
-            pInputText
+            coreInput
             type="text"
             [id]="inputId"
             [placeholder]="property().placeholder || ''"
@@ -62,18 +49,18 @@ import { ModelPropertyWrapper } from './property-wrapper';
       <ng-container actions>
         @if (property().isRemovable) {
           <button
-            pButton
+            coreButton
             text
             class="size-8"
             rounded
             severity="danger"
             aria-label="Remove"
             coreTooltip="Remove"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="remove.emit()"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
             >
               delete

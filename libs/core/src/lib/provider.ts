@@ -1,7 +1,4 @@
-import {
-  BuilderEngineService,
-  BuilderFieldStateService as EngineFieldState,
-} from '@ngx-formly/builder-state';
+import { BuilderEngineService, BuilderFieldStateService as EngineFieldState } from './state';
 import { EnvironmentProviders, makeEnvironmentProviders, signal, Type } from '@angular/core';
 import {
   ConfigOption,

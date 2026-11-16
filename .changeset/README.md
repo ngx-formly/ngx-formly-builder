@@ -1,5 +1,6 @@
 # Changesets
 
-Add an entry with `pnpm run changeset` for each publishable package change. See
-[the release guide](../docs/releases.md) for independent versioning, breaking changes and prereleases.
-Documentation-only changes outside the packages do not need a release entry.
+Add an entry for `@ngx-formly/builder` with `pnpm run changeset` when its public code changes.
+See the [release guide](../docs/releases.md) for versioning, validation, and publication.
+Studio, docs, and extra field examples are private workspaces and are never published.
+Documentation-only changes outside the builder do not need a release entry.

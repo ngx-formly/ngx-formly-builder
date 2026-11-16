@@ -6,13 +6,12 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Tooltip } from '../shared/tooltip';
 
 @Component({
   selector: 'core-field-property-wrapper',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Tooltip, ButtonDirective, ButtonIcon],
+  imports: [Tooltip],
   host: {
     class: 'flex flex-col gap-0.5',
     '(mouseenter)': 'isMouseInside.set(true)',
@@ -31,19 +30,19 @@ import { Tooltip } from '../shared/tooltip';
 
       @if (isClearable()) {
         <button
-          pButton
+          coreButton
           text
           class="touch-actions-visible size-5 opacity-0 transition-opacity"
           rounded
           severity="danger"
           aria-label="Clear"
           coreTooltip="Clear"
-          tooltipPosition="top"
+          tooltipPosition="above"
           [class.opacity-100]="isMouseInside()"
           (click)="clear.emit()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             style="font-size: 1rem"
           >

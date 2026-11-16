@@ -6,12 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const workspaceRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const fixtureSource = join(workspaceRoot, 'integration/package-consumer');
-const packageDirectories = [
-  'libs/state',
-  'libs/core',
-  'libs/ui/material',
-  'libs/ui/builder-material',
-];
+const packageDirectories = ['libs/core'];
 const nodeCommand = process.execPath;
 const pnpmCli = process.env['npm_execpath'];
 const fixtureRoot = mkdtempSync(join(tmpdir(), 'formly-editor-consumer-'));
@@ -68,7 +63,7 @@ try {
 
   writeFileSync(join(fixtureRoot, 'package.json'), `${JSON.stringify(fixtureManifest, null, 2)}\n`);
 
-  runPnpm(['install', '--ignore-scripts', '--lockfile=false']);
+  runPnpm(['install', '--ignore-scripts', '--lockfile=false', '--strict-peer-dependencies']);
   runPnpm(['exec', 'tsc', '--noEmit', '-p', 'tsconfig.json']);
   runPnpm(['run', 'build']);
   run(nodeCommand, [
@@ -77,7 +72,7 @@ try {
     [
       "import { existsSync } from 'node:fs';",
       "import { fileURLToPath } from 'node:url';",
-      "for (const name of ['@ngx-formly/builder-state', '@ngx-formly/builder', '@ngx-formly/builder/styles.css', '@ngx-formly/builder-material-fields', '@ngx-formly/builder-material']) {",
+      "for (const name of ['@ngx-formly/builder', '@ngx-formly/builder/styles.css']) {",
       '  const entryPoint = fileURLToPath(import.meta.resolve(name));',
       '  if (!existsSync(entryPoint)) throw new Error(`Missing package entry point: ${name}`);',
       '}',
@@ -93,7 +88,7 @@ try {
     ]);
   }
 
-  console.log('Validated packed packages in a clean consumer installation.');
+  console.log('Validated the builder tarball in a clean consumer installation.');
 } finally {
   rmSync(fixtureRoot, { force: true, recursive: true });
 }

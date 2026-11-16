@@ -9,11 +9,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { FloatLabel } from 'primeng/floatlabel';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Select } from 'primeng/select';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 import { CoreFormService } from '../../editor/core-form.service';
 import { CoreLibraryService } from '../../config/core-library.service';
 import { VANILLA_LIBRARY_ID } from '../../config/vanilla/vanilla.library';
@@ -23,17 +20,7 @@ import { JSONContentDialog } from '../../json-content/json-content-dialog';
 @Component({
   selector: 'core-import-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    JSONContentDialog,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
-    FloatLabel,
-    FormsModule,
-    Message,
-    Select,
-    InputText,
-  ],
+  imports: [JSONContentDialog, FormsModule, MatSelect, MatOption],
   template: `
     <core-json-content-dialog
       class="text-base"
@@ -49,12 +36,12 @@ import { JSONContentDialog } from '../../json-content/json-content-dialog';
     >
       <ng-container formFields>
         <div>
-          <p-floatlabel variant="on">
+          <div class="core-labeled-control">
             <input
               #nameModel="ngModel"
               class="w-full"
               name="name"
-              pInputText
+              coreInput
               required
               autocomplete="off"
               data-bwignore
@@ -62,34 +49,36 @@ import { JSONContentDialog } from '../../json-content/json-content-dialog';
               [(ngModel)]="formName"
             />
             <label for="import-dialog-name-input">Name</label>
-          </p-floatlabel>
+          </div>
           @if (!nameModel.valid && nameModel.touched) {
-            <p-message
+            <div
+              role="alert"
+              class="core-message"
               class="mt-1 inline-block"
               severity="error"
               size="small"
               variant="simple"
-              >Name is required.</p-message
             >
+              Name is required.
+            </div>
           }
         </div>
         <div>
-          <p-floatlabel variant="on">
-            <p-select
+          <div class="core-labeled-control">
+            <mat-select
               class="w-full"
               name="formlyUI"
-              checkmark
-              optionLabel="label"
-              optionValue="id"
-              ariaLabel="UI Library"
-              [showClear]="true"
-              [pt]="{ label: { 'aria-describedby': 'import-form-library-help' } }"
-              [inputId]="selectedLibraryInputId"
-              [options]="libraryOptions"
+              aria-label="UI Library"
+              [id]="selectedLibraryInputId"
+              [attr.aria-describedby]="'import-form-library-help'"
               [(ngModel)]="selectedLibraryId"
-            />
+              ><mat-option [value]="null">None (Vanilla)</mat-option>
+              @for (option of libraryOptions; track $index) {
+                <mat-option [value]="option.id">{{ option.label }}</mat-option>
+              }
+            </mat-select>
             <label [for]="selectedLibraryInputId">UI Library</label>
-          </p-floatlabel>
+          </div>
           <small
             class="mt-1 block text-muted-color"
             id="import-form-library-help"
@@ -101,17 +90,17 @@ import { JSONContentDialog } from '../../json-content/json-content-dialog';
       <ng-container lhsActions>
         <span>
           <button
-            pButton
+            coreButton
             text
             (click)="fileSelect.click()"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
             >
               file_open
             </i>
-            <span pButtonLabel>Choose File</span>
+            <span coreButtonLabel>Choose File</span>
           </button>
           <input
             #fileSelect

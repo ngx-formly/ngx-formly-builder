@@ -1,56 +1,61 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { InputNumber } from 'primeng/inputnumber';
-import { SelectButton } from 'primeng/selectbutton';
+
 import { Tooltip } from '../../shared';
 import { PreviewDevicePreset, PreviewViewportService } from './preview-viewport.service';
 
 @Component({
   selector: 'core-preview-device-toolbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ButtonDirective, ButtonIcon, InputNumber, SelectButton, Tooltip],
+  imports: [FormsModule, Tooltip],
   host: {
     class:
       'flex flex-wrap items-center justify-center min-h-(--sub-panel-header-height) shrink-0 gap-2',
   },
   template: `
-    <p-selectbutton
-      class="max-w-full flex-wrap justify-center"
+    <div
+      class="core-segmented"
+      role="group"
       aria-label="Preview device width"
-      optionLabel="label"
-      optionValue="value"
-      allowEmpty="false"
-      [options]="presetOptions"
-      [ngModel]="viewport.preset()"
-      (ngModelChange)="selectPreset($event)"
-    />
+    >
+      @for (option of presetOptions; track option.value) {
+        <button
+          coreButton
+          text
+          type="button"
+          [attr.aria-pressed]="viewport.preset() === option.value"
+          (click)="selectPreset(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      }
+    </div>
     @if (viewport.preset() === 'custom') {
       <span class="inline-flex items-center gap-1">
-        <p-inputnumber
-          inputId="preview-custom-width"
-          inputStyleClass="w-24"
-          mode="decimal"
-          suffix=" px"
+        <input
+          coreInput
+          type="number"
+          aria-label="Custom width"
+          id="preview-custom-width"
+          class="w-24"
           [min]="240"
           [max]="3840"
-          [useGrouping]="false"
           [ngModel]="customWidthDraft()"
           (ngModelChange)="customWidthDraft.set($event)"
           (keydown.enter)="confirmCustomWidth()"
         />
         <button
-          pButton
+          coreButton
           text
           rounded
           aria-label="Confirm width"
           coreTooltip="Confirm width"
-          tooltipPosition="top"
+          tooltipPosition="above"
           [disabled]="!isCustomWidthValid()"
           (click)="confirmCustomWidth()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
           >
             check

@@ -1,26 +1,69 @@
-name: Release packages
+name: Release builder
 
 on:
   workflow_dispatch:
     inputs:
-      publish:
-        description: Publish the reviewed versions on main (otherwise prepare a version PR)
-        type: boolean
-        default: false
+      action:
+        description: Validate only, prepare a version PR, or publish reviewed versions
+        type: choice
+        options:
+          - validate
+          - version
+          - publish
+        default: validate
 
 concurrency:
   group: package-release
   cancel-in-progress: false
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  release:
+  validate:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: npm-release
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Require prepared release notes
+        if: inputs.action == 'publish'
+        run: pnpm run release:check
+      - run: pnpm run test:release
+      - run: pnpm run test:api
+      - run: pnpm run lint
+      - run: pnpm test
+      - run: pnpm run check:docs
+      - run: pnpm run build
+      - run: node scripts/check-api.mjs
+      - run: node scripts/check-release-artifacts.mjs
+      - run: pnpm run release:dry-run --consumer
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm run check:packages:e2e
+      - run: pnpm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failure-reports
+          path: |
+            tmp/playwright/test-results
+            tmp/package-consumer-results
+            dist/.playwright/apps/studio/playwright-report
+          if-no-files-found: ignore
+
+  version:
+    needs: validate
+    if: inputs.action == 'version'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -30,37 +73,50 @@ jobs:
         with:
           node-version-file: .node-version
           cache: pnpm
-          registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run test:release
-      - run: pnpm run lint
-      - run: pnpm test
-      - run: pnpm run check:docs
-      - run: pnpm run build
-      - run: node scripts/check-release-artifacts.mjs
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm run check:packages:e2e
-      - run: pnpm run test:e2e
-      - name: Prepare a version pull request
-        if: ${{ !inputs.publish }}
-        uses: changesets/action@v1
+      - uses: changesets/action@v1
         with:
           version: pnpm run release:version
-          title: 'chore(release): version changed packages'
-          commit: 'chore(release): version changed packages'
+          title: 'chore(release): version builder'
+          commit: 'chore(release): version builder'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Require reviewed version changes
-        if: inputs.publish
+
+  publish:
+    needs: validate
+    if: inputs.action == 'publish'
+    runs-on: ubuntu-latest
+    environment: npm-release
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - name: Require npm publishing credentials
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          pnpm run release:status --output /tmp/release-status.json
-          node --input-type=module -e "import fs from 'node:fs'; if (JSON.parse(fs.readFileSync('/tmp/release-status.json')).changesets.length) throw new Error('Merge the version PR before publishing')"
-      - name: Publish built packages and record package tags
-        if: inputs.publish
+          if [ -z "$NPM_TOKEN" ]; then
+            echo '::error::Add NPM_TOKEN to the npm-release environment before publishing.'
+            exit 1
+          fi
+      - run: pnpm install --frozen-lockfile
+      - name: Publish builder, its tag, and GitHub release notes
         uses: changesets/action@v1
         with:
           publish: pnpm run release:publish
+          createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

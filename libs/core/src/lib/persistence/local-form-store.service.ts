@@ -1,1 +1,1 @@
-export { LocalFormStoreService } from '@ngx-formly/builder-state';
+export { LocalFormStoreService } from '../state';

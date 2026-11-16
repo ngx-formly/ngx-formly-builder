@@ -12,9 +12,9 @@ export type {
   WorkspaceNode,
   WorkspaceNodeType,
   WorkspaceValidation,
-} from './lib/model/types';
+} from './model/types';
 
-export { isValidationRuleName } from './lib/model/workspace-validation';
+export { isValidationRuleName } from './model/workspace-validation';
 
 export {
   addNodeToHierarchy,
@@ -27,21 +27,21 @@ export {
   removeNodeFromHierarchy,
   renameNodeInHierarchy,
   toggleFolderExpansion,
-} from './lib/model/workspace-hierarchy.utils';
+} from './model/workspace-hierarchy.utils';
 
-export { LocalFormStoreService } from './lib/persistence/local-form-store.service';
+export { LocalFormStoreService } from './persistence/local-form-store.service';
 export {
   CORE_FORM_STORE,
   FormStoreRecoveryRequiredError,
   type FormStoreDataKind,
   type FormStoreRecoveryIssue,
   type FormStoreService,
-} from './lib/persistence/types';
+} from './persistence/types';
 
-export { BuilderEngineService } from './lib/editor/builder-engine.service';
-export { isLayoutRow, type FieldDropPosition } from './lib/editor/field-layout';
-export { BuilderFieldStateService } from './lib/editor/builder-field-state.service';
-export { provideBuilderEngine } from './lib/editor/provider';
+export { BuilderEngineService } from './editor/builder-engine.service';
+export { isLayoutRow, type FieldDropPosition } from './editor/field-layout';
+export { BuilderFieldStateService } from './editor/builder-field-state.service';
+export { provideBuilderEngine } from './editor/provider';
 export {
   BUILDER_ENGINE_CONFIG,
   type BuilderEngineConfig,
@@ -50,15 +50,15 @@ export {
   type EngineLibrary,
   type FormLoadError,
   type PersistenceError,
-} from './lib/editor/types';
+} from './editor/types';
 export {
   modifyPropertyTarget,
   PropertyChangeType,
   type PropertyChange,
-} from './lib/editor/property-change';
+} from './editor/property-change';
 export {
   clearFieldModelValue,
   convertField,
   generateFieldId,
   generateFormId,
-} from './lib/editor/field-conversion';
+} from './editor/field-conversion';

@@ -16,10 +16,13 @@ test('renders styling options as soon as the dropdown opens', async ({ page }) =
   const frames = await height.evaluate(async (element) => {
     const frames: { elapsed: number; visibleOptions: string[] }[] = [];
     const start = performance.now();
-    (element as HTMLElement).click();
+    (element as HTMLElement).focus();
+    element.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }),
+    );
     while (performance.now() - start < 500) {
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      const overlay = document.querySelector('.p-select-overlay');
+      const overlay = document.querySelector('.mat-mdc-select-panel');
       const bounds = overlay?.getBoundingClientRect();
       if (bounds && bounds.height > 0) {
         frames.push({
@@ -62,7 +65,10 @@ test('renders styling options as soon as the dropdown opens', async ({ page }) =
   await expect(classes).not.toContainText('sm:h-4');
   await expect(classes).toContainText('h-0');
 
-  await page.locator('core-styling-panel').getByRole('button', { name: 'Default', exact: true }).click();
+  await page
+    .locator('core-styling-panel')
+    .getByRole('button', { name: 'Default', exact: true })
+    .click();
   await expect(height).toHaveText('0 · 0rem');
   await heightOption.getByRole('button', { name: 'Clear', exact: true }).click();
   await expect(classes).not.toContainText('h-0');

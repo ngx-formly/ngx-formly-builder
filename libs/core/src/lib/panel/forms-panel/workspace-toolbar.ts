@@ -13,14 +13,13 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Filter } from '../../shared/filter';
 import { Tooltip } from '../../shared/tooltip';
 
 @Component({
   selector: 'core-workspace-toolbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, ButtonLabel, Filter, Tooltip],
+  imports: [Filter, Tooltip],
   host: { class: 'flex shrink-0 items-center gap-1 px-4 pt-1' },
   template: `
     <div class="@container relative flex min-w-0 flex-1 items-center justify-between gap-1">
@@ -33,19 +32,19 @@ import { Tooltip } from '../../shared/tooltip';
       @if (canSearch()) {
         <button
           #searchButton
-          pButton
+          coreButton
           type="button"
           class="shrink-0"
           severity="secondary"
           text
-          tooltipPosition="top"
+          tooltipPosition="above"
           [attr.aria-label]="searchLabel()"
           [coreTooltip]="searchLabel()"
           [class.invisible]="searchOpen()"
           (click)="setSearchOpen(true)"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             aria-hidden="true"
             >search</i
@@ -62,25 +61,25 @@ import { Tooltip } from '../../shared/tooltip';
       }
     </div>
     <button
-      pButton
+      coreButton
       type="button"
       class="shrink-0 px-2"
       text
-      tooltipPosition="top"
-      [severity]="deleteDisabled() ? 'secondary' : 'danger'"
+      tooltipPosition="above"
+      [attr.severity]="deleteDisabled() ? 'secondary' : 'danger'"
       [coreTooltip]="deleteLabel()"
       [attr.aria-label]="deleteLabel() + ' (' + selectedCount() + ')'"
       [disabled]="deleteDisabled()"
       (click)="deleteSelected.emit()"
     >
       <i
-        pButtonIcon
+        coreButtonIcon
         class="material-symbols-outlined"
         aria-hidden="true"
         >delete</i
       >
       <span
-        pButtonLabel
+        coreButtonLabel
         class="tabular-nums"
         >{{ selectedCount() }}</span
       >

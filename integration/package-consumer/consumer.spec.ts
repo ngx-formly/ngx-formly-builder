@@ -36,7 +36,7 @@ for (const viewport of [
       viewport.width < 1024 ? page.getByRole('complementary') : page.locator('formly-builder');
     await navigation.getByRole('button', { name: 'Open Workspace panel', exact: true }).click();
     await page.getByRole('button', { name: 'Open form Sized form', exact: true }).click();
-    await navigation.getByRole('button', { name: 'Open Styling panel', exact: true }).click();
+    await page.getByRole('button', { name: 'Open Styling panel', exact: true }).click();
     const width = page.getByRole('combobox', { name: 'Width', exact: true });
     await width.click();
     await page.getByRole('option', { name: 'Comfortable · 12rem', exact: true }).click();
@@ -96,6 +96,7 @@ for (const viewport of [
     await page.getByRole('button', { name: 'Create Form' }).first().click();
     const dialog = page.getByRole('dialog', { name: 'Create Form' });
     await expect(dialog).toBeVisible();
+    await page.getByRole('option', { name: 'None (Vanilla)', exact: true }).click();
     await dialog.getByLabel('Name', { exact: true }).fill('Packaged form');
     await dialog.getByRole('button', { name: 'Start with a blank form', exact: true }).click();
     await expect(dialog).not.toBeVisible();

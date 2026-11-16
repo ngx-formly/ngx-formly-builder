@@ -11,12 +11,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
-import { FloatLabel } from 'primeng/floatlabel';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Select } from 'primeng/select';
+import { Dialog } from '../../ui/dialog';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 import { defer, finalize } from 'rxjs';
 import { CoreLibraryService } from '../../config/core-library.service';
 import { CORE_FORM_TEMPLATES, FormTemplate as SharedFormTemplate } from '../../config/types';
@@ -42,20 +39,9 @@ interface FormTemplate {
 @Component({
   selector: 'core-create-form-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    Dialog,
-    FloatLabel,
-    InputText,
-    FormsModule,
-    Message,
-    Select,
-    ButtonDirective,
-    ButtonIcon,
-    Tooltip,
-  ],
+  imports: [Dialog, FormsModule, MatSelect, MatOption, Tooltip],
   template: `
-    <p-dialog
-      modal
+    <core-dialog
       header="Create Form"
       [style]="{
         width: '800px',
@@ -64,7 +50,7 @@ interface FormTemplate {
       }"
       [visible]="dialogService.isOpen()"
       [focusOnShow]="libraryOptions.length === 0"
-      (onShow)="libraryOptions.length > 0 && librarySelect.show(true)"
+      (opened)="onDialogOpened(librarySelect)"
       (visibleChange)="onVisibilityChange($event)"
     >
       <form
@@ -72,15 +58,21 @@ interface FormTemplate {
         class="flex flex-col gap-6"
       >
         @if (errorMessage()) {
-          <p-message severity="error">{{ errorMessage() }}</p-message>
+          <div
+            role="alert"
+            class="core-message"
+            severity="error"
+          >
+            {{ errorMessage() }}
+          </div>
         }
         <div class="grid w-full shrink-0 grid-cols-1 items-start gap-4 py-2 sm:grid-cols-2">
           <div class="min-w-0">
-            <p-floatlabel variant="on">
+            <div class="core-labeled-control">
               <input
                 class="w-full"
                 name="name"
-                pInputText
+                coreInput
                 autocomplete="off"
                 data-bwignore
                 [id]="nameInputId"
@@ -88,28 +80,26 @@ interface FormTemplate {
                 (ngModelChange)="formName.set($event)"
               />
               <label [for]="nameInputId">Name</label>
-            </p-floatlabel>
+            </div>
           </div>
           <div class="min-w-0">
-            <p-floatlabel variant="on">
-              <p-select
+            <div class="core-labeled-control">
+              <mat-select
                 #librarySelect
                 class="w-full"
                 name="formlyUI"
-                checkmark
-                optionLabel="label"
-                optionValue="id"
-                ariaLabel="UI Library"
-                [focusOnHover]="false"
-                [showClear]="true"
-                [pt]="{ label: { 'aria-describedby': 'create-form-library-help' } }"
-                [inputId]="selectedLibraryInputId"
-                [options]="libraryOptions"
+                aria-label="UI Library"
+                [id]="selectedLibraryInputId"
                 [ngModel]="selectedLibrary()"
+                [attr.aria-describedby]="'create-form-library-help'"
                 (ngModelChange)="selectedLibrary.set($event)"
-              />
+                ><mat-option [value]="null">None (Vanilla)</mat-option>
+                @for (option of libraryOptions; track $index) {
+                  <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                }
+              </mat-select>
               <label [for]="selectedLibraryInputId">UI Library</label>
-            </p-floatlabel>
+            </div>
             <small
               class="mt-1 block text-muted-color"
               id="create-form-library-help"
@@ -157,18 +147,18 @@ interface FormTemplate {
             </button>
             <button
               class="absolute top-2 right-2 h-11 w-11"
-              pButton
+              coreButton
               text
               type="button"
               severity="secondary"
               aria-label="Import form file"
               coreTooltip="Import form file"
-              tooltipPosition="top"
+              tooltipPosition="above"
               [disabled]="!form.valid || isCreating() || formService.hasStorageRecoveryIssues()"
               (click)="fileSelect.click()"
             >
               <i
-                pButtonIcon
+                coreButtonIcon
                 class="material-symbols-outlined"
                 aria-hidden="true"
                 >upload</i
@@ -233,10 +223,17 @@ interface FormTemplate {
           }
         </div>
       </form>
-    </p-dialog>
+    </core-dialog>
   `,
 })
 export class CreateFormDialog {
+  onDialogOpened(select: MatSelect): void {
+    if (this.libraryOptions.length) {
+      select.focus();
+      select.open();
+    }
+  }
+
   protected readonly form = viewChild.required('form', { read: NgForm });
 
   protected dialogService = inject(CreateFormDialogService);

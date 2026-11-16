@@ -6,7 +6,7 @@ for (const width of [1536, 1024, 390]) {
     await page.emulateMedia({ colorScheme: width === 390 ? 'dark' : 'light' });
     await page.goto('/workspaces/validations');
     const catalog = page.locator('core-validations-tab-content:visible');
-    const tabList = page.locator('core-forms-panel:visible .p-tablist-content');
+    const tabList = page.locator('core-forms-panel:visible [role=tablist]');
     await expect
       .poll(() => tabList.evaluate((element) => element.scrollWidth <= element.clientWidth))
       .toBe(true);
@@ -68,7 +68,11 @@ for (const width of [1536, 1024, 390]) {
     });
     await page.goto('/workspaces/forms/catalog-copy/fields');
     if (width < 1024) {
-      await page.locator('.p-drawer-close-button').click();
+      await expect(page.locator('core-fields-panel')).toContainText('age');
+      await page
+        .getByRole('complementary')
+        .getByRole('button', { name: 'Close', exact: true })
+        .click();
       await expect(page.getByRole('complementary')).toBeHidden();
     }
     await page
@@ -88,7 +92,10 @@ for (const width of [1536, 1024, 390]) {
       custom.getByRole('button', { name: 'Edit validation minimumAge', exact: true }),
     ).toBeVisible();
     if (width < 1024) {
-      await page.locator('.p-drawer-close-button').click();
+      await page
+        .getByRole('complementary')
+        .getByRole('button', { name: 'Close', exact: true })
+        .click();
       await expect(page.getByRole('complementary')).toBeHidden();
     }
     await page.getByRole('button', { name: 'Save Form', exact: true }).click();
@@ -120,7 +127,11 @@ for (const width of [1536, 1024, 390]) {
     await expect(catalog).toContainText('No validations yet');
     await page.goto('/workspaces/forms/catalog-copy/fields');
     if (width < 1024) {
-      await page.locator('.p-drawer-close-button').click();
+      await expect(page.locator('core-fields-panel')).toContainText('age');
+      await page
+        .getByRole('complementary')
+        .getByRole('button', { name: 'Close', exact: true })
+        .click();
       await expect(page.getByRole('complementary')).toBeHidden();
     }
     await page.getByRole('button', { name: 'Preview', exact: true }).click();

@@ -1,6 +1,6 @@
 import { CoreFormService } from '../../editor/core-form.service';
-import { ChangeDetectionStrategy, Component, effect, inject, viewChild } from '@angular/core';
-import { Dialog, DialogPassThrough } from 'primeng/dialog';
+import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
+import { Dialog, DialogLayout } from '../../ui/dialog';
 import { PreviewDialogService } from './preview-dialog.service';
 import { FormPreviewContent } from './form-preview-content';
 import { PreviewDeviceToolbar } from './preview-device-toolbar';
@@ -10,9 +10,9 @@ import { PreviewDeviceToolbar } from './preview-device-toolbar';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Dialog, FormPreviewContent, PreviewDeviceToolbar],
   template: `
-    <p-dialog
+    <core-dialog
       header="Form Preview"
-      maximizable
+      [style]="{ width: 'calc(100vw - 32px)', height: 'calc(100dvh - 32px)' }"
       [pt]="pt"
       [visible]="isOpen()"
       (visibleChange)="updateVisibility($event)"
@@ -22,7 +22,7 @@ import { PreviewDeviceToolbar } from './preview-device-toolbar';
         let-titleId="ariaLabelledBy"
       >
         <span
-          class="p-dialog-title"
+          class="core-dialog-title"
           [id]="titleId"
           >Form Preview</span
         >
@@ -34,11 +34,10 @@ import { PreviewDeviceToolbar } from './preview-device-toolbar';
       @if (isOpen()) {
         <core-form-preview-content [formFields]="activePreviewFormFields()" />
       }
-    </p-dialog>
+    </core-dialog>
   `,
 })
 export class FormPreviewDialog {
-  readonly dialogRef = viewChild(Dialog);
   protected readonly previewContent = viewChild(FormPreviewContent);
 
   dialogService = inject(PreviewDialogService);
@@ -47,26 +46,11 @@ export class FormPreviewDialog {
   isOpen = this.dialogService.isOpen;
   activePreviewFormFields = this.formService.activePreviewFormFields;
 
-  pt: DialogPassThrough = {
+  pt: DialogLayout = {
     header: {
       class: 'grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 lg:grid-cols-[1fr_auto_1fr]',
     },
-    headerActions: {
-      class: 'col-start-2 row-start-1 justify-self-end lg:col-start-3',
-    },
-    pcMaximizeButton: {
-      host: {
-        style: { display: 'none' },
-      },
-    },
   };
-  constructor() {
-    effect(() => {
-      if (this.isOpen()) {
-        this.dialogRef()?.maximize();
-      }
-    });
-  }
 
   updateVisibility(visible: boolean) {
     if (!visible) {

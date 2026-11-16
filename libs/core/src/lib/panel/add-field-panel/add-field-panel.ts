@@ -1,7 +1,7 @@
 import { CoreFormService } from '../../editor/core-form.service';
 import { CoreFieldService } from '../../config/core-field.service';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { MatTabsModule } from '@angular/material/tabs';
 import { EmptyNoForm } from '../../empty';
 import { AddFieldService } from './add-field.service';
 import { PanelHeader } from '../../shared/panel-header';
@@ -13,17 +13,7 @@ import { PanelService } from '../../editor/panel.service';
   selector: 'core-add-field-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [AddFieldService],
-  imports: [
-    EmptyNoForm,
-    Tabs,
-    TabList,
-    Tab,
-    TabPanels,
-    TabPanel,
-    PanelHeader,
-    FieldsTabContent,
-    PresetsTabContent,
-  ],
+  imports: [MatTabsModule, EmptyNoForm, PanelHeader, FieldsTabContent, PresetsTabContent],
   host: {
     class: 'overflow-hidden h-full block',
   },
@@ -33,49 +23,35 @@ import { PanelService } from '../../editor/panel.service';
       subHeader="Add or drag a field into the form"
     />
     @if (activeFormId()) {
-      <p-tabs
-        class="flex min-h-0 flex-1 flex-col"
-        [(value)]="activeTab"
-      >
-        <p-tablist class="min-h-12.5 shrink-0 px-4">
-          <p-tab
-            class="flex items-center gap-2"
-            value="fields"
-          >
+      <mat-tab-group
+        class="core-tabs min-h-0 flex-1"
+        animationDuration="0ms"
+        [preserveContent]="true"
+        [selectedIndex]="['fields', 'presets'].indexOf(activeTab())"
+        (selectedTabChange)="activeTab.set($event.index === 0 ? 'fields' : 'presets')"
+        ><mat-tab
+          ><ng-template mat-tab-label>
             <i
               class="material-symbols-outlined size-6 shrink-0 overflow-hidden"
               aria-hidden="true"
               >ad</i
             >
             <span>Field</span>
-          </p-tab>
-          <p-tab
-            class="flex items-center gap-2"
-            value="presets"
-          >
+          </ng-template>
+          <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
+            <core-fields-tab-content /></div></mat-tab
+        ><mat-tab
+          ><ng-template mat-tab-label>
             <i
               class="material-symbols-outlined size-6 shrink-0 overflow-hidden"
               aria-hidden="true"
               >tune</i
             >
             <span>Preset</span>
-          </p-tab>
-        </p-tablist>
-        <p-tabpanels class="flex min-h-0 flex-1 flex-col px-0 pb-0">
-          <p-tabpanel
-            class="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden"
-            value="fields"
-          >
-            <core-fields-tab-content />
-          </p-tabpanel>
-          <p-tabpanel
-            class="flex min-h-0 flex-1 flex-col overflow-hidden"
-            value="presets"
-          >
-            <core-presets-tab-content />
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
+          </ng-template>
+          <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <core-presets-tab-content /></div></mat-tab
+      ></mat-tab-group>
     } @else {
       <core-empty-no-form />
     }

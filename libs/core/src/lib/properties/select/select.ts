@@ -6,7 +6,8 @@ import {
   input,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Select } from 'primeng/select';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 import { BaseProperty } from '../base.directive';
 import { PropertyType } from '../types';
 import { FieldPropertyWrapper } from '../property-wrapper';
@@ -15,7 +16,7 @@ import { SelectPropertyConfig, SelectPropertyOption } from './select.config';
 @Component({
   selector: 'core-field-select-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, Select, FieldPropertyWrapper],
+  imports: [FormsModule, MatSelect, MatOption, FieldPropertyWrapper],
   template: `
     <core-field-property-wrapper
       [label]="property().label"
@@ -24,17 +25,18 @@ import { SelectPropertyConfig, SelectPropertyOption } from './select.config';
       [isClearable]="isClearable()"
       (clear)="onClear()"
     >
-      <p-select
+      <mat-select
         class="field-property-control"
-        optionLabel="label"
-        optionValue="value"
         [id]="selectId"
-        [placeholder]="property().placeholder || 'Select Option'"
-        [checkmark]="true"
-        [options]="property().options"
+        [aria-label]="property().label || 'Select option'"
+        [placeholder]="property().placeholder || 'Select option'"
         [ngModel]="controlValue()"
         (ngModelChange)="onValueChange($event)"
-      />
+      >
+        @for (option of property().options; track $index) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
     </core-field-property-wrapper>
   `,
 })

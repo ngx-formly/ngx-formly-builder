@@ -1,6 +1,1 @@
-export {
-  clearFieldModelValue,
-  convertField,
-  generateFieldId,
-  generateFormId,
-} from '@ngx-formly/builder-state';
+export { clearFieldModelValue, convertField, generateFieldId, generateFormId } from '../state';

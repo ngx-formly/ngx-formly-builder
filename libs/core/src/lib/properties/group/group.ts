@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { Panel } from 'primeng/panel';
+import { Panel } from '../../ui/panel';
 import { Tooltip } from '../../shared/tooltip';
 import { PropertyChange, PropertyConfig, PropertyType } from '../types';
 import { getChildPath, trackByPropertyKey } from '../utils';
@@ -16,10 +16,10 @@ import { FieldSelectProperty } from '../select/select';
     class: 'flex flex-col gap-1',
   },
   template: `
-    <p-panel [toggleable]="false">
+    <core-property-panel [toggleable]="false">
       <ng-template #header>
         <span
-          class="p-panel-title"
+          class="core-property-panel-title"
           tooltipPosition="left"
           [coreTooltip]="property().description"
         >
@@ -62,7 +62,7 @@ import { FieldSelectProperty } from '../select/select';
           </div>
         }
       </div>
-    </p-panel>
+    </core-property-panel>
   `,
 })
 export class FieldGroupProperty {

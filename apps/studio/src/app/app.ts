@@ -13,7 +13,7 @@ import { Header } from './header';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Header, RouterOutlet],
   host: {
-    class: 'flex flex-col h-full bg-(--p-content-background)',
+    class: 'flex flex-col h-full bg-(--builder-content-background)',
   },
   template: `
     <app-header

@@ -12,9 +12,9 @@ test.describe('Form Editor desktop baseline', () => {
   test('renders three resizable panes with hover-action space at desktop width', async ({
     page,
   }) => {
-    const splitter = page.locator('p-splitter');
-    const panels = splitter.locator('.p-splitterpanel');
-    const gutters = splitter.locator('.p-splitter-gutter');
+    const splitter = page.locator('core-splitter');
+    const panels = splitter.locator('.core-splitter-panel');
+    const gutters = splitter.locator('.core-splitter-handle');
 
     await expect(splitter).toBeVisible();
     await expect(panels).toHaveCount(3);
@@ -29,8 +29,8 @@ test.describe('Form Editor desktop baseline', () => {
   });
 
   test('persists a desktop pane resize after reload', async ({ page }) => {
-    const panels = page.locator('p-splitter .p-splitterpanel');
-    const firstGutter = page.locator('p-splitter .p-splitter-gutter').first();
+    const panels = page.locator('core-splitter .core-splitter-panel');
+    const firstGutter = page.locator('core-splitter .core-splitter-handle').first();
     const gutterBox = await firstGutter.boundingBox();
     expect(gutterBox).not.toBeNull();
 
@@ -71,7 +71,7 @@ test.describe('Form Editor desktop baseline', () => {
   test('does not render the desktop splitter below the desktop breakpoint', async ({ page }) => {
     await page.setViewportSize({ width: 1535, height: 900 });
 
-    await expect(page.locator('p-splitter .p-splitterpanel')).toHaveCount(2);
+    await expect(page.locator('core-splitter .core-splitter-panel')).toHaveCount(2);
     await expect(page.locator('core-tablet-sidebar')).toBeVisible();
     await expect(page.locator('core-lhs-sidebar, core-rhs-sidebar')).toHaveCount(0);
   });

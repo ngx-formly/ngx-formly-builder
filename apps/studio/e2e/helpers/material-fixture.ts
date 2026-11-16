@@ -148,6 +148,12 @@ export async function loadMaterialFixture(page: Page) {
   await page.reload();
   await openWorkspaceTab(page, 'Forms');
   await page.getByRole('button', { name: 'Open form New Form', exact: true }).click();
+  if ((page.viewportSize()?.width ?? 1024) < 1024) {
+    await page
+      .getByRole('complementary')
+      .getByRole('button', { name: 'Close', exact: true })
+      .click();
+  }
   await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
   await expect(page.locator('core-form-builder-content')).toContainText('supportRequest');
 }

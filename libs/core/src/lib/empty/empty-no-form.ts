@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ButtonDirective } from 'primeng/button';
 import { CreateFormDialogService } from '../panel/forms-panel/create-form-dialog.service';
 import { PanelService } from '../editor/panel.service';
 import { CoreFormService } from '../editor/core-form.service';
@@ -8,7 +7,7 @@ import { Empty } from './empty';
 @Component({
   selector: 'core-empty-no-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Empty, ButtonDirective],
+  imports: [Empty],
   template: `
     <core-empty
       label="No Active form"
@@ -16,7 +15,7 @@ import { Empty } from './empty';
     >
       <span class="inline-flex flex-wrap items-center justify-center gap-4">
         <button
-          pButton
+          coreButton
           severity="secondary"
           (click)="openFormsPanel()"
         >
@@ -24,7 +23,7 @@ import { Empty } from './empty';
           Open Workspace Panel
         </button>
         <button
-          pButton
+          coreButton
           [disabled]="formService.hasStorageRecoveryIssues()"
           (click)="addNewForm()"
         >

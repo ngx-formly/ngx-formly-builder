@@ -5,7 +5,12 @@ import { MatStepper } from '@angular/material/stepper';
 import { MatTabGroup } from '@angular/material/tabs';
 import { By } from '@angular/platform-browser';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { BuilderFieldStateService, CoreFormService, FieldInfo } from '@ngx-formly/builder';
+import {
+  BuilderEngineService,
+  BuilderFieldStateService,
+  CoreFormService,
+  FieldInfo,
+} from '@ngx-formly/builder';
 import {
   StepperContent,
   TabsContent,
@@ -13,7 +18,7 @@ import {
   withStepType,
   withTabsType,
   withTabType,
-} from '@ngx-formly/builder-material-fields';
+} from '@formly-studio/material-fields';
 import { FormlyFieldConfig, FormlyForm, provideFormlyCore } from '@ngx-formly/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { withStepperTypeBuilder } from './stepper/config';
@@ -103,6 +108,7 @@ describe.each([
         provideFormlyCore([withStepType(), withTabType(), type.config()]),
         provideNoopAnimations(),
         BuilderFieldStateService,
+        { provide: BuilderEngineService, useExisting: CoreFormService },
         { provide: CoreFormService, useValue: { activeFieldMap: fieldMap.asReadonly() } },
       ],
     }).compileComponents();

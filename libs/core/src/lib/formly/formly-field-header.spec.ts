@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { TieredMenu } from 'primeng/tieredmenu';
+import { Menu } from '../ui/menu';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CoreFieldService } from '../config/core-field.service';
 import { CoreFormService } from '../editor/core-form.service';
@@ -59,7 +59,7 @@ Object.defineProperty(window, 'matchMedia', {
 describe('FormlyFieldHeader', () => {
   let fixture: ComponentFixture<TestHostComponent>;
   let header: FormlyFieldHeader;
-  let tieredMenu: TieredMenu;
+  let tieredMenu: Menu;
   let addField: (fieldType: string, fieldId: string) => void;
   let addOptions: CoreAddFieldOption[];
 
@@ -107,11 +107,11 @@ describe('FormlyFieldHeader', () => {
     fixture = TestBed.createComponent(TestHostComponent);
     fixture.detectChanges();
     header = fixture.debugElement.query(By.directive(FormlyFieldHeader)).componentInstance;
-    tieredMenu = fixture.debugElement.query(By.directive(TieredMenu)).componentInstance;
+    tieredMenu = fixture.debugElement.query(By.directive(Menu)).componentInstance;
   });
 
   it('renders add options through a tiered menu', () => {
-    expect(tieredMenu.model).toEqual(addOptions);
+    expect(tieredMenu.model()).toEqual(addOptions);
     expect(header.addOptions()).toEqual(addOptions);
     expect(addOptions[0].items?.[0].items?.[0].label).toBe('Input');
   });

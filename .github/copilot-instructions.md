@@ -14,17 +14,17 @@ The user is an experienced senior software engineer. Provide concise, high-signa
 Source code, tests, and current documentation in `apps/docs/src/content/docs/` define supported behavior. Start at `README.md` and `apps/docs/src/content/docs/developers/index.mdx`.
 
 This is an Angular CLI workspace with pnpm workspaces. The application workspaces are private; the
-library workspaces define provisional publishable package contracts:
+only `libs/core` is publishable as `@ngx-formly/builder`:
 
 - `apps/studio`: Browser-local Angular editor application and shell.
 - `apps/docs`: Astro/Starlight public documentation site, built independently of Angular.
-- `libs/state`: Headless document models, hierarchy operations, and persistence contracts.
+- `libs/core/src/lib/state`: Internal editing engine, document models, hierarchy, and persistence.
 - `libs/core`: Formly-backed editor shell, configuration, field editing, layout panels, and serialization.
-- `libs/ui/material`: Reusable Material runtime fields and Formly integrations.
-- `libs/ui/builder-material`: Editor-only adapters for Material composite fields.
+- `libs/ui/material`: Private Studio examples of additional Material runtime fields.
+- `libs/ui/builder-material`: Private Studio editor integrations for those fields.
 
-Import the editor shell through `@ngx-formly/builder` and companion libraries through their
-`@ngx-formly/builder-*` public entry points. Keep entry points limited to supported consumer
+Import the editor, state, and persistence contracts through `@ngx-formly/builder`.
+Additional fields and feature integrations belong in a separate library, not this package. Keep entry points limited to supported consumer
 APIs; do not export implementation details. State must not depend on UI frameworks or the editor
 shell. Core must not depend on UI integrations or application code.
 
@@ -37,8 +37,8 @@ Run commands from the repository root with pnpm:
 
 - All apps: `pnpm dev` starts Studio and docs together.
 - Studio: `pnpm start`, `pnpm run build:studio`.
-- Focused unit suites: `pnpm run test:studio`, `pnpm run test:state`, `pnpm run test:core`, `pnpm run test:material`, `pnpm run test:builder-material`.
-- Package contracts: `pnpm run check:packages` after building the library packages.
+- Focused unit suites: `pnpm run test:studio`, `pnpm run test:core`, `pnpm run test:material`, `pnpm run test:builder-material`.
+- Package contracts: `pnpm run check:packages` after building the builder package.
 - Check `package.json` before suggesting other commands; archived commands are not supported setup instructions.
 
 ## TypeScript And Angular Standards

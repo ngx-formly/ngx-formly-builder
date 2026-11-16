@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
-import { Divider } from 'primeng/divider';
 import { PanelService } from '../editor/panel.service';
 import { CoreFormService } from '../editor/core-form.service';
 import { PanelOptionConfig } from '../panel';
@@ -8,13 +7,13 @@ import { PanelOption } from './panel-option';
 @Component({
   selector: 'core-panel-option-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Divider, PanelOption],
+  imports: [PanelOption],
   host: {
     class: 'flex',
   },
   template: `
     @if (position() === 'right') {
-      <p-divider
+      <hr
         class="h-full"
         layout="vertical"
       />
@@ -28,7 +27,7 @@ import { PanelOption } from './panel-option';
                 class="px-3 py-2"
                 aria-hidden="true"
               >
-                <p-divider />
+                <hr />
               </div>
             }
             <core-panel-option
@@ -47,7 +46,7 @@ import { PanelOption } from './panel-option';
       }
     </ul>
     @if (position() === 'left') {
-      <p-divider
+      <hr
         class="h-full"
         layout="vertical"
       />

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Panel } from 'primeng/panel';
+import { Panel } from '../../ui/panel';
 import { CORE_EDITOR_CONFIG, CORE_FORM_TEMPLATES, CORE_LIBRARY_CONFIGS } from '../../config/types';
 import { LocalFormStoreService } from '../../persistence/local-form-store.service';
 import { CORE_FORM_STORE } from '../../persistence/types';
@@ -91,7 +91,7 @@ import { CORE_STYLES_CONFIG } from '../styling-panel/types';
         @for (group of styleGroups; track group.label) {
           <h4 class="mt-4 mb-2 font-medium">{{ group.label }}</h4>
           @for (category of group.categories; track $index) {
-            <p-panel
+            <core-property-panel
               [header]="category.name"
               [toggleable]="true"
               [collapsed]="true"
@@ -125,7 +125,7 @@ import { CORE_STYLES_CONFIG } from '../styling-panel/types';
               } @empty {
                 <p>No options configured.</p>
               }
-            </p-panel>
+            </core-property-panel>
           } @empty {
             <p class="text-muted-color">No styling categories configured.</p>
           }

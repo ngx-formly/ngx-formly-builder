@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AutoComplete } from 'primeng/autocomplete';
+import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import { BaseProperty } from '../base.directive';
 import { PropertyType } from '../types';
 import { ChipsPropertyConfig } from './chips.config';
@@ -9,7 +8,7 @@ import { FieldPropertyWrapper } from '../property-wrapper';
 @Component({
   selector: 'core-field-chips-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, FormsModule, AutoComplete, FieldPropertyWrapper],
+  imports: [MatChipsModule, FieldPropertyWrapper],
   template: `
     <core-field-property-wrapper
       [label]="property().label"
@@ -18,15 +17,35 @@ import { FieldPropertyWrapper } from '../property-wrapper';
       [isClearable]="true"
       (clear)="onClear()"
     >
-      <p-autocomplete
+      <mat-chip-grid
+        #chips
+        [attr.aria-label]="property().label || 'Values'"
+      >
+        @for (value of controlValue(); track $index) {
+          <mat-chip-row (removed)="removeChip($index)">
+            {{ value }}
+            <button
+              matChipRemove
+              type="button"
+              [attr.aria-label]="'Remove ' + value"
+            >
+              <i
+                class="material-symbols-outlined"
+                aria-hidden="true"
+                >close</i
+              >
+            </button>
+          </mat-chip-row>
+        }
+      </mat-chip-grid>
+      <input
+        coreInput
         class="field-property-control"
-        multiple
-        addOnTab
-        typeahead="false"
-        [inputId]="inputId"
+        [id]="inputId"
         [placeholder]="property().placeholder || ''"
-        [ngModel]="controlValue()"
-        (ngModelChange)="onValueChange($event)"
+        [matChipInputFor]="chips"
+        [matChipInputAddOnBlur]="true"
+        (matChipInputTokenEnd)="addChip($event)"
       />
     </core-field-property-wrapper>
   `,
@@ -48,6 +67,16 @@ export class FieldChipsProperty extends BaseProperty<ChipsPropertyConfig, string
 
   onClear(): void {
     this._clear();
+  }
+
+  addChip(event: MatChipInputEvent): void {
+    const value = event.value.trim();
+    if (value) this.onValueChange([...this.controlValue(), value]);
+    event.chipInput.clear();
+  }
+
+  removeChip(index: number): void {
+    this.onValueChange(this.controlValue().filter((_, itemIndex) => itemIndex !== index));
   }
 
   onValueChange(value: string[] | null): void {

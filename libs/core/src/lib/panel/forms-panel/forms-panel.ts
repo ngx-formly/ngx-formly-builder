@@ -8,8 +8,6 @@ import {
   linkedSignal,
   signal,
 } from '@angular/core';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { ButtonGroup } from 'primeng/buttongroup';
 import { Empty } from '../../empty/empty';
 import { CreateFormDialogService } from './create-form-dialog.service';
 import { ImportDialogService } from './import-dialog.service';
@@ -19,7 +17,7 @@ import { Tooltip } from '../../shared/tooltip';
 import { WorkspaceToolbar } from './workspace-toolbar';
 import { WorkspaceTreeItem } from './workspace-tree-item';
 import type { WorkspaceNode } from '../../model/types';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { MatTabsModule } from '@angular/material/tabs';
 import { PanelService } from '../../editor/panel.service';
 import { ValidationsTabContent } from './validations-tab-content';
 
@@ -28,20 +26,12 @@ import { ValidationsTabContent } from './validations-tab-content';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [MouseInsideService],
   imports: [
+    MatTabsModule,
     Empty,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
-    ButtonGroup,
     Tooltip,
     WorkspaceToolbar,
     PanelHeader,
     WorkspaceTreeItem,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
     ValidationsTabContent,
   ],
   host: {
@@ -53,38 +43,21 @@ import { ValidationsTabContent } from './validations-tab-content';
       header="Workspace"
       subHeader="Create and manage forms and validations"
     />
-    <p-tabs
-      class="flex min-h-0 flex-1 flex-col"
-      [value]="activeTab()"
-      (valueChange)="selectTab($event)"
-    >
-      <p-tablist class="min-h-12.5 shrink-0 px-4">
-        <p-tab
-          class="flex items-center gap-1 px-2!"
-          value="forms"
-        >
+    <mat-tab-group
+      class="core-tabs min-h-0 flex-1"
+      animationDuration="0ms"
+      [preserveContent]="true"
+      [selectedIndex]="['forms', 'validations'].indexOf(activeTab())"
+      (selectedTabChange)="selectTab($event.index === 0 ? 'forms' : 'validations')"
+      ><mat-tab
+        ><ng-template mat-tab-label>
           <i
             class="material-symbols-outlined size-6 shrink-0 overflow-hidden"
             aria-hidden="true"
             >description</i
           ><span>Forms</span>
-        </p-tab>
-        <p-tab
-          class="flex items-center gap-1 px-2!"
-          value="validations"
-        >
-          <i
-            class="material-symbols-outlined size-6 shrink-0 overflow-hidden"
-            aria-hidden="true"
-            >rule</i
-          ><span>Validations</span>
-        </p-tab>
-      </p-tablist>
-      <p-tabpanels class="flex min-h-0 flex-1 flex-col px-0 pb-0">
-        <p-tabpanel
-          class="flex min-h-0 flex-1 flex-col overflow-hidden"
-          value="forms"
-        >
+        </ng-template>
+        <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
           <core-workspace-toolbar
             class="pb-2"
             searchLabel="Search forms and folders"
@@ -95,39 +68,40 @@ import { ValidationsTabContent } from './validations-tab-content';
             [(filterValue)]="filterValue"
             (deleteSelected)="deleteSelectedNodes()"
           >
-            <p-buttongroup
+            <div
+              role="group"
               class="min-w-0 [&>span]:flex"
               aria-label="Workspace actions"
             >
               <button
-                pButton
+                coreButton
                 class="shrink-0"
                 severity="secondary"
                 aria-label="New folder"
                 coreTooltip="New folder"
-                tooltipPosition="top"
+                tooltipPosition="above"
                 [disabled]="hasStorageRecoveryIssues()"
                 (click)="addNewFolder()"
               >
                 <i
-                  pButtonIcon
+                  coreButtonIcon
                   class="material-symbols-outlined"
                 >
                   create_new_folder
                 </i>
               </button>
               <button
-                pButton
+                coreButton
                 class="shrink-0"
                 severity="secondary"
                 aria-label="Import Form"
                 coreTooltip="Import Form"
-                tooltipPosition="top"
+                tooltipPosition="above"
                 [disabled]="hasStorageRecoveryIssues()"
                 (click)="openImportDialog()"
               >
                 <i
-                  pButtonIcon
+                  coreButtonIcon
                   class="material-symbols-outlined"
                 >
                   upload
@@ -135,27 +109,27 @@ import { ValidationsTabContent } from './validations-tab-content';
               </button>
               <button
                 #createButton
-                pButton
+                coreButton
                 class="min-w-0 @max-[17.5rem]:w-10 @max-[17.5rem]:px-1"
                 aria-label="Create Form"
                 coreTooltip="Create Form"
-                tooltipPosition="top"
+                tooltipPosition="above"
                 [disabled]="hasStorageRecoveryIssues()"
                 (click)="addNewForm()"
               >
                 <i
-                  pButtonIcon
+                  coreButtonIcon
                   class="material-symbols-outlined"
                 >
                   add
                 </i>
                 <span
-                  pButtonLabel
+                  coreButtonLabel
                   class="truncate @max-[17.5rem]:hidden"
                   >Create Form</span
                 >
               </button>
-            </p-buttongroup>
+            </div>
           </core-workspace-toolbar>
 
           @if (hasStorageRecoveryIssues()) {
@@ -170,7 +144,7 @@ import { ValidationsTabContent } from './validations-tab-content';
               </p>
               <div class="mt-3 flex flex-wrap gap-2">
                 <button
-                  pButton
+                  coreButton
                   severity="secondary"
                   outlined
                   (click)="downloadRecoveryBackup()"
@@ -178,7 +152,7 @@ import { ValidationsTabContent } from './validations-tab-content';
                   Download backup
                 </button>
                 <button
-                  pButton
+                  coreButton
                   severity="danger"
                   (click)="resetCorruptedStorage()"
                 >
@@ -223,7 +197,7 @@ import { ValidationsTabContent } from './validations-tab-content';
               description="Click the + button to add a new form. You can also add the default form"
             >
               <button
-                pButton
+                coreButton
                 text
                 [disabled]="hasStorageRecoveryIssues()"
                 (click)="addNewForm()"
@@ -233,15 +207,18 @@ import { ValidationsTabContent } from './validations-tab-content';
               </button>
             </core-empty>
           }
-        </p-tabpanel>
-        <p-tabpanel
-          class="flex min-h-0 flex-1 flex-col overflow-hidden"
-          value="validations"
-        >
-          <core-validations-tab-content />
-        </p-tabpanel>
-      </p-tabpanels>
-    </p-tabs>
+        </div></mat-tab
+      ><mat-tab
+        ><ng-template mat-tab-label>
+          <i
+            class="material-symbols-outlined size-6 shrink-0 overflow-hidden"
+            aria-hidden="true"
+            >rule</i
+          ><span>Validations</span>
+        </ng-template>
+        <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <core-validations-tab-content /></div></mat-tab
+    ></mat-tab-group>
   `,
 })
 export class FormsPanel {

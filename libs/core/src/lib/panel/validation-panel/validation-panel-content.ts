@@ -1,7 +1,7 @@
 import { CoreFieldService } from '../../config/core-field.service';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { get } from 'lodash-es';
-import { Panel, PanelPassThrough } from 'primeng/panel';
+import { Panel, PanelLayout } from '../../ui/panel';
 import { FieldProperty } from '../../properties/field-property';
 import { FieldCustomValidationProperty } from '../../properties/custom-validation/custom-validation';
 import { PropertyChange, PropertyChangeType, PropertyConfig } from '../../properties/types';
@@ -18,7 +18,7 @@ import { createCustomValidationProperty } from '../../properties/custom-validati
   },
   template: `
     @if (config().displayProperties?.length) {
-      <p-panel header="Display">
+      <core-property-panel header="Display">
         @for (property of config().displayProperties; track property.key) {
           <core-field-property
             [class.col-span-1]="property.colSpan === 1"
@@ -29,11 +29,11 @@ import { createCustomValidationProperty } from '../../properties/custom-validati
             (targetChanged)="targetChanged.emit($event)"
           />
         }
-      </p-panel>
+      </core-property-panel>
     }
 
     @if (config().rules.length) {
-      <p-panel header="Rules">
+      <core-property-panel header="Rules">
         @for (rule of config().rules; track rule.name) {
           <div
             class="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-end gap-2 [&_.field-property-control]:min-w-0!"
@@ -56,7 +56,7 @@ import { createCustomValidationProperty } from '../../properties/custom-validati
             }
           </div>
         }
-      </p-panel>
+      </core-property-panel>
     }
 
     @if (customValidators(); as property) {
@@ -94,7 +94,7 @@ export class ValidationPanelContent {
 
   protected fieldService = inject(CoreFieldService);
 
-  panelPT: PanelPassThrough = {
+  panelPT: PanelLayout = {
     content: {
       class: 'grid! grid-cols-2 gap-2',
     },

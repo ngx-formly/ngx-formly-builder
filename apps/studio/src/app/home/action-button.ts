@@ -1,26 +1,25 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 
 @Component({
   selector: 'app-action-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, ButtonLabel],
+  imports: [],
   template: `
     <button
-      pButton
+      coreButton
       class="w-full justify-start p-4 text-left"
       type="button"
-      [text]="text()"
+      [attr.text]="text()"
       (click)="activated.emit()"
     >
       <i
-        pButtonIcon
+        coreButtonIcon
         class="material-symbols-outlined"
         >{{ icon() }}</i
       >
       <span class="flex flex-col items-start gap-1">
         <span
-          pButtonLabel
+          coreButtonLabel
           class="text-base"
           >{{ label() }}</span
         >

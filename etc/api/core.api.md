@@ -24,16 +24,13 @@ Generated declarations for review. Update with `pnpm run update:api`.
 
 ```ts
 // types/ngx-formly-builder.d.ts
-import { BaseEditorForm, BaseWorkspaceNode, BuilderEngineService, BuilderFieldStateService as BuilderFieldStateService$1, CORE_FORM_STORE, DefaultForm, EditorField, EditorForm, FieldInfo, FieldInfoBadge, FormStoreDataKind, FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, FormStoreService, PropertyChange, PropertyChangeType, WorkspaceFolderNode, WorkspaceFormNode, WorkspaceHierarchy, WorkspaceNode, WorkspaceNodeType, WorkspaceValidation, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion } from "@ngx-formly/builder-state";
+import { ConfigOption, FormlyFieldConfig, FormlyFieldProps } from "@ngx-formly/core";
+import { Observable, Subject } from "rxjs";
 import * as i0 from "@angular/core";
 import { EnvironmentProviders, InjectionToken, TrackByFunction, Type, WritableSignal } from "@angular/core";
 import * as z$1 from "zod";
 import z, { ZodType } from "zod";
-import { ConfigOption, FormlyFieldConfig } from "@ngx-formly/core";
-import { MenuItem } from "primeng/api";
-import { Subject } from "rxjs";
 import { NgForm } from "@angular/forms";
-import { Preset } from "@primeuix/themes/types";
 interface BooleanPropertyConfig extends BasePropertyConfig {
     type: PropertyType.BOOLEAN;
     /**
@@ -230,6 +227,455 @@ interface WrappersPropertyConfig extends BasePropertyConfig {
     clearOnEmpty?: boolean;
 }
 export declare const createWrappersProperty: PropertyCreator<WrappersPropertyConfig, WrappersPropertyConfig>;
+/** A reusable expression copied into a field when selected. */
+interface WorkspaceValidation {
+    id: string;
+    name: string;
+    expression: string;
+    message: string;
+}
+/**
+ * Metadata about a field used by the editor to track relationships and UI state.
+ */
+interface FieldInfo {
+    childIds: string[];
+    isFieldArray?: boolean;
+    /** Field name/label used for display or key generation. */
+    name: string;
+    /** The id of the form this field belongs to. */
+    formId: string;
+    /** Unique id for the field. */
+    id: string;
+    /** Array of ancestor ids followed by this field's id. */
+    idPath: string[];
+    /** True when the field can contain children. */
+    isParent?: boolean;
+    /** True when the field is a root-level field. */
+    isRoot?: boolean;
+    /** Optional UI badges to display alongside the field. */
+    badges?: FieldInfoBadge[];
+}
+/**
+ * Small descriptive badge attached to a field in the UI.
+ */
+interface FieldInfoBadge {
+    /** Short badge text. */
+    label: string;
+    /** Longer description shown in a tooltip. */
+    description: string;
+}
+type EditorField<Props = FormlyFieldProps & {
+    [additionalProperties: string]: unknown;
+}> = FormlyFieldConfig<Props> & {
+    _info: FieldInfo;
+    fieldGroup?: EditorField[];
+    fieldArray?: EditorField;
+    [key: string]: unknown;
+};
+/**
+ * Basic metadata for an editor form.
+ */
+interface BaseEditorForm {
+    /** Unique form id. */
+    id: string;
+    libraryId: string;
+    fieldCount: number;
+    /** Human friendly form name. */
+    name: string;
+    /** Optional parent directory/folder id. */
+    parentId?: null | string;
+}
+/**
+ * Full form representation including fields and model.
+ */
+interface EditorForm extends BaseEditorForm {
+    /** Map of field id -> field instance. */
+    fieldMap: Record<string, EditorField>;
+    /** Ordered ids for root-level fields. */
+    rootFieldIds: string[];
+    /** Form model data object. */
+    model: Record<string, unknown>;
+}
+/**
+ * Default form package used when creating a new form from a template.
+ */
+interface DefaultForm {
+    /** Identifier for the form. Will be generated if not set */
+    id?: string;
+    libraryId: string;
+    fieldCount?: number;
+    /** Optional parent folder id */
+    parentId?: null | string;
+    /** Form name. */
+    name: string;
+    /** Optional icon identifier (e.g. Material Symbols name) shown on template cards. */
+    icon?: string;
+    /** Optional short description shown on template cards. */
+    description?: string;
+    /** Array of field definitions for the template. */
+    fields: FormlyFieldConfig[];
+    /** Initial model for the template form. */
+    model: Record<string, unknown>;
+}
+/**
+ * Node types for workspace folder and form hierarchy.
+ */
+type WorkspaceNodeType = 'folder' | 'form';
+interface BaseWorkspaceNode {
+    id: string;
+    name: string;
+    type: WorkspaceNodeType;
+    parentId: null | string;
+    idPath: string[];
+    sortOrder?: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
+interface WorkspaceFolderNode extends BaseWorkspaceNode {
+    type: 'folder';
+    childIds: string[];
+    isExpanded?: boolean;
+}
+interface WorkspaceFormNode extends BaseWorkspaceNode {
+    type: 'form';
+    libraryId: string;
+    fieldCount?: number;
+}
+type WorkspaceNode = WorkspaceFolderNode | WorkspaceFormNode;
+interface WorkspaceHierarchy {
+    workspaceId: string;
+    rootNodeIds: string[];
+    nodeMap: Record<string, WorkspaceNode>;
+}
+/** Whether a name can safely identify a custom expression validator. */
+export declare function isValidationRuleName(name: string): boolean;
+declare function isWorkspaceValidation(value: unknown): value is WorkspaceValidation;
+declare function isWorkspaceValidationList(value: unknown): value is WorkspaceValidation[];
+/**
+ * Creates a clean, empty workspace hierarchy structure.
+ */
+export declare function createEmptyWorkspaceHierarchy(workspaceId: string): WorkspaceHierarchy;
+/**
+ * Checks if a candidate node is an ancestor of target node.
+ * Used to prevent circular hierarchies (e.g. moving a folder into its own subfolder).
+ */
+export declare function isAncestorOf(hierarchy: WorkspaceHierarchy, potentialAncestorId: string, targetNodeId: null | string): boolean;
+/**
+ * Recursively collects all descendant node IDs for a given folder.
+ */
+export declare function getDescendantNodeIds(hierarchy: WorkspaceHierarchy, folderId: string): string[];
+/**
+ * Recalculates idPaths for a node and all its descendants recursively.
+ */
+export declare function recalculateNodePaths(nodeMap: Record<string, WorkspaceNode>, nodeId: string, parentPath?: string[]): Record<string, WorkspaceNode>;
+/**
+ * Adds a new node (folder or form) to the hierarchy immutably.
+ */
+export declare function addNodeToHierarchy(hierarchy: WorkspaceHierarchy, node: WorkspaceNode, targetIndex?: number): WorkspaceHierarchy;
+/**
+ * Removes a node and all of its descendants recursively from the hierarchy.
+ */
+export declare function removeNodeFromHierarchy(hierarchy: WorkspaceHierarchy, nodeId: string): {
+    hierarchy: WorkspaceHierarchy;
+    removedNodeIds: string[];
+};
+/**
+ * Moves a node to a new parent folder (or to root) with cycle detection.
+ */
+export declare function moveNodeInHierarchy(hierarchy: WorkspaceHierarchy, nodeId: string, newParentId: null | string, targetIndex?: number): WorkspaceHierarchy;
+/**
+ * Renames a node in the hierarchy immutably.
+ */
+export declare function renameNodeInHierarchy(hierarchy: WorkspaceHierarchy, nodeId: string, newName: string): WorkspaceHierarchy;
+/**
+ * Toggles or sets the expanded state of a folder.
+ */
+export declare function toggleFolderExpansion(hierarchy: WorkspaceHierarchy, folderId: string, isExpanded?: boolean): WorkspaceHierarchy;
+/**
+ * Migrates a legacy flat array of forms into a normalized WorkspaceHierarchy.
+ */
+export declare function buildHierarchyFromFlatForms(workspaceId: string, forms: BaseEditorForm[]): WorkspaceHierarchy;
+/**
+ * Form store interface describing persistence operations.
+ */
+interface FormStoreService {
+    /** Add a new form to storage. */
+    addForm$(editorType: string, form: DefaultForm): Observable<void>;
+    /** Update an existing form in storage. */
+    updateForm$(editorType: string, form: DefaultForm): Observable<void>;
+    /** Remove a form by id. */
+    removeForm$(editorType: string, formId: string): Observable<void>;
+    /** Retrieve a stored form by id. */
+    getForm$(editorType: string, formId: string): Observable<DefaultForm | undefined>;
+    /** List available forms for an editor. */
+    getFormList$(editorType: string): Observable<BaseEditorForm[]>;
+    /** Retrieve the full workspace hierarchy structure. */
+    getHierarchy$(editorType: string): Observable<WorkspaceHierarchy>;
+    /** Save the full workspace hierarchy structure. */
+    saveHierarchy$(editorType: string, hierarchy: WorkspaceHierarchy): Observable<void>;
+    /** Catalog support requires both methods. Rules are shared within the editor namespace. */
+    getValidations$?(editorType: string): Observable<WorkspaceValidation[]>;
+    saveValidations$?(editorType: string, validations: WorkspaceValidation[]): Observable<void>;
+    /** Report local data that could not be read without discarding the original value. */
+    getRecoveryIssues$?(editorType: string): Observable<readonly FormStoreRecoveryIssue[]>;
+    /** Explicitly remove corrupted local data for an editor namespace. */
+    resetCorruptedStorage$?(editorType: string, kind?: FormStoreDataKind): Observable<void>;
+}
+type FormStoreDataKind = 'forms' | 'hierarchy' | 'validations';
+interface FormStoreRecoveryIssue {
+    editorType: string;
+    kind: FormStoreDataKind;
+    reason: 'invalid-json' | 'invalid-shape';
+    storageKey: string;
+    rawValue: string;
+    /** Additional stored values removed when this issue is reset, included in recovery backups. */
+    relatedEntries?: readonly {
+        storageKey: string;
+        rawValue: string;
+    }[];
+}
+export declare class FormStoreRecoveryRequiredError extends Error {
+    readonly issues: readonly FormStoreRecoveryIssue[];
+    constructor(issues: readonly FormStoreRecoveryIssue[]);
+}
+export declare const CORE_FORM_STORE: InjectionToken<FormStoreService>;
+export declare class LocalFormStoreService implements FormStoreService {
+    readonly storageKey = "formly-studio-forms";
+    readonly hierarchyStorageKey = "formly-studio-hierarchy";
+    readonly validationsStorageKey = "formly-studio-validations";
+    private readonly recoveryIssues;
+    addForm$(editorType: string, newForm: DefaultForm): Observable<undefined>;
+    updateForm$(editorType: string, newForm: DefaultForm): Observable<undefined>;
+    removeForm$(editorType: string, formId: string): Observable<undefined>;
+    getFormList$(editorType: string): Observable<BaseEditorForm[]>;
+    getForm$(editorType: string, formId: string): Observable<DefaultForm | undefined>;
+    getHierarchy$(editorType: string): Observable<WorkspaceHierarchy>;
+    saveHierarchy$(editorType: string, hierarchy: WorkspaceHierarchy): Observable<void>;
+    getRecoveryIssues$(editorType: string): Observable<readonly FormStoreRecoveryIssue[]>;
+    getValidations$(editorType: string): Observable<WorkspaceValidation[]>;
+    saveValidations$(editorType: string, validations: WorkspaceValidation[]): Observable<void>;
+    private readValidations;
+    resetCorruptedStorage$(editorType: string, kind?: FormStoreDataKind): Observable<void>;
+    protected getHierarchySync(editorType: string): WorkspaceHierarchy;
+    protected storeHierarchy(editorType: string, hierarchy: WorkspaceHierarchy): void;
+    protected getFormMap(editorType: string): Record<string, DefaultForm>;
+    protected storeFormMap(editorType: string, formMap: Record<string, DefaultForm>): void;
+    private getRecoveryIssuesSubject;
+    private getRecoveryError;
+    private setRecoveryIssue;
+    private clearRecoveryIssue;
+    private isFormMap;
+    private isWorkspaceHierarchy;
+    private isWorkspaceNode;
+    private isRecord;
+    static ɵfac: i0.ɵɵFactoryDeclaration<LocalFormStoreService, never>;
+    static ɵprov: i0.ɵɵInjectableDeclaration<any>;
+}
+/** Field metadata used by document operations, without rendering components. */
+interface EngineFieldType {
+    name: string;
+    displayName: string;
+    defaultConfig: FormlyFieldConfig;
+    isParent?: boolean;
+    isFieldArray?: boolean;
+    disableKeyGeneration?: boolean;
+    keyGenerationPrefix?: string;
+}
+interface EngineFieldPreset {
+    id?: string;
+    displayName?: string;
+    isRemovable?: boolean;
+    typeOption?: EngineFieldType;
+    field: FormlyFieldConfig;
+}
+/** Libraries available to a headless editor. Runtime registration is the host's responsibility. */
+interface EngineLibrary {
+    id: string;
+    fieldTypes: EngineFieldType[];
+    defaultField?: FormlyFieldConfig;
+}
+interface BuilderEngineConfig {
+    editorType: string;
+    libraries: EngineLibrary[];
+    /** Defaults to true. */
+    autoSave?: boolean;
+    autoSaveDelay?: number;
+    formStore?: Type<FormStoreService>;
+}
+export declare const BUILDER_ENGINE_CONFIG: InjectionToken<BuilderEngineConfig>;
+/** A failed selection leaves the current document and save status unchanged. */
+interface FormLoadError {
+    formId: string;
+    reason: 'invalid-form' | 'missing-library' | 'not-found' | 'recovery-required' | 'store-error';
+    libraryId?: string;
+    cause?: unknown;
+}
+interface PersistenceError {
+    action: string;
+    cause: unknown;
+    failedFormIds?: string[];
+}
+export declare enum PropertyChangeType {
+    KEY = 0,
+    VALUE = 1,
+    CLEAR = 2
+}
+interface PropertyChange {
+    type: PropertyChangeType;
+    path: string[];
+    newPath?: string[];
+    value?: unknown;
+}
+export declare const modifyPropertyTarget: <T extends Record<string, unknown>>(target: T, { type, ...change }: PropertyChange) => T;
+type FieldDropPosition = 'bottom' | 'center' | 'left' | 'right' | 'top';
+export declare function isLayoutRow(field: FormlyFieldConfig | undefined): boolean;
+/** Only discard empty generated rows; a remaining field keeps its full row and original styles. */
+declare function removeEmptyRows(form: EditorForm): void;
+declare function canDropField(form: EditorForm, sourceId: string | undefined, targetId: string, position: FieldDropPosition): boolean;
+/** Mutates a draft after canDropField has validated the destination. */
+declare function placeField(form: EditorForm, sourceId: string, targetId: string, position: FieldDropPosition, rowId: string): void;
+export declare class BuilderEngineService {
+    protected readonly editorConfig: BuilderEngineConfig;
+    protected readonly formStoreService: FormStoreService;
+    private readonly destroyRef;
+    private pendingFormId;
+    private readonly cancelLoad$;
+    private loadVersion;
+    private activeVersion;
+    private readonly queuedSaves;
+    private readonly operations$;
+    private readonly loadingFormIdSrc;
+    private readonly formLoadErrorSrc;
+    private readonly persistenceErrorSrc;
+    readonly loadingFormId: import("@angular/core").Signal<null | string>;
+    readonly formLoadError: import("@angular/core").Signal<FormLoadError | null>;
+    readonly persistenceError: import("@angular/core").Signal<PersistenceError | null>;
+    private readonly autosaveTrigger$;
+    private readonly autosaveEnabled;
+    private readonly autosaveDelay;
+    readonly saveActiveFormTrigger$: Subject<void>;
+    readonly saveStatusSrc: import("@angular/core").WritableSignal<"dirty" | "error" | "saved" | "saving">;
+    readonly saveStatus: import("@angular/core").Signal<"dirty" | "error" | "saved" | "saving">;
+    protected readonly storageRecoveryIssuesSrc: import("@angular/core").WritableSignal<readonly FormStoreRecoveryIssue[]>;
+    readonly storageRecoveryIssues: import("@angular/core").Signal<readonly FormStoreRecoveryIssue[]>;
+    readonly hasStorageRecoveryIssues: import("@angular/core").Signal<boolean>;
+    readonly hasFormStorageRecoveryIssue: import("@angular/core").Signal<boolean>;
+    readonly validationStorageAvailable: boolean;
+    private readonly validationsSrc;
+    readonly validations: import("@angular/core").Signal<WorkspaceValidation[]>;
+    private readonly validationsLoadingSrc;
+    readonly validationsLoading: import("@angular/core").Signal<boolean>;
+    private readonly validationsLoadErrorSrc;
+    readonly validationsLoadError: import("@angular/core").Signal<null | string>;
+    readonly validationRecoveryIssues: import("@angular/core").Signal<FormStoreRecoveryIssue[]>;
+    protected readonly formListSrc: import("@angular/core").WritableSignal<BaseEditorForm[]>;
+    protected readonly hierarchySrc: import("@angular/core").WritableSignal<WorkspaceHierarchy>;
+    protected readonly activeFieldIdSrc: import("@angular/core").WritableSignal<null | string>;
+    protected readonly activeFormSrc: import("@angular/core").WritableSignal<EditorForm | null>;
+    protected readonly activeFieldIdByFormSrc: import("@angular/core").WritableSignal<Record<string, null | string>>;
+    readonly formList: import("@angular/core").Signal<BaseEditorForm[]>;
+    readonly hierarchy: import("@angular/core").Signal<WorkspaceHierarchy>;
+    readonly hierarchyRootNodeIds: import("@angular/core").Signal<string[]>;
+    readonly hierarchyNodeMap: import("@angular/core").Signal<Record<string, import("@ngx-formly/builder").WorkspaceNode>>;
+    readonly activeFieldId: import("@angular/core").Signal<null | string>;
+    readonly activeForm: import("@angular/core").Signal<EditorForm | null>;
+    readonly activeFormId: import("@angular/core").Signal<string | undefined>;
+    readonly activeFormName: import("@angular/core").Signal<string | undefined>;
+    readonly activeRootFieldIds: import("@angular/core").Signal<string[]>;
+    readonly activeFieldMap: import("@angular/core").Signal<Record<string, EditorField<import("@ngx-formly/core").FormlyFieldProps & {
+        [additionalProperties: string]: unknown;
+    }>>>;
+    readonly activeFieldCount: import("@angular/core").Signal<number>;
+    readonly activeField: import("@angular/core").Signal<EditorField<import("@ngx-formly/core").FormlyFieldProps & {
+        [additionalProperties: string]: unknown;
+    }> | null>;
+    readonly activeFormFieldsRaw: import("@angular/core").Signal<EditorField[]>;
+    readonly activeModel: import("@angular/core").Signal<Record<string, unknown>>;
+    readonly activeLibraryId: import("@angular/core").Signal<null | string>;
+    readonly formSelected$: Subject<EditorForm | null>;
+    readonly activeFormFields: import("@angular/core").Signal<EditorField[]>;
+    readonly activePreviewFormFields: import("@angular/core").Signal<EditorField[]>;
+    readonly activeFormFieldsJSON: import("@angular/core").Signal<string>;
+    constructor(config: BuilderEngineConfig, store: FormStoreService);
+    private enqueue$;
+    private snapshot$;
+    private refreshWorkspace$;
+    loadValidations(): void;
+    private readValidations$;
+    saveValidation$(draft: Omit<WorkspaceValidation, 'id'>, id?: string): Observable<void>;
+    deleteValidation$(id: string): Observable<void>;
+    private mutateValidations$;
+    resetValidations$(): Observable<void>;
+    private runMutation;
+    private requestSave;
+    protected markFormDirty(): void;
+    protected refreshHierarchy(): void;
+    resetCorruptedStorage(): void;
+    getStorageRecoveryBackup(kind?: FormStoreDataKind): string;
+    setActiveField(fieldId: null | string): void;
+    setActiveFormName(newName: string): void;
+    setWorkspaceNodeName(nodeId: string, newName: string): void;
+    private cancelLoad;
+    setActiveForm(formId: null | string): void;
+    saveActiveForm(): void;
+    addForm$(name: string, fields: FormlyFieldConfig[] | undefined, model: Record<string, unknown>, libraryId: string, setActive?: boolean, parentId?: null | string): Observable<void>;
+    private clearDeletedSelection;
+    removeForm(formId: string): void;
+    createFolder(name: string, parentId?: null | string): string | undefined;
+    deleteWorkspaceNode(nodeId: string): void;
+    moveWorkspaceNode(nodeId: string, targetFolderId: null | string, targetIndex?: number): void;
+    renameWorkspaceNode(nodeId: string, newName: string): void;
+    toggleFolderExpansion(folderId: string, isExpanded?: boolean): void;
+    private isStorageMutationBlocked;
+    private handlePersistenceError;
+    modifyActiveField(change: PropertyChange): void;
+    setActiveModel(newModel: Record<string, unknown>): void;
+    modifyActiveModel(newModelJSON: string): void;
+    getField(fieldId: string): EditorField | undefined;
+    private getTypeOptions;
+    private getDefaultField;
+    protected insertId(id: string, arr: string[], index: number | undefined): string[];
+    buildField(fieldId: string, fieldMap: Record<string, EditorField>): EditorField;
+    cleanField(field: EditorField): void;
+    convertFromRawForm({ id, name, libraryId, fields, model, parentId }: DefaultForm): EditorForm;
+    convertToRawForm({ id, libraryId, name, fieldMap, rootFieldIds, model, parentId }: EditorForm): DefaultForm;
+    getFieldIndex(fieldId: string): number;
+    canDropField(sourceId: string | undefined, targetId: string, position: FieldDropPosition): boolean;
+    /** Adds or moves a field and updates its row in one document change. */
+    dropField(targetId: string, position: FieldDropPosition, source: {
+        fieldId: string;
+    } | {
+        fieldType: string;
+        preset?: EngineFieldPreset;
+    }): void;
+    addField(fieldType: string, parentId?: string, index?: number, preset?: EngineFieldPreset): void;
+    removeField(fieldId: string): void;
+    moveField(fieldId: string, fromIndex: number, toIndex: number | undefined, toParentId?: string | undefined): void;
+    replaceField(fieldType: string, fieldId: string): void;
+    static ɵfac: i0.ɵɵFactoryDeclaration<BuilderEngineService, never>;
+    static ɵprov: i0.ɵɵInjectableDeclaration<any>;
+}
+type StatefulField = FormlyFieldConfig & {
+    _info?: Pick<FieldInfo, 'id'>;
+};
+export declare class BuilderFieldStateService {
+    protected readonly formService: BuilderEngineService;
+    constructor(formService?: BuilderEngineService);
+    private readonly state;
+    getState<T>(field: StatefulField): T | undefined;
+    setState<T>(field: StatefulField, state: T): void;
+    static ɵfac: i0.ɵɵFactoryDeclaration<BuilderFieldStateService, never>;
+    static ɵprov: i0.ɵɵInjectableDeclaration<any>;
+}
+/** Provide an isolated editor engine without configuring a UI shell or a Formly runtime. */
+export declare function provideBuilderEngine(config: BuilderEngineConfig): EnvironmentProviders;
+export declare function generateFormId(): string;
+export declare function generateFieldId(type: string | undefined): string;
+export declare function clearFieldModelValue(fieldId: string, fieldMap: Record<string, EditorField>, model: Record<string, unknown>): void;
+/**
+ * Converts a FormlyFieldConfig to an IEditorFormlyField, populating _info and generating ids.
+ */
+export declare function convertField(sourceField: FormlyFieldConfig, fieldId: string, formId: string, parentIdPath: string[] | undefined, fieldMap: Record<string, EditorField>, typeOptions: EngineFieldType[], getDefaultField: (type: string) => FormlyFieldConfig): EditorField;
 export declare enum PropertyType {
     BOOLEAN = "Boolean",
     INPUT = "Input",
@@ -558,6 +1004,20 @@ export declare class CoreFieldService {
     static ɵfac: i0.ɵɵFactoryDeclaration<CoreFieldService, never>;
     static ɵprov: i0.ɵɵInjectableDeclaration<any>;
 }
+interface MenuItem {
+    label?: string;
+    icon?: string;
+    matIcon?: string;
+    warn?: boolean;
+    items?: MenuItem[];
+    disabled?: boolean;
+    visible?: boolean;
+    separator?: boolean;
+    styleClass?: string;
+    command?: (event: {
+        item?: MenuItem;
+    }) => void;
+}
 interface CoreAddFieldOption extends MenuItem {
     items?: CoreAddFieldOption[];
     fieldType?: string;
@@ -623,7 +1083,7 @@ declare class AddFieldPanel {
     protected formService: CoreFormService;
     protected fieldService: CoreFieldService;
     activeFormId: import("@angular/core").Signal<string | undefined>;
-    activeField: import("@angular/core").Signal<EditorField<import("@ngx-formly/core").FormlyFieldProps & {
+    activeField: import("@angular/core").Signal<import("@ngx-formly/builder").EditorField<import("@ngx-formly/core").FormlyFieldProps & {
         [additionalProperties: string]: unknown;
     }> | null>;
     fieldCategoryPresets: import("@angular/core").WritableSignal<FieldCategoryPreset[]>;
@@ -634,17 +1094,17 @@ declare class AddFieldPanel {
 declare class FieldEditPanel {
     protected formService: CoreFormService;
     protected fieldService: CoreFieldService;
-    activeField: import("@angular/core").Signal<EditorField<import("@ngx-formly/core").FormlyFieldProps & {
+    activeField: import("@angular/core").Signal<import("@ngx-formly/builder").EditorField<import("@ngx-formly/core").FormlyFieldProps & {
         [additionalProperties: string]: unknown;
     }> | null>;
-    activeFieldMap: import("@angular/core").Signal<Record<string, EditorField<import("@ngx-formly/core").FormlyFieldProps & {
+    activeFieldMap: import("@angular/core").Signal<Record<string, import("@ngx-formly/builder").EditorField<import("@ngx-formly/core").FormlyFieldProps & {
         [additionalProperties: string]: unknown;
     }>>>;
     readonly headerTitle: import("@angular/core").Signal<string>;
-    readonly parentField: import("@angular/core").Signal<EditorField<import("@ngx-formly/core").FormlyFieldProps & {
+    readonly parentField: import("@angular/core").Signal<import("@ngx-formly/builder").EditorField<import("@ngx-formly/core").FormlyFieldProps & {
         [additionalProperties: string]: unknown;
     }> | null>;
-    readonly activeFieldByType: import("@angular/core").Signal<EditorField<import("@ngx-formly/core").FormlyFieldProps & {
+    readonly activeFieldByType: import("@angular/core").Signal<import("@ngx-formly/builder").EditorField<import("@ngx-formly/core").FormlyFieldProps & {
         [additionalProperties: string]: unknown;
     }> | null>;
     readonly properties: import("@angular/core").Signal<import("@ngx-formly/builder").PropertyConfig[]>;
@@ -744,13 +1204,9 @@ declare class FormPanel {
     activeFormFieldsJSON: import("@angular/core").Signal<string>;
     activeFormDisplayMode: import("@angular/core").Signal<"form" | "json" | "preview">;
     schema: import("@angular/core").Signal<import("zod").ZodType<unknown, unknown, import("zod/v4/core").$ZodTypeInternals<unknown, unknown>> | undefined>;
-    activePreviewFormFields$: import("rxjs").Observable<EditorField<import("@ngx-formly/core").FormlyFieldProps & {
-        [additionalProperties: string]: unknown;
-    }>[]>;
+    activePreviewFormFields$: import("rxjs").Observable<import("@ngx-formly/builder").EditorField[]>;
     displayMode$: import("rxjs").Observable<"form" | "json" | "preview">;
-    previewFields$: import("rxjs").Observable<EditorField<import("@ngx-formly/core").FormlyFieldProps & {
-        [additionalProperties: string]: unknown;
-    }>[]>;
+    previewFields$: import("rxjs").Observable<import("@ngx-formly/builder").EditorField[]>;
     setActiveFormDisplayMode(mode?: number | string): void;
     static ɵfac: i0.ɵɵFactoryDeclaration<FormPanel, never>;
     static ɵcmp: i0.ɵɵComponentDeclaration<FormPanel, "core-form-panel", never, {
@@ -849,7 +1305,7 @@ interface PanelOptionConfig {
 declare class ValidationPanel {
     private readonly formService;
     private readonly fieldService;
-    protected readonly activeField: import("@angular/core").Signal<EditorField<import("@ngx-formly/core").FormlyFieldProps & {
+    protected readonly activeField: import("@angular/core").Signal<import("@ngx-formly/builder").EditorField<import("@ngx-formly/core").FormlyFieldProps & {
         [additionalProperties: string]: unknown;
     }> | null>;
     private readonly activeFieldByType;
@@ -909,11 +1365,6 @@ export declare function generateTypeOptionSchemaMap(fieldCategoryOptions: FieldC
     typeOption: FieldTypeOption;
     schema: Record<string, z$1.ZodType>;
 }>;
-export declare class BuilderFieldStateService extends BuilderFieldStateService$1 {
-    constructor();
-    static ɵfac: i0.ɵɵFactoryDeclaration<BuilderFieldStateService, never>;
-    static ɵprov: i0.ɵɵInjectableDeclaration<any>;
-}
 export declare class ImportDialogService {
     protected readonly isOpenSrc: import("@angular/core").WritableSignal<boolean>;
     readonly isOpen: import("@angular/core").Signal<boolean>;
@@ -946,7 +1397,6 @@ export declare function provideCoreConfig(libraryConfig?: LibraryConfig[], autoS
 export declare function provideFormlyBuilder(config?: FormlyBuilderConfig): EnvironmentProviders;
 export declare function provideFormStore(service: Type<FormStoreService>): EnvironmentProviders;
 export declare function provideLocalFormStore(): EnvironmentProviders;
-export declare const primengPreset: Preset;
 export declare const tailwindConfig: StylesConfig;
 declare const defaultTypeOption: {
     name: string;
@@ -965,5 +1415,5 @@ export declare const nativeFieldTypes: FieldTypeOption[];
 export declare const nativeFieldConfig: ConfigOption;
 /** Recheck expression validators when another field changes their model. */
 export declare function withValidationExpressions(): ConfigOption;
-export { type BaseEditorForm, type BasePropertyConfig, type BaseWorkspaceNode, type Breakpoint, CORE_FORM_STORE, FormlyBuilder as Core, type CoreAddFieldOption, type CoreEditorConfig, type DefaultForm, type EditorForm, type FieldCategoryOption, type FieldInfo, type FieldInfoBadge, type FieldTypeOption, type FieldTypePreset, type FieldValidationConfig, type FieldWrapperOption, type FormStoreDataKind, type FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, type FormStoreService, type FormTemplate, type FormlyBuilderConfig, type GroupChildPropertyConfig, type GroupPropertyConfig, type PropertyConfig as IProperty, type PropertyConfig, type LibraryConfig, type MarkdownPropertyConfig, type PropertyChange, PropertyChangeType, type PropertyCreator, type StyleDependency, type StyleOptionCategory, type StyleOptionConfig, type StylesConfig, type ValidationRuleConfig, type ValidationRulePropertyConfig, type WorkspaceFolderNode, type WorkspaceFormNode, type WorkspaceHierarchy, type WorkspaceNode, type WorkspaceNodeType, type WorkspaceValidation, type WrappersPropertyConfig, type WrappersPropertyOption, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion };
+export { type BaseEditorForm, type BasePropertyConfig, type BaseWorkspaceNode, type Breakpoint, type BuilderEngineConfig, FormlyBuilder as Core, type CoreAddFieldOption, type CoreEditorConfig, type DefaultForm, type EditorField, type EditorForm, type EngineFieldPreset, type EngineFieldType, type EngineLibrary, type FieldCategoryOption, type FieldDropPosition, type FieldInfo, type FieldInfoBadge, type FieldTypeOption, type FieldTypePreset, type FieldValidationConfig, type FieldWrapperOption, type FormLoadError, type FormStoreDataKind, type FormStoreRecoveryIssue, type FormStoreService, type FormTemplate, type FormlyBuilderConfig, type GroupChildPropertyConfig, type GroupPropertyConfig, type PropertyConfig as IProperty, type PropertyConfig, type LibraryConfig, type MarkdownPropertyConfig, type PersistenceError, type PropertyChange, type PropertyCreator, type StyleDependency, type StyleOptionCategory, type StyleOptionConfig, type StylesConfig, type ValidationRuleConfig, type ValidationRulePropertyConfig, type WorkspaceFolderNode, type WorkspaceFormNode, type WorkspaceHierarchy, type WorkspaceNode, type WorkspaceNodeType, type WorkspaceValidation, type WrappersPropertyConfig, type WrappersPropertyOption };
 ```

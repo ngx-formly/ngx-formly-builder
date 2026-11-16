@@ -83,6 +83,7 @@ test.describe('Form Editor responsive authoring', () => {
     await expect(toolbar).toContainText('1280px · 100%');
     await expectNoDocumentOverflow(page);
     await page.setViewportSize({ width: 375, height: 812 });
+    await expect(page.locator('core-splitter')).toHaveCount(0);
     await expect(builder).toHaveCSS('width', '1280px');
     await expectWithinViewport(page, 'Save Form');
     await expectNoDocumentOverflow(page);
@@ -180,9 +181,11 @@ test.describe('Form Editor responsive authoring', () => {
     await openWorkspaceTab(page, 'Forms');
     await page.getByRole('complementary').getByRole('button', { name: 'Create Form' }).click();
     const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
+    await page.getByRole('option', { name: 'None (Vanilla)', exact: true }).click();
     await createFormDialog
       .getByRole('button', { name: 'Start with a blank form', exact: true })
       .click();
+    await expect(createFormDialog).toBeHidden();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('complementary')).toBeHidden();
     await openWorkspaceTab(page, 'Add Field');
@@ -269,9 +272,11 @@ test.describe('Form Editor responsive authoring', () => {
     await openWorkspaceTab(page, 'Forms');
     await page.getByRole('complementary').getByRole('button', { name: 'Create Form' }).click();
     const createFormDialog = page.getByRole('dialog', { name: 'Create Form' });
+    await page.getByRole('option', { name: 'None (Vanilla)', exact: true }).click();
     await createFormDialog
       .getByRole('button', { name: 'Start with a blank form', exact: true })
       .click();
+    await expect(createFormDialog).toBeHidden();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('complementary')).toBeHidden();
     await openWorkspaceTab(page, 'Add Field');
@@ -308,7 +313,10 @@ test.describe('Form Editor responsive authoring', () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await openWorkspaceTab(page, 'Preset');
 
-    const presetSource = page.locator('core-type-container').filter({ hasText: 'Email' }).first();
+    const presetSource = page
+      .getByRole('tabpanel', { name: 'Preset', exact: true })
+      .locator('core-type-container')
+      .filter({ hasText: 'Email' });
     await presetSource.getByRole('button', { name: 'Add Field' }).click();
     const action = page
       .getByRole('menuitem', { name: /Add inside supportRequest|Add after supportRequest/ })

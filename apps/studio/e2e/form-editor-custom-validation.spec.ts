@@ -22,7 +22,11 @@ for (const width of [1440, 390]) {
     });
     await page.goto('/workspaces/forms/custom-validation-test/fields');
     if (width < 1024) {
-      await page.locator('.p-drawer-close-button').click();
+      await expect(page.locator('core-fields-panel')).toContainText('minimumAge');
+      await page
+        .getByRole('complementary')
+        .getByRole('button', { name: 'Close', exact: true })
+        .click();
       await expect(page.getByRole('complementary')).toBeHidden();
     }
     await page
@@ -105,13 +109,21 @@ for (const width of [1440, 390]) {
     ).toBe(true);
     await section.getByRole('button', { name: 'Save validation', exact: true }).click();
     if (width < 1024) {
-      await page.locator('.p-drawer-close-button').click();
+      await page
+        .getByRole('complementary')
+        .getByRole('button', { name: 'Close', exact: true })
+        .click();
       await expect(page.getByRole('complementary')).toBeHidden();
     }
     await page.getByRole('button', { name: 'Save Form', exact: true }).click();
     await page.reload();
+    await expect(page.locator('core-form-builder-content input').first()).toBeVisible();
     if (width < 1024) {
-      await page.locator('.p-drawer-close-button').click();
+      await expect(page.locator('core-validation-panel')).toBeVisible();
+      await page
+        .getByRole('complementary')
+        .getByRole('button', { name: 'Close', exact: true })
+        .click();
       await expect(page.getByRole('complementary')).toBeHidden();
     }
     await page.getByRole('button', { name: 'Preview', exact: true }).click();
@@ -152,7 +164,7 @@ for (const width of [1440, 390]) {
         .getByRole('button', { name: 'Remove validation minimumAge', exact: true })
         .isVisible())
     ) {
-      await section.locator('.p-panel-header').first().click();
+      await section.locator('.core-property-panel-toggle').first().click();
     }
     await section
       .getByRole('button', { name: 'Remove validation minimumAge', exact: true })

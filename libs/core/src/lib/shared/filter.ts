@@ -8,44 +8,40 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { InputGroup } from 'primeng/inputgroup';
-import { InputGroupAddon } from 'primeng/inputgroupaddon';
-import { InputText } from 'primeng/inputtext';
 
 @Component({
   selector: 'core-filter',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, InputGroup, InputGroupAddon, InputText, ButtonDirective, ButtonIcon],
+  imports: [FormsModule],
   template: `
-    <p-inputgroup>
-      <p-inputgroup-addon>
+    <div class="flex min-w-0 items-center gap-2">
+      <span class="inline-flex shrink-0 items-center">
         <i class="material-symbols-outlined"> search </i>
-      </p-inputgroup-addon>
+      </span>
       <input
         #input
         class="w-full truncate text-sm"
-        pInputText
+        coreInput
         type="text"
         placeholder="Filter items..."
         [(ngModel)]="value"
       />
-      <p-inputgroup-addon>
+      <span class="inline-flex shrink-0 items-center">
         <button
-          pButton
+          coreButton
           severity="secondary"
           [attr.aria-label]="clearLabel()"
           (click)="clear.emit()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
           >
             clear
           </i>
         </button>
-      </p-inputgroup-addon>
-    </p-inputgroup>
+      </span>
+    </div>
   `,
 })
 export class Filter {

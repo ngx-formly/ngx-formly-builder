@@ -3,8 +3,7 @@ import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input, viewChild } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective } from 'primeng/button';
-import { TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+
 import { combineLatest, debounceTime, filter, map } from 'rxjs';
 import { EmptyNoForm } from '../../empty';
 import type { FormDisplayMode } from '../../editor/types';
@@ -21,13 +20,9 @@ import { FormToolbarComponent } from './toolbar';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
-    ButtonDirective,
     FormToolbarComponent,
     FormBuilderContent,
     EmptyNoForm,
-    Tabs,
-    TabPanels,
-    TabPanel,
     JSONContent,
     FormsModule,
     JSONFormatValidator,
@@ -72,7 +67,7 @@ import { FormToolbarComponent } from './toolbar';
           }
         </span>
         <button
-          pButton
+          coreButton
           type="button"
           size="small"
           (click)="formService.setActiveForm(error.formId)"
@@ -106,41 +101,38 @@ import { FormToolbarComponent } from './toolbar';
         }
       </core-form-toolbar>
 
-      <p-tabs
-        class="min-h-0 grow overflow-hidden"
-        [value]="activeFormDisplayMode()"
-        (valueChange)="setActiveFormDisplayMode($event)"
-      >
-        <p-tabpanels class="h-full min-h-0 p-0">
-          <p-tabpanel
-            class="block h-full overflow-y-auto px-4 pb-4"
-            value="form"
-          >
-            <core-form-builder-content class="min-h-full" />
-          </p-tabpanel>
-          <p-tabpanel
-            class="block h-full overflow-hidden"
-            value="preview"
-          >
-            <core-form-preview-content
-              class="h-full"
-              [formFields]="(previewFields$ | async) ?? []"
-            />
-          </p-tabpanel>
-          <p-tabpanel
-            class="block h-full px-4 pb-4"
-            value="json"
-          >
-            <core-json-content
-              class="h-full"
-              coreJsonFormat
-              [coreJsonSchema]="schema()"
-              [ngModel]="activeFormFieldsJSON()"
-              [editable]="false"
-            />
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
+      <div class="min-h-0 grow overflow-hidden">
+        <div
+          role="tabpanel"
+          class="block h-full overflow-y-auto px-4 pb-4"
+          [hidden]="activeFormDisplayMode() !== 'form'"
+        >
+          <core-form-builder-content class="min-h-full" />
+        </div>
+        <div
+          role="tabpanel"
+          class="block h-full overflow-hidden"
+          [hidden]="activeFormDisplayMode() !== 'preview'"
+        >
+          <core-form-preview-content
+            class="h-full"
+            [formFields]="(previewFields$ | async) ?? []"
+          />
+        </div>
+        <div
+          role="tabpanel"
+          class="block h-full px-4 pb-4"
+          [hidden]="activeFormDisplayMode() !== 'json'"
+        >
+          <core-json-content
+            class="h-full"
+            coreJsonFormat
+            [coreJsonSchema]="schema()"
+            [ngModel]="activeFormFieldsJSON()"
+            [editable]="false"
+          />
+        </div>
+      </div>
     } @else {
       <core-empty-no-form />
     }

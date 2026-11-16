@@ -39,16 +39,19 @@ describe('Tooltip', () => {
   it('shows the hint after the default 500 ms delay and removes it on mouse leave', () => {
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
     button.dispatchEvent(new MouseEvent('mouseenter'));
+    fixture.detectChanges();
 
     vi.advanceTimersByTime(499);
-    expect(document.querySelector('[role="tooltip"]')).toBeNull();
+    expect(document.querySelector('.mat-mdc-tooltip-show')).toBeNull();
 
     vi.advanceTimersByTime(1);
-    const tooltip = document.querySelector('[role="tooltip"]');
+    const tooltip = document.querySelector('.mat-mdc-tooltip-show');
     expect(tooltip?.textContent).toContain('Default hint');
 
     button.dispatchEvent(new MouseEvent('mouseleave'));
-    expect(document.querySelector('[role="tooltip"]')).toBeNull();
+    vi.advanceTimersByTime(0);
+    fixture.detectChanges();
+    expect(document.querySelector('.mat-mdc-tooltip-show')).toBeNull();
   });
 
   it.each([0, 50])('honors a changed showDelay of %i ms', (delay) => {
@@ -56,13 +59,17 @@ describe('Tooltip', () => {
     fixture.detectChanges();
     const button = fixture.nativeElement.querySelectorAll('button')[1] as HTMLButtonElement;
     button.dispatchEvent(new MouseEvent('mouseenter'));
+    fixture.detectChanges();
 
     if (delay > 0) {
       vi.advanceTimersByTime(delay - 1);
-      expect(document.querySelector('[role="tooltip"]')).toBeNull();
+      expect(document.querySelector('.mat-mdc-tooltip-show')).toBeNull();
       vi.advanceTimersByTime(1);
+    } else {
+      vi.advanceTimersByTime(0);
     }
+    fixture.detectChanges();
 
-    expect(document.querySelector('[role="tooltip"]')?.textContent).toContain('Custom hint');
+    expect(document.querySelector('.mat-mdc-tooltip-show')?.textContent).toContain('Custom hint');
   });
 });

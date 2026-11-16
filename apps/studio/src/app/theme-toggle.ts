@@ -1,28 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { ThemeToggleService } from './theme-toggle.service';
 import { ResponsiveService } from './responsive.service';
 
 @Component({
   selector: 'app-theme-toggle',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, ButtonLabel],
+  imports: [],
   template: `
     <button
-      pButton
+      coreButton
       text
       rounded
       aria-label="Toggle Light/Dark Theme"
       (click)="toggleTheme()"
     >
       <i
-        pButtonIcon
+        coreButtonIcon
         class="material-symbols-outlined"
       >
         {{ iconName() }}
       </i>
       @if (!isMobile()) {
-        <span pButtonLabel>{{ iconLabel() }}</span>
+        <span coreButtonLabel>{{ iconLabel() }}</span>
       }
     </button>
   `,

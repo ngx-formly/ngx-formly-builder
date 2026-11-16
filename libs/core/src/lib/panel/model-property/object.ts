@@ -6,10 +6,9 @@ import {
   numberAttribute,
   signal,
 } from '@angular/core';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Menu } from 'primeng/menu';
 
-import { MenuItem } from 'primeng/api';
+import { Menu } from '../../ui/menu';
+import { MenuItem } from '../../ui/menu-item';
 import { ObjectProperty } from '../../properties/object/object.directive';
 import { PropertyType } from '../../properties/types';
 import { getChildPath, trackByPropertyKey } from '../../properties/utils';
@@ -26,8 +25,6 @@ import { ModelPropertyWrapper } from './property-wrapper';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ModelPropertyKey,
-    ButtonDirective,
-    ButtonIcon,
     Menu,
     ModelBooleanProperty,
     ModelInputProperty,
@@ -44,7 +41,7 @@ import { ModelPropertyWrapper } from './property-wrapper';
     >
       <span class="inline-flex min-w-0 items-center gap-2">
         <button
-          pButton
+          coreButton
           text
           class="size-8 shrink-0"
           rounded
@@ -52,7 +49,7 @@ import { ModelPropertyWrapper } from './property-wrapper';
           (click)="isCollapsed.set(!isCollapsed())"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             style="font-size: 24px;"
             [class.rotate-90]="!isCollapsed()"
@@ -68,17 +65,17 @@ import { ModelPropertyWrapper } from './property-wrapper';
       </span>
       <ng-container actions>
         <button
-          pButton
+          coreButton
           text
           class="size-8"
           rounded
           aria-label="Add item"
           coreTooltip="Add item"
-          tooltipPosition="top"
+          tooltipPosition="above"
           (click)="menu.toggle($event)"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
           >
             add
@@ -86,18 +83,18 @@ import { ModelPropertyWrapper } from './property-wrapper';
         </button>
         @if (property().isRemovable) {
           <button
-            pButton
+            coreButton
             text
             class="size-8"
             rounded
             severity="danger"
             aria-label="Remove"
             coreTooltip="Remove"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="remove.emit()"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
             >
               delete
@@ -107,10 +104,9 @@ import { ModelPropertyWrapper } from './property-wrapper';
       </ng-container>
     </core-model-property-wrapper>
 
-    <p-menu
+    <core-menu
       #menu
       [model]="addMenuItems"
-      [popup]="true"
     />
 
     @if (!isCollapsed()) {

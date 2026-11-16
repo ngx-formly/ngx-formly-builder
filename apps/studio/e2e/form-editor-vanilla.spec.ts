@@ -19,7 +19,12 @@ for (const viewport of [
     const name = dialog.getByRole('textbox', { name: 'Name', exact: true });
     const options = dialog.getByRole('listbox');
     await expect(library).toBeFocused();
-    await expect(options.getByRole('option')).toHaveText(['Material', 'Ng Zorro', 'Bootstrap']);
+    await expect(options.getByRole('option')).toHaveText([
+      'None (Vanilla)',
+      'Material',
+      'Ng Zorro',
+      'Bootstrap',
+    ]);
     await dialog.screenshot({
       path: testInfo.outputPath('ui-library-open.png'),
       animations: 'disabled',
@@ -73,6 +78,12 @@ for (const viewport of [
     await starter.focus();
     await starter.press('Enter');
     await expect(dialog).toBeHidden();
+    if (viewport.width < 1024) {
+      await page
+        .getByRole('complementary')
+        .getByRole('button', { name: 'Close', exact: true })
+        .click();
+    }
     await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
     await expect
       .poll(() =>
@@ -93,6 +104,7 @@ test('creates, edits, previews, and reopens a form without a UI library', async 
   await page.goto('/form-editor');
   await page.getByRole('button', { name: 'Create Form' }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Create Form' });
+  await page.getByRole('option', { name: 'None (Vanilla)', exact: true }).click();
   await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Vanilla form');
   await expect(dialog.getByText('Leave empty for Vanilla (native HTML controls).')).toBeVisible();
   await expect(dialog.getByRole('combobox', { name: 'UI Library', exact: true })).toHaveAttribute(
@@ -137,8 +149,9 @@ test('allows clearing a chosen library and leaving the form name blank', async (
   await page.getByRole('button', { name: 'Create Form' }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Create Form' });
   await page.getByRole('option', { name: 'Material', exact: true }).click();
-  await dialog.locator('[data-pc-section="clearicon"]').click();
-  await expect(dialog.locator('[data-pc-section="clearicon"]')).toBeHidden();
+  await dialog.getByRole('combobox', { name: 'UI Library' }).click();
+  await page.getByRole('option', { name: 'None (Vanilla)', exact: true }).click();
+  await expect(dialog.getByRole('combobox', { name: 'UI Library' })).toHaveText('');
   await dialog.getByRole('textbox', { name: 'Name', exact: true }).clear();
   await expect(
     dialog.getByRole('button', { name: 'Start with a blank form', exact: true }),
@@ -169,6 +182,7 @@ for (const [startingPoint, savedName] of [
     await page.goto('/form-editor');
     await page.getByRole('button', { name: 'Create Form' }).first().click();
     const dialog = page.getByRole('dialog', { name: 'Create Form' });
+    await page.getByRole('option', { name: 'None (Vanilla)', exact: true }).click();
     await expect(dialog.getByRole('textbox', { name: 'Name', exact: true })).toHaveValue('');
     await dialog.getByRole('button', { name: startingPoint, exact: true }).click();
     await expect(dialog).toBeHidden();

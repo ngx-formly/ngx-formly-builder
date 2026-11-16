@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Panel } from 'primeng/panel';
+import { Panel } from '../../ui/panel';
 import { createObjectProperty } from '..';
 import { Tooltip } from '../../shared/tooltip';
 import { FieldObjectProperty } from '../object/object';
@@ -12,29 +11,22 @@ import { CustomValidationOption } from './custom-validation.config';
 @Component({
   selector: 'core-custom-validation-item',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ButtonDirective,
-    ButtonIcon,
-    Panel,
-    FieldObjectProperty,
-    ValidationMessageInput,
-    Tooltip,
-  ],
+  imports: [Panel, FieldObjectProperty, ValidationMessageInput, Tooltip],
   template: `
-    <p-panel [header]="selectedOption()?.label || name() || 'Validation'">
+    <core-property-panel [header]="selectedOption()?.label || name() || 'Validation'">
       <ng-template #icons>
         <button
-          pButton
+          coreButton
           text
           rounded
           severity="danger"
           aria-label="Remove validation"
           coreTooltip="Remove validation"
-          tooltipPosition="top"
+          tooltipPosition="above"
           (click)="remove.emit()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             >remove</i
           >
@@ -67,7 +59,7 @@ import { CustomValidationOption } from './custom-validation.config';
           />
         }
       </div>
-    </p-panel>
+    </core-property-panel>
   `,
 })
 export class CustomValidationItem {

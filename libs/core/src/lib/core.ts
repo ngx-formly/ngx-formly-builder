@@ -8,8 +8,8 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Drawer } from 'primeng/drawer';
-import { Splitter } from 'primeng/splitter';
+import { Dialog } from './ui/dialog';
+import { Splitter } from './ui/splitter';
 import { CoreResponsiveService } from './core-responsive.service';
 import { PanelService } from './editor/panel.service';
 import { LHSPanelType, RHSPanelType } from './editor/types';
@@ -22,15 +22,13 @@ import { TABLET_PANEL_OPTIONS, TabletSidebar } from './sidebar/tablet-sidebar';
 @Component({
   selector: 'formly-builder',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormPanel, Drawer, PanelOptionList, Splitter, LHSSidebar, RHSSidebar, TabletSidebar],
+  imports: [FormPanel, Dialog, PanelOptionList, Splitter, LHSSidebar, RHSSidebar, TabletSidebar],
   host: { class: 'core-root block h-full min-h-0' },
   template: `
     @if (isDesktop()) {
-      <p-splitter
+      <core-splitter
         class="h-full min-h-0"
-        stateStorage="local"
         stateKey="formly-studio-main-splitter-desktop"
-        [panelStyle]="{ minWidth: '4.9rem' }"
         [panelSizes]="panelSizes()"
         [minSizes]="minSizes()"
       >
@@ -43,13 +41,11 @@ import { TABLET_PANEL_OPTIONS, TabletSidebar } from './sidebar/tablet-sidebar';
         <ng-template #panel>
           <core-rhs-sidebar />
         </ng-template>
-      </p-splitter>
+      </core-splitter>
     } @else if (isTablet()) {
-      <p-splitter
+      <core-splitter
         class="h-full min-h-0"
-        stateStorage="local"
         stateKey="formly-studio-main-splitter-tablet"
-        [panelStyle]="{ minWidth: '4.9rem' }"
         [panelSizes]="tabletPanelSizes()"
         [minSizes]="tabletMinSizes()"
       >
@@ -59,7 +55,7 @@ import { TABLET_PANEL_OPTIONS, TabletSidebar } from './sidebar/tablet-sidebar';
         <ng-template #panel>
           <core-form-panel [hideFormTitle]="hideFormTitle()" />
         </ng-template>
-      </p-splitter>
+      </core-splitter>
     } @else if (isMobile()) {
       <div class="flex h-full min-w-0">
         <core-panel-option-list
@@ -74,20 +70,15 @@ import { TABLET_PANEL_OPTIONS, TabletSidebar } from './sidebar/tablet-sidebar';
         />
       </div>
 
-      <p-drawer
-        styleClass="core-root w-full! md:w-[44rem]!"
+      <core-dialog
         header="Editor panels"
-        position="left"
+        role="complementary"
         [visible]="mobileDrawerVisible()"
-        [modal]="true"
-        [dismissible]="true"
-        [closeOnEscape]="true"
-        [blockScroll]="true"
-        [style]="{ width: 'min(92vw, 30rem)' }"
+        [style]="{ width: 'min(92vw, 30rem)', height: '100dvh', maxHeight: '100dvh' }"
         (visibleChange)="mobileDrawerVisible.set($event)"
       >
         <core-tablet-sidebar class="h-full min-h-0 min-w-0 overflow-hidden" />
-      </p-drawer>
+      </core-dialog>
     }
   `,
 })

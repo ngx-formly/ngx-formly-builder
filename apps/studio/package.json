@@ -8,8 +8,7 @@
   },
   "dependencies": {
     "@ngx-formly/builder": "workspace:*",
-    "@ngx-formly/builder-state": "workspace:*",
-    "@ngx-formly/builder-material": "workspace:*",
-    "@ngx-formly/builder-material-fields": "workspace:*"
+    "@formly-studio/material-fields": "workspace:*",
+    "@formly-studio/material-editor": "workspace:*"
   }
 }

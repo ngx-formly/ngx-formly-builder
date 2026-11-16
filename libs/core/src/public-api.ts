@@ -60,7 +60,6 @@ export {
 
 export { CoreFieldService } from './lib/config/core-field.service';
 export { CoreLibraryService } from './lib/config/core-library.service';
-export { BuilderFieldStateService } from './lib/editor/builder-field-state.service';
 export { CoreFormService } from './lib/editor/core-form.service';
 export { PanelService } from './lib/editor/panel.service';
 export { CreateFormDialogService } from './lib/panel/forms-panel/create-form-dialog.service';
@@ -76,8 +75,6 @@ export {
   provideLocalFormStore,
 } from './lib/provider';
 
-export { primengPreset } from './lib/primeng';
-
 export { tailwindConfig } from './lib/panel/styling-panel/config/tailwind';
 export {
   BreakpointAffix,
@@ -92,3 +89,5 @@ export {
 export { createLibrary } from './lib/config/library';
 export { nativeFieldConfig, nativeFieldTypes } from './lib/config/native-fields';
 export { withValidationExpressions } from './lib/formly/validation-expressions';
+
+export * from './lib/state';

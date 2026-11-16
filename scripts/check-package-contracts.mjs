@@ -3,20 +3,22 @@ import { join } from 'node:path';
 
 const packages = [
   {
-    source: 'libs/state/package.json',
-    dist: 'dist/state',
+    source: 'libs/core/package.json',
+    dist: 'dist/core',
     forbiddenImports: [
-      '@angular/cdk',
-      '@angular/material',
-      '@ngx-formly/builder',
-      '@ngx-formly/builder-material',
-      '@ngx-formly/builder-material-fields',
       'primeng',
+      '@primeuix/themes',
+      'tailwindcss-primeui',
+      '@formly-studio/material-fields',
+      '@formly-studio/material-editor',
+      '@ngx-formly/builder-state',
+      '@ngx-formly/builder-material-fields',
+      '@ngx-formly/builder-material',
+      '@ngx-formly/material',
+      'dompurify',
+      'marked',
     ],
   },
-  { source: 'libs/core/package.json', dist: 'dist/core' },
-  { source: 'libs/ui/material/package.json', dist: 'dist/material' },
-  { source: 'libs/ui/builder-material/package.json', dist: 'dist/builder-material' },
 ];
 
 function readJson(path) {
@@ -78,6 +80,13 @@ for (const definition of packages) {
     ...Object.keys(distManifest.peerDependencies ?? {}),
     ...Object.keys(distManifest.optionalDependencies ?? {}),
   ]);
+  const extraPeers = (definition.forbiddenImports ?? []).filter((dependency) =>
+    declared.has(dependency),
+  );
+  if (extraPeers.length)
+    failures.push(
+      `${sourceManifest.name}: forbidden package dependencies: ${extraPeers.join(', ')}`,
+    );
   const bundleImports = collectBundleImports(bundleDirectory);
   const missing = [...bundleImports].filter((dependency) => !declared.has(dependency));
 

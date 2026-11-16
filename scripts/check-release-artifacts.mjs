@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const packages = ['libs/state', 'libs/core', 'libs/ui/material', 'libs/ui/builder-material'];
+const packages = ['libs/core'];
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 for (const directory of packages) {
   const source = readJson(`${directory}/package.json`);
@@ -17,7 +17,14 @@ for (const directory of packages) {
   );
   assert.ok(existsSync(resolve(output, built.typings)), `${source.name}: missing declarations`);
   assert.ok(existsSync(resolve(output, built.module)), `${source.name}: missing bundle`);
-  assert.ok(built.exports['.'], `${source.name}: missing public entry point`);
+  for (const file of ['LICENSE', 'README.md', 'CHANGELOG.md']) {
+    assert.ok(existsSync(resolve(output, file)), `${source.name}: missing ${file}`);
+  }
+  assert.deepEqual(
+    Object.keys(built.exports).sort(),
+    ['.', './package.json', './styles.css'],
+    `${source.name}: unexpected public entry points`,
+  );
 }
 console.log(
   'Release names, versions, peer ranges, bundles and declarations match source manifests.',
