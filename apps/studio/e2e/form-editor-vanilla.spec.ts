@@ -149,6 +149,7 @@ test('allows clearing a chosen library and leaving the form name blank', async (
   await page.getByRole('button', { name: 'Create Form' }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Create Form' });
   await page.getByRole('option', { name: 'Material', exact: true }).click();
+  await expect(page.getByRole('listbox')).toBeHidden();
   await dialog.getByRole('combobox', { name: 'UI Library' }).click();
   await page.getByRole('option', { name: 'None (Vanilla)', exact: true }).click();
   await expect(dialog.getByRole('combobox', { name: 'UI Library' })).toHaveText('');
