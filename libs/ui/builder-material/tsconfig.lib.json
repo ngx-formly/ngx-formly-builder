@@ -7,6 +7,7 @@
     "rootDir": "../../../",
     "paths": {
       "@ngx-formly/builder": ["../../../dist/core"],
+      "@ngx-formly/builder/ui": ["../../../dist/core/types/ngx-formly-builder-ui.d.ts"],
       "@formly-studio/material-fields": ["../../../dist/material"]
     },
     "declaration": true,

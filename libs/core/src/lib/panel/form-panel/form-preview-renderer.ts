@@ -34,7 +34,10 @@ export class FormPreviewRenderer {
 
   protected readonly formService = inject(CoreFormService);
   protected readonly formlyConfig = inject(FormlyConfigService);
-  protected readonly clonedFormFields = computed(() => structuredClone(this.formFields()));
+  private readonly fieldClones = new WeakMap<FormlyFieldConfig, FormlyFieldConfig>();
+  protected readonly clonedFormFields = computed(() =>
+    this.formFields().map((field) => this.cloneField(field)),
+  );
   protected readonly model = computed(() => structuredClone(this.formService.activeModel()));
 
   formGroup = new FormGroup({});
@@ -42,11 +45,36 @@ export class FormPreviewRenderer {
 
   constructor() {
     effect(() => {
-      this.formFields();
+      this.formService.activeFormId();
+      this.formService.activeLibraryId();
       this.formlyConfig.loadLibraryConfigOptions();
       this.formGroup = new FormGroup({});
       this.options = {};
     });
+  }
+
+  private cloneField(source: FormlyFieldConfig): FormlyFieldConfig {
+    const children = source.fieldGroup?.map((child) => this.cloneField(child));
+    const existing = this.fieldClones.get(source);
+    if (existing) {
+      if (
+        children &&
+        !source.fieldArray &&
+        (children.length !== existing.fieldGroup?.length ||
+          children.some((child, index) => child !== existing.fieldGroup?.[index]))
+      ) {
+        existing.fieldGroup = children;
+      }
+      return existing;
+    }
+    const { fieldGroup, fieldArray, ...config } = source;
+    const field: FormlyFieldConfig = structuredClone(config);
+    if (fieldGroup) field.fieldGroup = children;
+    if (fieldArray)
+      field.fieldArray =
+        typeof fieldArray === 'function' ? fieldArray : this.cloneField(fieldArray);
+    this.fieldClones.set(source, field);
+    return field;
   }
 
   protected onFormModelChanged(model: Record<string, unknown>): void {

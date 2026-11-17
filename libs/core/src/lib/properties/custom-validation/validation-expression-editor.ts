@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { FormGroup, FormsModule } from '@angular/forms';
 import { FormlyFormBuilder } from '@ngx-formly/core';
-import { isValidationRuleName } from '../../state';
+import { isValidationRuleName } from '@ngx-formly/builder';
 import { FieldPropertyWrapper } from '../property-wrapper';
 
 export interface ValidationExpression {

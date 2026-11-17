@@ -1,4 +1,4 @@
-import { FormTemplate } from '@ngx-formly/builder';
+import { FormTemplate } from '@ngx-formly/builder/ui';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 
 const starterFormFields: FormlyFieldConfig[] = [

@@ -28,6 +28,6 @@ export interface DragOverData {
   clientY: number;
 }
 
-export type { FieldDropPosition } from '../state';
+export type { FieldDropPosition } from '@ngx-formly/builder';
 
 export type FormDisplayMode = 'form' | 'preview' | 'json';

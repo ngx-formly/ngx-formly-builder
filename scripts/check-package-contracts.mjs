@@ -76,6 +76,7 @@ for (const definition of packages) {
   }
 
   const declared = new Set([
+    sourceManifest.name,
     ...Object.keys(distManifest.dependencies ?? {}),
     ...Object.keys(distManifest.peerDependencies ?? {}),
     ...Object.keys(distManifest.optionalDependencies ?? {}),
@@ -87,6 +88,31 @@ for (const definition of packages) {
     failures.push(
       `${sourceManifest.name}: forbidden package dependencies: ${extraPeers.join(', ')}`,
     );
+  const headlessSource = readFileSync(join(definition.dist, distManifest.module), 'utf8');
+  const allowedHeadlessImports = new Set([
+    '@angular/core',
+    '@ngx-formly/core',
+    'rxjs',
+    'lodash-es',
+    'mutative',
+    'uuid',
+    'tslib',
+  ]);
+  for (const match of headlessSource.matchAll(/(?:from\s+|import\s*)['"]([^'"]+)['"]/g)) {
+    if (!allowedHeadlessImports.has(packageName(match[1]))) {
+      failures.push(`${sourceManifest.name}: non-headless root import: ${match[1]}`);
+    }
+  }
+  for (const dependency of Object.keys(distManifest.peerDependencies)) {
+    if (
+      !['@angular/core', '@angular/common', '@angular/forms', '@ngx-formly/core', 'rxjs'].includes(
+        dependency,
+      ) &&
+      !distManifest.peerDependenciesMeta?.[dependency]?.optional
+    ) {
+      failures.push(`${sourceManifest.name}: UI peer must be optional: ${dependency}`);
+    }
+  }
   const bundleImports = collectBundleImports(bundleDirectory);
   const missing = [...bundleImports].filter((dependency) => !declared.has(dependency));
 

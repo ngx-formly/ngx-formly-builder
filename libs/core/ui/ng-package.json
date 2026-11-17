@@ -1,0 +1,5 @@
+{
+  "lib": {
+    "entryFile": "../src/ui-public-api.ts"
+  }
+}

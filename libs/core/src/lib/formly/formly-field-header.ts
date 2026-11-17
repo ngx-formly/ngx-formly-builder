@@ -13,7 +13,7 @@ import { MenuItem } from '../ui/menu-item';
 import { CoreFieldService } from '../config/core-field.service';
 import { CoreFormService } from '../editor/core-form.service';
 import { FieldPresetDialogService } from '../field-preset/field-preset-dialog.service';
-import { isLayoutRow } from '../state';
+import { isLayoutRow } from '@ngx-formly/builder';
 import { EditorField, FieldInfo } from '../model/types';
 import { Tooltip } from '../shared';
 

@@ -17,8 +17,8 @@ The repository is the shared foundation for an official ngx-formly builder. It c
 the Studio application, reusable editor libraries, multiple UI profiles, local persistence, and
 authoring documentation.
 
-The initial `0.0.1` release provides the barebones embeddable editor in one package,
-`@ngx-formly/builder`. Additional fields and feature integrations belong in separate libraries.
+The package `@ngx-formly/builder` exposes a headless editing engine at its root and an
+optional ready-made editor at `@ngx-formly/builder/ui`. Additional fields and feature integrations belong in separate libraries.
 The API is experimental; review the changelog before upgrading. See
 [CONTRIBUTING.md](CONTRIBUTING.md) before proposing public API changes.
 
@@ -85,9 +85,10 @@ Chromium, run `pnpm run check:packages:e2e` to check the packaged editor in a br
 
 ## Published package
 
-`@ngx-formly/builder` is the only published package, built from `libs/core`. It includes the editor,
-state and persistence, native baseline fields, and extension contracts. Import its public API from
-`@ngx-formly/builder` and its stylesheet from `@ngx-formly/builder/styles.css`.
+`@ngx-formly/builder` is the only published package, built from `libs/core`. Its root exports the
+headless engine, document model, persistence and validation-expression helper. The optional
+`@ngx-formly/builder/ui` entry point contains the editor, native baseline fields and UI extension
+contracts. UI consumers load `@ngx-formly/builder/styles.css`; headless consumers need no stylesheet.
 
 Extra runtime fields and feature integrations are not bundled, re-exported, or installed by this
 package. They belong in separate libraries registered through `libraries`, `configOptions`, and
@@ -108,13 +109,16 @@ The Studio route uses the same component and provider intended for embedding. Th
 [package-consumer fixture](integration/package-consumer) runs against npm tarballs without Studio
 or workspace source imports.
 
-The editor's CSS requires Tailwind 4 and its PostCSS plugin. Install the build dependencies in the
-consuming application:
+The ready-made editor uses optional peers. Install them explicitly when importing `/ui`:
 
 ```sh
-npm install tailwindcss
-npm install --save-dev @tailwindcss/postcss postcss
+pnpm add @angular/cdk@^22 @angular/material@^22 ngx-drag-drop@^22
+pnpm add codemirror@^6 @codemirror/state@^6 @codemirror/view@^6 @codemirror/lang-javascript@^6 @codemirror/lang-json@^6 @codemirror/lang-markdown@^6 @uiw/codemirror-theme-vscode@^4
+pnpm add date-fns@^4 file-saver@^2 js-beautify@^1 terser@^5 zod@^4 tailwindcss@^4
+pnpm add -D @tailwindcss/postcss@^4 postcss
 ```
+
+The package root does not require these UI dependencies.
 
 Add `.postcssrc.json` at the Angular application's root:
 
@@ -161,7 +165,7 @@ Register the builder and any optional UI profiles, then render the builder compo
 
 ```ts
 import { ApplicationConfig, ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormlyBuilder, provideFormlyBuilder } from '@ngx-formly/builder';
+import { FormlyBuilder, provideFormlyBuilder } from '@ngx-formly/builder/ui';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -209,8 +213,9 @@ preserves the active form's unsaved edits.
 
 ## Headless editing
 
-`@ngx-formly/builder` also exposes its editing engine for hosts that supply their own UI.
-It uses the same package and peer dependencies as the editor.
+`@ngx-formly/builder` is headless by default. It requires Angular core/common/forms, Formly and
+RxJS; lodash-es, mutative and uuid are implementation dependencies. UI-only peers are optional
+and are neither installed nor bundled when consuming the root alone.
 Register `provideBuilderEngine` in a route or environment injector, then inject
 `BuilderEngineService`. Use a different `editorType` for each independent storage namespace.
 
@@ -232,16 +237,27 @@ const providers = [provideBuilderEngine({
 // engine.activePreviewFormFields() contains exported Formly fields.
 ```
 
+Create `const previewFields = engine.createPreviewFields()` once per renderer and bind
+`previewFields()` to Formly. Each preview owns its mutable runtime fields and keeps unchanged
+inputs mounted across document edits. The shared `activePreviewFormFields` signal is suitable
+for a single renderer; do not bind the same mutable fields to multiple Formly forms. Use
+`activeFormFieldsJSON()` for clean exports, independently of rendered previews.
+
 Autosave defaults to `true`, with a 3000 ms delay; set `autoSave: false` for explicit saves.
-The provider accepts an optional `formStore` class and `autoSaveDelay`. It does not register Formly
+The provider accepts an optional `formStore` class and `autoSaveDelay`. Creating a form writes to
+the store even with autosave disabled; use an in-memory store for transient demos. It does not register Formly
 runtime components. Headless hosts render their own controls and register their chosen Formly
 runtime separately. `BuilderFieldStateService` holds transient per-field UI state without storage.
 The engine owns document edits, selection, hierarchy, autosave and recovery. Its `formSelected$`
 event reports completed loads or unloads; the shell uses it to update library and panel selection.
 
-Existing shell consumers keep `provideFormlyBuilder` and `CoreFormService`. That provider exposes
+Existing shell consumers move `provideFormlyBuilder`, `CoreFormService`, components, property
+editors and UI configuration helpers to `@ngx-formly/builder/ui`. That provider exposes
 the same engine and transient field-state instances through the package root. Do not also
 register `provideBuilderEngine` in the same injector. Storage keys and document formats are unchanged.
 
 See [Asynchronous stores and editor lifecycle](docs/asynchronous-stores.md) for custom-store
 contracts, error handling, and saving before closing the editor.
+
+`moveField` uses the original list’s insertion boundary: moving a root field down one position
+uses `toIndex = fromIndex + 2`, and moving up uses `toIndex = fromIndex - 1`.

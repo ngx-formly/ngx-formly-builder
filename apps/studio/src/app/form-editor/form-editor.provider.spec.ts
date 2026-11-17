@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { CoreFieldService, CoreLibraryService } from '@ngx-formly/builder';
+import { CoreFieldService, CoreLibraryService } from '@ngx-formly/builder/ui';
 import { describe, expect, it } from 'vitest';
 import { provideFormEditor } from './form-editor.provider';
 

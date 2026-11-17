@@ -1,6 +1,6 @@
 import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { FormLoadError, PersistenceError } from '../../state';
+import type { FormLoadError, PersistenceError } from '@ngx-formly/builder';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CoreFormService } from '../../editor/core-form.service';
 import { FormPanel } from './form-panel';

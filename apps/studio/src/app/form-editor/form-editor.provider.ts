@@ -1,5 +1,5 @@
 import { EnvironmentProviders } from '@angular/core';
-import { provideFormlyBuilder } from '@ngx-formly/builder';
+import { provideFormlyBuilder } from '@ngx-formly/builder/ui';
 import { bootstrapFormEditorConfig } from './bootstrap/bootstrap.library';
 import { ngZorroFormEditorConfig } from './ng-zorro/ng-zorro.library';
 import { materialFormEditorConfig } from './material/material.library';
