@@ -237,6 +237,12 @@ const providers = [provideBuilderEngine({
 // engine.activePreviewFormFields() contains exported Formly fields.
 ```
 
+Create `const previewFields = engine.createPreviewFields()` once per renderer and bind
+`previewFields()` to Formly. Each preview owns its mutable runtime fields and keeps unchanged
+inputs mounted across document edits. The shared `activePreviewFormFields` signal is suitable
+for a single renderer; do not bind the same mutable fields to multiple Formly forms. Use
+`activeFormFieldsJSON()` for clean exports, independently of rendered previews.
+
 Autosave defaults to `true`, with a 3000 ms delay; set `autoSave: false` for explicit saves.
 The provider accepts an optional `formStore` class and `autoSaveDelay`. Creating a form writes to
 the store even with autosave disabled; use an in-memory store for transient demos. It does not register Formly

@@ -137,11 +137,7 @@ export class BuilderEngineService {
   readonly formSelected$ = new Subject<EditorForm | null>();
 
   readonly activeFormFields = computed(() => structuredClone(this.activeFormFieldsRaw()));
-  readonly activePreviewFormFields = computed(() => {
-    const clonedFields = structuredClone(this.activeFormFieldsRaw());
-    clonedFields.forEach((f) => this.cleanField(f));
-    return clonedFields;
-  });
+  readonly activePreviewFormFields = this.createPreviewFields();
   readonly activeFormFieldsJSON = computed(() => {
     // Formly mutates preview fields; export a fresh snapshot of the document instead.
     const fields = this.activeRootFieldIds().map((id) =>
@@ -150,6 +146,53 @@ export class BuilderEngineService {
     fields.forEach((field) => this.cleanField(field));
     return JSON.stringify(fields, null, 2);
   });
+
+  /** Create one mutable preview per renderer; unchanged fields retain their identities. */
+  createPreviewFields() {
+    type Entry = { source: EditorField; children: Entry[]; field: EditorField };
+    let cache = new Map<string, Entry>();
+    let formId: string | undefined;
+    let libraryId: string | null;
+
+    return computed(() => {
+      if (formId !== this.activeFormId() || libraryId !== this.activeLibraryId()) cache.clear();
+      formId = this.activeFormId();
+      libraryId = this.activeLibraryId();
+      const fieldMap = this.activeFieldMap();
+      const nextCache = new Map<string, Entry>();
+      const build = (id: string, reset = false): Entry => {
+        const source = fieldMap[id];
+        const previous = reset ? undefined : cache.get(id);
+        // Parent edits can change inherited properties, templates and model paths.
+        const resetChildren = reset || (!!previous && source !== previous.source);
+        const children = source._info.childIds.map((child) => build(child, resetChildren));
+        if (
+          previous?.source === source &&
+          children.length === previous.children.length &&
+          children.every((child, index) => child === previous.children[index])
+        ) {
+          nextCache.set(id, previous);
+          return previous;
+        }
+
+        let field: EditorField;
+        if (previous?.source === source && !source._info.isFieldArray) {
+          field = previous.field;
+        } else {
+          field = structuredClone(source);
+          this.cleanField(field);
+        }
+        if (source._info.isFieldArray && children.length) field.fieldArray = children[0].field;
+        else if (children.length) field.fieldGroup = children.map((child) => child.field);
+        const entry = { source, children, field };
+        nextCache.set(id, entry);
+        return entry;
+      };
+      const fields = this.activeRootFieldIds().map((id) => build(id).field);
+      cache = nextCache;
+      return fields;
+    });
+  }
 
   constructor(
     // eslint-disable-next-line @angular-eslint/prefer-inject -- The shell facade passes its existing configuration and store.

@@ -1348,6 +1348,8 @@ export declare class BuilderEngineService {
     readonly activeFormFields: import("@angular/core").Signal<EditorField[]>;
     readonly activePreviewFormFields: import("@angular/core").Signal<EditorField[]>;
     readonly activeFormFieldsJSON: import("@angular/core").Signal<string>;
+    /** Create one mutable preview per renderer; unchanged fields retain their identities. */
+    createPreviewFields(): import("@angular/core").Signal<EditorField[]>;
     constructor(config: BuilderEngineConfig, store: FormStoreService);
     private enqueue$;
     private snapshot$;
