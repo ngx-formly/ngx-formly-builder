@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { CoreFormService, FormlyBuilder, FormTitle, PanelService } from '@ngx-formly/builder';
+import { CoreFormService, FormlyBuilder, FormTitle, PanelService } from '@ngx-formly/builder/ui';
 import { filter } from 'rxjs';
 
 @Component({

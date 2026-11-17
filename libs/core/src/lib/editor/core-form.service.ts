@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BuilderEngineService, CORE_FORM_STORE } from '../state';
+import { BuilderEngineService, CORE_FORM_STORE } from '@ngx-formly/builder';
 import { CoreFieldService } from '../config/core-field.service';
 import { CoreLibraryService } from '../config/core-library.service';
 import { CORE_EDITOR_CONFIG, CORE_LIBRARY_CONFIGS } from '../config/types';

@@ -15,6 +15,12 @@ for (const directory of packages) {
     source.peerDependencies,
     `${source.name}: stale peer ranges`,
   );
+  assert.deepEqual(built.dependencies, source.dependencies, `${source.name}: stale dependencies`);
+  assert.deepEqual(
+    built.peerDependenciesMeta,
+    source.peerDependenciesMeta,
+    `${source.name}: stale optional peers`,
+  );
   assert.ok(existsSync(resolve(output, built.typings)), `${source.name}: missing declarations`);
   assert.ok(existsSync(resolve(output, built.module)), `${source.name}: missing bundle`);
   for (const file of ['LICENSE', 'README.md', 'CHANGELOG.md']) {
@@ -22,7 +28,7 @@ for (const directory of packages) {
   }
   assert.deepEqual(
     Object.keys(built.exports).sort(),
-    ['.', './package.json', './styles.css'],
+    ['.', './package.json', './styles.css', './ui'],
     `${source.name}: unexpected public entry points`,
   );
 }

@@ -1,4 +1,4 @@
-import { createLibrary } from '@ngx-formly/builder';
+import { createLibrary } from '@ngx-formly/builder/ui';
 import { bootstrapConfigOptions } from './bootstrap.config';
 import { formTemplates } from './bootstrap.forms';
 import { bootstrapFieldCategoryOptions } from './bootstrap.options';

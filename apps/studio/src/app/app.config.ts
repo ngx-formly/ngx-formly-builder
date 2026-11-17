@@ -6,7 +6,7 @@ import {
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MAT_ICON_DEFAULT_OPTIONS } from '@angular/material/icon';
 import { provideRouter } from '@angular/router';
-import { provideCoreTheme } from '@ngx-formly/builder';
+import { provideCoreTheme } from '@ngx-formly/builder/ui';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { routes } from './app.routes';
 

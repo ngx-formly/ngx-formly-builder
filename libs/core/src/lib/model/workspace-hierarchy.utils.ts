@@ -9,4 +9,4 @@ export {
   removeNodeFromHierarchy,
   renameNodeInHierarchy,
   toggleFolderExpansion,
-} from '../state';
+} from '@ngx-formly/builder';

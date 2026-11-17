@@ -1,5 +1,7 @@
-import { createEnvironmentInjector, EnvironmentInjector } from '@angular/core';
+import { Component, createEnvironmentInjector, EnvironmentInjector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FieldType, FieldTypeConfig, FormlyForm, provideFormlyCore } from '@ngx-formly/core';
 import { throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BuilderEngineService } from './builder-engine.service';
@@ -17,12 +19,25 @@ const library: EngineLibrary = {
   ],
 };
 
+@Component({
+  selector: 'core-test-input',
+  imports: [ReactiveFormsModule],
+  template: '<input [formControl]="formControl" />',
+})
+class TestInput extends FieldType<FieldTypeConfig> {}
+
 describe('headless builder engine', () => {
   let engine: BuilderEngineService;
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
+        provideFormlyCore({
+          types: [
+            { name: 'input', component: TestInput },
+            { name: 'group', extends: 'formly-group' },
+          ],
+        }),
         provideBuilderEngine({
           editorType: 'engine-test',
           libraries: [library],
@@ -34,6 +49,92 @@ describe('headless builder engine', () => {
     engine = TestBed.inject(BuilderEngineService);
   });
   afterEach(() => vi.useRealTimers());
+
+  it.each([false, true])(
+    'isolates exports from rendered previews (export read first: %s)',
+    async (readExportFirst) => {
+      const fields = [
+        {
+          type: 'group',
+          key: 'person',
+          fieldGroup: [{ type: 'input', key: 'name', props: { label: 'Name', custom: 'kept' } }],
+        },
+      ];
+      engine.addForm$('Preview', fields, { person: { name: 'Ada' } }, library.id).subscribe();
+      if (readExportFirst) expect(JSON.parse(engine.activeFormFieldsJSON())).toEqual(fields);
+
+      const fixture = TestBed.createComponent(FormlyForm);
+      fixture.componentRef.setInput('form', new FormGroup({}));
+      fixture.componentRef.setInput('model', { person: { name: 'Ada' } });
+      fixture.componentRef.setInput('fields', engine.activePreviewFormFields());
+      fixture.autoDetectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.nativeElement.querySelector('input').value).toBe('Ada');
+      expect(engine.activePreviewFormFields()[0].fieldGroup![0].formControl).toBeDefined();
+      expect(JSON.parse(engine.activeFormFieldsJSON())).toEqual(fields);
+
+      const child = engine.activeField()!._info.childIds[0];
+      engine.setActiveField(child);
+      engine.modifyActiveField({
+        type: PropertyChangeType.VALUE,
+        path: ['props', 'label'],
+        value: 'Full name',
+      });
+      fixture.componentRef.setInput('fields', engine.activePreviewFormFields());
+      await fixture.whenStable();
+
+      fields[0].fieldGroup[0].props.label = 'Full name';
+      expect(JSON.parse(engine.activeFormFieldsJSON())).toEqual(fields);
+      expect(fixture.nativeElement.querySelector('input').value).toBe('Ada');
+      engine.setActiveForm(null);
+      expect(engine.activeFormFieldsJSON()).toBe('[]');
+    },
+  );
+
+  it.each([
+    { type: PropertyChangeType.VALUE, path: ['props', 'label'], value: 'Name' },
+    { type: PropertyChangeType.VALUE, path: ['props', 'required'], value: false },
+    { type: PropertyChangeType.CLEAR, path: ['props', 'description'] },
+  ])('ignores an unchanged field edit: $type $path', async (change) => {
+    vi.useFakeTimers();
+    engine
+      .addForm$(
+        'Unchanged',
+        [
+          {
+            type: 'input',
+            key: 'name',
+            props: { label: 'Name', required: false },
+          },
+        ],
+        {},
+        library.id,
+      )
+      .subscribe();
+    const form = engine.activeForm();
+    const preview = engine.activePreviewFormFields();
+    const save = vi.spyOn(TestBed.inject(CORE_FORM_STORE), 'updateForm$');
+
+    engine.modifyActiveField(change);
+
+    expect(engine.activeForm()).toBe(form);
+    expect(engine.activePreviewFormFields()).toBe(preview);
+    expect(engine.saveStatus()).toBe('saved');
+    await vi.advanceTimersByTimeAsync(20);
+    expect(save).not.toHaveBeenCalled();
+
+    engine.modifyActiveField({
+      type: PropertyChangeType.VALUE,
+      path: ['props', 'label'],
+      value: 'Full name',
+    });
+    expect(engine.activePreviewFormFields()).not.toBe(preview);
+    expect(engine.saveStatus()).toBe('dirty');
+    await vi.advanceTimersByTimeAsync(20);
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(save.mock.calls[0][1].fields[0].props?.label).toBe('Full name');
+  });
 
   it('edits nested documents and exports unknown properties without shell providers', () => {
     engine

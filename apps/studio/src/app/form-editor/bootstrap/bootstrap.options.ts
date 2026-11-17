@@ -8,7 +8,7 @@ import {
   FieldTypeOption,
   nativeFieldTypes,
   FieldWrapperOption,
-} from '@ngx-formly/builder';
+} from '@ngx-formly/builder/ui';
 
 const keyProp = createInputProperty({
   label: 'Key',

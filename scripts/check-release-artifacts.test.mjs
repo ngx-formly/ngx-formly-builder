@@ -27,6 +27,7 @@ test('release artifacts reject stale versions, peer ranges and missing declarati
             '.': './index.mjs',
             './package.json': './package.json',
             './styles.css': './styles.css',
+            './ui': './ui.mjs',
           },
         }),
       );
@@ -46,6 +47,8 @@ test('release artifacts reject stale versions, peer ranges and missing declarati
     for (const [override, error] of [
       [{ version: '99.0.0' }, 'stale built version'],
       [{ peerDependencies: {} }, 'stale peer ranges'],
+      [{ dependencies: {} }, 'stale dependencies'],
+      [{ peerDependenciesMeta: {} }, 'stale optional peers'],
       [{ typings: 'missing.d.ts' }, 'missing declarations'],
       [
         { exports: { ...original.exports, './material': './extra.mjs' } },

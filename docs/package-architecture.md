@@ -1,63 +1,67 @@
 # Package architecture
 
-`@ngx-formly/builder` is the only published package. It provides the barebones editor,
-its editing engine and persistence, native baseline fields, and contracts for registering
-application-owned fields and extensions. Its version starts at `0.0.1`.
+`@ngx-formly/builder` is the only published package. Its root API is a headless editing engine;
+the ready-made editor is an optional secondary entry point at `@ngx-formly/builder/ui`.
 
 ## Public boundary
 
-Consumers import JavaScript and types from `@ngx-formly/builder` and styles from
-`@ngx-formly/builder/styles.css`. State is compiled into the same package; there is no state
-package to install and no Material field or feature subpath.
+The root exports `BuilderEngineService`, `provideBuilderEngine`, transient field state, document
+models, persistence contracts and `withValidationExpressions`. It depends on Angular, Formly
+and RxJS, with lodash-es, mutative, uuid and tslib as implementation dependencies. It must not
+import the UI entry point, Material/CDK, editor tooling or styles.
 
-The package includes `FormlyBuilder`, `provideFormlyBuilder`, configuration helpers,
-property editors, persistence contracts, and the document-editing engine. Angular Material/CDK
-supply the editor's controls. They do not register an extra catalogue of runtime Formly fields.
+`@ngx-formly/builder/ui` exports `FormlyBuilder`, `provideFormlyBuilder`, configuration helpers,
+property editors, themes and native baseline fields. It imports the engine and injection tokens
+from the root so both entry points share their identities. Its Material/CDK, CodeMirror,
+Tailwind, drag/drop and editor utility peers are optional in the package manifest and must be
+installed explicitly by UI consumers. UI styles remain at `@ngx-formly/builder/styles.css`.
+
+Migration from the combined API: move editor components, providers, theme and UI configuration
+imports to `/ui`. Keep engine, model and persistence imports at the root. Stored documents and
+storage namespaces do not change. The pending minor changeset records this breaking API move.
 
 Additional fields and feature integrations belong in separate libraries. They register through
-`LibraryConfig.configOptions`, `builderConfigOptions`, palette metadata, and the existing
-extension contracts. They must not be bundled or re-exported by the builder.
+`LibraryConfig.configOptions`, `builderConfigOptions`, palette metadata and the existing
+extension contracts. Studio's examples are private and are not re-exported by either entry point.
 
 ## Source ownership
 
-| Source                     | Responsibility                                                            | Publication             |
-| -------------------------- | ------------------------------------------------------------------------- | ----------------------- |
-| `libs/core`                | Editor shell, configuration, baseline fields, extension contracts, styles | `@ngx-formly/builder`   |
-| `libs/core/src/lib/state`  | Document models, editing operations, hierarchy, persistence and recovery  | Included in the builder |
-| `libs/ui/material`         | Additional Material runtime examples used by Studio                       | Private workspace       |
-| `libs/ui/builder-material` | Editor integrations for Studio's composite field examples                 | Private workspace       |
-| `apps/studio`, `apps/docs` | Demo application and documentation                                        | Private workspaces      |
+| Source                                                           | Responsibility                                                  | Public API                                       |
+| ---------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| `libs/core/src/public-api.ts`                                    | Headless package boundary                                       | `@ngx-formly/builder`                            |
+| `libs/core/src/lib/state`                                        | Models, editing operations, hierarchy, persistence and recovery | Root                                             |
+| `libs/core/src/ui-public-api.ts`, `libs/core/ui/ng-package.json` | Optional UI package boundary                                    | `@ngx-formly/builder/ui`                         |
+| Other `libs/core/src/lib` modules                                | Editor shell, configuration, baseline fields, property editors  | UI, except the root validation-expression helper |
+| `libs/ui/material`, `libs/ui/builder-material`                   | Additional field examples and editor integrations               | Private Studio workspaces                        |
+| `apps/studio`, `apps/docs`                                       | Demo application and documentation                              | Private workspaces                               |
 
 The private example imports are `@formly-studio/material-fields` and
-`@formly-studio/material-editor`. They preserve the Studio demo while those features await a
-separate library. They are not supported consumer packages.
+`@formly-studio/material-editor`. They are not supported consumer packages.
 
 ## Internal boundaries
 
 State owns active form/field selection, normalized documents, nested editing operations,
-Formly import/export conversion, model/property edits, hierarchy operations, autosave, error
-recovery, and storage namespaces. It uses Angular signals and DI without importing the editor
-UI or field examples. Keep the existing JSON-safe document format and storage keys.
+Formly import/export conversion, model/property edits, hierarchy operations, autosave, recovery
+and storage namespaces. It uses Angular signals and DI without the editor UI or field examples.
 
-The shell owns panels, hover state, edit/preview/JSON modes, layouts, menus, drag/drop behavior,
-theme integration, and property presentation. It delegates document mutations to the engine.
-`provideFormlyBuilder` exposes the same engine instance through `BuilderEngineService` and
-`CoreFormService`, and shares transient field state with extension components.
+The shell owns panels, hover state, edit/preview/JSON modes, layouts, menus, drag/drop, themes
+and property presentation. It delegates document mutations to the engine. `provideFormlyBuilder`
+exposes the same engine through `BuilderEngineService` and `CoreFormService` and shares transient
+field state with extensions. UI modules must import root symbols through `@ngx-formly/builder`,
+not through relative source paths that could compile a second copy of the engine or its tokens.
 
-A host can use `provideBuilderEngine` from the same package to supply its own UI. It still installs
-the builder's declared peer dependencies. Do not register both engine and shell providers in the
-same injector. Use separate injectors and storage namespaces for independent editors.
-
-Runtime field examples remain independent from editor state. Their private editing integrations
-can use the builder's public extension contracts; the dependency must never point back into them
-from the builder.
+Use separate injectors and storage namespaces for independent editors. Do not register both
+`provideBuilderEngine` and `provideFormlyBuilder` in the same injector. The default store uses
+local storage; hosts can provide their own `FormStoreService` for server or in-memory storage.
 
 ## Verification
 
-The release guard rejects any second public workspace package. The API report captures the
-builder root and stylesheet exports. Package checks reject references to the removed packages,
-private examples, and extra field dependencies. The clean consumer installs one tarball with
-strict peer checking, tests its public exports, and renders the editor in Chromium.
+The API report captures root, UI and stylesheet exports and their declarations. Package checks
+reject non-headless root imports, required UI-only peers, undeclared dependencies, private
+examples and extra field packages. The clean headless consumer installs without UI peers, builds
+under a 400 kB initial budget and rejects UI code in its bundle graph. The clean UI consumer
+installs optional peers explicitly, tests shared engine identity and renders the editor in
+Chromium. Both consumers install a packed tarball with strict peer checking.
 
 See the [embedding guide](../README.md#embedding-contract-experimental),
-[store lifecycle guide](asynchronous-stores.md), and [release process](releases.md).
+[store lifecycle guide](asynchronous-stores.md) and [release process](releases.md).

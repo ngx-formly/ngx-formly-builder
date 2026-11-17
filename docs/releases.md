@@ -10,11 +10,13 @@ The release guard rejects a second public package.
 
 ## First release: 0.0.1
 
-The initial changelog contains the accumulated prerelease work. Do not run the version action
-before this first publication: `0.0.1` is already prepared. The API is experimental.
+The initial changelog contains the accumulated prerelease work. The pending headless-root
+changeset is an incompatible API move and must be versioned before publication. The release guard
+rejects publishing while changesets remain pending. The API is experimental.
 
-The editor uses native controls, Angular Material 22 and CDK 22. Hosts need its packaged
-stylesheet; no PrimeNG providers or peer overrides are required. Additional fields and feature
+The optional `/ui` editor uses native controls, Angular Material 22 and CDK 22. Its hosts install
+UI peers explicitly and need the packaged stylesheet. Headless root consumers need neither.
+No PrimeNG providers or peer overrides are required. Additional fields and feature
 integrations are not shipped by the builder and must come from the host or a separate library.
 
 Configure the repository's `npm-release` environment with a required reviewer, a deployment

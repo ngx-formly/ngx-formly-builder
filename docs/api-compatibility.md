@@ -1,8 +1,9 @@
 # Public API compatibility
 
 Issue #11 tracks stabilization, not an immediate API freeze. The API report in `etc/api/core.api.md` is a
-reviewable snapshot of the single `@ngx-formly/builder` package. It includes exports, providers, injection tokens, extension contracts and the builder stylesheet
-export. It is intentionally broader than the packaged-consumer fixture.
+reviewable snapshot of the single `@ngx-formly/builder` package. It includes exports, providers,
+injection tokens and extension contracts from the headless root and optional `/ui` entry point,
+plus the builder stylesheet export. It is intentionally broader than the packaged-consumer fixture.
 
 ## Gate and stabilization decision
 

@@ -41,7 +41,7 @@ export {
 export { BuilderEngineService } from './editor/builder-engine.service';
 export { isLayoutRow, type FieldDropPosition } from './editor/field-layout';
 export { BuilderFieldStateService } from './editor/builder-field-state.service';
-export { provideBuilderEngine } from './editor/provider';
+export { provideBuilderEngine, provideFormStore, provideLocalFormStore } from './editor/provider';
 export {
   BUILDER_ENGINE_CONFIG,
   type BuilderEngineConfig,

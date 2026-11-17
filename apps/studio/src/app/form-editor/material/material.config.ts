@@ -12,7 +12,7 @@ import {
   withTabsType,
   withTabType,
 } from '@formly-studio/material-fields';
-import { nativeFieldConfig } from '@ngx-formly/builder';
+import { nativeFieldConfig } from '@ngx-formly/builder/ui';
 import { ConfigOption } from '@ngx-formly/core';
 import { withFormlyMaterial } from '@ngx-formly/material';
 import { withFormlyFieldDatepicker } from '@ngx-formly/material/datepicker';

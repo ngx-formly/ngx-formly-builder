@@ -26,8 +26,8 @@ cards, and repeating sections, providing runtime registrations and editor metada
 - **Render an existing export:** [Use an exported form](/developers/use-an-exported-form/).
 
 These guides target Angular 22 and Formly 11.x. The embedding guide uses one locally packed
-`@ngx-formly/builder` tarball, matching the isolated consumer fixture. It contains the editor,
-state, persistence, native baseline fields, and extension contracts. Additional fields and features
+`@ngx-formly/builder` tarball, matching the isolated consumer fixture. Its root contains the headless engine and persistence; `/ui` adds the editor, native baseline
+fields and UI extension contracts. UI peers are optional and installed explicitly by editor hosts. Additional fields and features
 belong in separate libraries. Studio examples are private and are not included in the package.
 The public API is experimental in 0.0.x.
 

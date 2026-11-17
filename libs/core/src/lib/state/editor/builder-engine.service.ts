@@ -142,9 +142,14 @@ export class BuilderEngineService {
     clonedFields.forEach((f) => this.cleanField(f));
     return clonedFields;
   });
-  readonly activeFormFieldsJSON = computed(() =>
-    JSON.stringify(this.activePreviewFormFields(), null, 2),
-  );
+  readonly activeFormFieldsJSON = computed(() => {
+    // Formly mutates preview fields; export a fresh snapshot of the document instead.
+    const fields = this.activeRootFieldIds().map((id) =>
+      this.buildField(id, this.activeFieldMap()),
+    );
+    fields.forEach((field) => this.cleanField(field));
+    return JSON.stringify(fields, null, 2);
+  });
 
   constructor(
     // eslint-disable-next-line @angular-eslint/prefer-inject -- The shell facade passes its existing configuration and store.
@@ -769,6 +774,7 @@ export class BuilderEngineService {
     if (!activeField) return;
 
     const newActiveField = modifyPropertyTarget(activeField, change);
+    if (newActiveField === activeField) return;
     const newFieldMap = { ...this.activeFieldMap(), [newActiveField._info.id]: newActiveField };
 
     const newForm = { ...form, fieldMap: newFieldMap };

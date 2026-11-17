@@ -8,8 +8,8 @@ Use an issue or discussion for changes that affect the document format, public A
 boundaries, extension contracts, or user workflows. Small fixes and test improvements can go
 directly to a pull request.
 
-The public builder package is `@ngx-formly/builder`, built from `libs/core`. State and UI packages
-use `@ngx-formly/builder-*`; see the [package map](README.md#package-names).
+The public builder package is `@ngx-formly/builder`, built from `libs/core`. The root is headless; the
+optional editor UI uses `@ngx-formly/builder/ui`. See the [package boundary](README.md#published-package).
 Avoid introducing new imports from application code into a library or exporting an internal
 service without discussing the compatibility cost.
 
@@ -54,7 +54,8 @@ pnpm run check:packages:e2e
 
 The production build includes package-contract validation. It checks built bundle imports against
 package manifests, packs the builder, and installs its tarball into an isolated Angular
-consumer for type-checking, export resolution, and a production build. `check:packages:e2e` also
+headless and UI consumers for type-checking, export resolution, and production builds. The headless
+fixture has a bundle budget and rejects UI peers in its installation or output. `check:packages:e2e` also
 opens that consumer in Chromium at desktop and mobile sizes, checks its styles, and creates a form.
 It uses port 4314 and does not reuse a running server. CI runs this alongside the Studio browser
 tests.

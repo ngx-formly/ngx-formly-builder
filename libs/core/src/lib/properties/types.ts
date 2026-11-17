@@ -66,7 +66,7 @@ export interface BasePropertyConfig {
   colSpan?: number;
 }
 
-export { PropertyChangeType, type PropertyChange } from '../state';
+export { PropertyChangeType, type PropertyChange } from '@ngx-formly/builder';
 
 export type PropertyConfig =
   | ArrayPropertyConfig

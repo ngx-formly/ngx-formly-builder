@@ -1,16 +1,18 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
+  BuilderEngineService,
+  createEmptyWorkspaceHierarchy,
+  type FormStoreService,
+} from '@ngx-formly/builder';
+import {
   FormlyBuilder,
   CoreFormService,
   createLibrary,
   provideFormlyBuilder,
   tailwindConfig,
   type StylesConfig,
-  BuilderEngineService,
-  createEmptyWorkspaceHierarchy,
-  type FormStoreService,
-} from '@ngx-formly/builder';
+} from '@ngx-formly/builder/ui';
 
 // A future extension library supplies custom fields; the barebones package must not export them.
 // @ts-expect-error Extra runtime fields are outside the builder's public API.

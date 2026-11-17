@@ -1,12 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { withStepperTypeBuilder, withTabsTypeBuilder } from '@formly-studio/material-editor';
-import {
-  BuilderFieldStateService,
-  CoreFormService,
-  CoreLibraryService,
-  PropertyChangeType,
-  provideFormlyBuilder,
-} from '@ngx-formly/builder';
+import { BuilderFieldStateService, PropertyChangeType } from '@ngx-formly/builder';
+import { CoreFormService, CoreLibraryService, provideFormlyBuilder } from '@ngx-formly/builder/ui';
 import { withStepperType, withTabsType } from '@formly-studio/material-fields';
 import { FormlyConfig, FormlyFieldConfig } from '@ngx-formly/core';
 import { firstValueFrom } from 'rxjs';

@@ -1,4 +1,4 @@
-import { createLibrary } from '@ngx-formly/builder';
+import { createLibrary } from '@ngx-formly/builder/ui';
 import { ngZorroConfigOptions } from './ng-zorro.config';
 import { formTemplates } from './ng-zorro.forms';
 import { ngZorroFieldCategoryOptions } from './ng-zorro.options';

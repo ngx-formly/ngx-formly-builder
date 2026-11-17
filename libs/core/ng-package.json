@@ -17,5 +17,6 @@
   ],
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "allowedNonPeerDependencies": ["lodash-es", "mutative", "uuid"]
 }

@@ -5,12 +5,8 @@ import { MatStepper } from '@angular/material/stepper';
 import { MatTabGroup } from '@angular/material/tabs';
 import { By } from '@angular/platform-browser';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import {
-  BuilderEngineService,
-  BuilderFieldStateService,
-  CoreFormService,
-  FieldInfo,
-} from '@ngx-formly/builder';
+import { BuilderEngineService, BuilderFieldStateService, FieldInfo } from '@ngx-formly/builder';
+import { CoreFormService } from '@ngx-formly/builder/ui';
 import {
   StepperContent,
   TabsContent,
