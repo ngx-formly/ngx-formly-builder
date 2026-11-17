@@ -7,8 +7,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Panel, PanelPassThrough } from 'primeng/panel';
+import { Panel, PanelLayout } from '../../ui/panel';
 
 import { Empty } from '../../empty/empty';
 import { ArrayTableDialogService } from './array-table-dialog.service';
@@ -30,14 +29,12 @@ import { isTableDialogProperty, isTableRow } from './table-dialog.utils';
     FieldBooleanProperty,
     FieldInputProperty,
     FieldObjectProperty,
-    ButtonDirective,
-    ButtonIcon,
     Panel,
     Empty,
     Tooltip,
   ],
   template: `
-    <p-panel
+    <core-property-panel
       toggler="header"
       [pt]="panelPT()"
       [toggleable]="combinedIsCollpasible()"
@@ -46,7 +43,7 @@ import { isTableDialogProperty, isTableRow } from './table-dialog.utils';
     >
       <ng-template #header>
         <span
-          class="p-panel-title"
+          class="core-property-panel-title"
           tooltipPosition="left"
           [coreTooltip]="property().description"
         >
@@ -57,34 +54,34 @@ import { isTableDialogProperty, isTableRow } from './table-dialog.utils';
       <ng-template #icons>
         <button
           class="mr-2"
-          pButton
+          coreButton
           text
           rounded
           aria-label="Add item"
           coreTooltip="Add item"
-          tooltipPosition="top"
+          tooltipPosition="above"
           [style.opacity]="isCollapsed() ? '0' : '1'"
           [style.pointerEvents]="isCollapsed() ? 'none' : 'auto'"
           (click)="$event.stopPropagation(); onAddChild()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             >add</i
           >
         </button>
         @if (canUseTableDialog()) {
           <button
-            pButton
+            coreButton
             text
             rounded
             aria-label="Edit items as table"
             coreTooltip="Edit items as table"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="$event.stopPropagation(); openTable()"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
               >table</i
             >
@@ -152,7 +149,7 @@ import { isTableDialogProperty, isTableRow } from './table-dialog.utils';
           />
         }
       </div>
-    </p-panel>
+    </core-property-panel>
   `,
 })
 export class FieldArrayProperty extends ArrayProperty {
@@ -167,7 +164,7 @@ export class FieldArrayProperty extends ArrayProperty {
       : this.isCollapsible(),
   );
 
-  readonly panelPT = computed<PanelPassThrough>(() => ({
+  readonly panelPT = computed<PanelLayout>(() => ({
     header: {
       class: this.isCollapsible() ? 'cursor-pointer' : '',
     },

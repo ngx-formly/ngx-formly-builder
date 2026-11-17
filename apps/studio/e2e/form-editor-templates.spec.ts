@@ -9,9 +9,12 @@ for (const library of ['Vanilla', 'Material', 'Bootstrap', 'Ng Zorro']) {
       await page.goto('/form-editor');
       await page.getByRole('button', { name: 'Create Form' }).first().click();
       const dialog = page.getByRole('dialog', { name: 'Create Form' });
-      if (library !== 'Vanilla') {
-        await page.getByRole('option', { name: library, exact: true }).click();
-      }
+      await page
+        .getByRole('option', {
+          name: library === 'Vanilla' ? 'None (Vanilla)' : library,
+          exact: true,
+        })
+        .click();
       await dialog
         .getByRole('textbox', { name: 'Name', exact: true })
         .fill(`${library} ${template}`);

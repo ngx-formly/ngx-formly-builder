@@ -8,9 +8,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { DndDraggableDirective } from 'ngx-drag-drop';
-import { MenuItem } from 'primeng/api';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Menu } from 'primeng/menu';
+
+import { Menu } from '../../ui/menu';
+import { MenuItem } from '../../ui/menu-item';
 import { AddFieldService } from './add-field.service';
 import { DNDService } from '../../editor/dnd.service';
 import { FieldTypePreset } from '../../config/types';
@@ -26,7 +26,7 @@ interface AddFieldAction extends MenuItem {
 @Component({
   selector: 'core-type-container',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, DndDraggableDirective, Menu, Tooltip],
+  imports: [DndDraggableDirective, Menu, Tooltip],
   template: `
     <div
       class="relative flex cursor-grab items-center justify-between gap-2 rounded-lg py-2 text-left text-color transition-colors focus-within:bg-emphasis hover:bg-emphasis"
@@ -40,11 +40,9 @@ interface AddFieldAction extends MenuItem {
         class="touch-actions-visible inline-flex shrink-0 gap-1 opacity-0 transition-opacity focus-within:opacity-100"
         [class.opacity-100]="showActions() || addMenuChild()?.visible"
       >
-        <p-menu
+        <core-menu
           #addMenu
-          appendTo="body"
           [model]="addActionsWithCommand()"
-          [popup]="true"
         >
           <ng-template
             #item
@@ -57,19 +55,19 @@ interface AddFieldAction extends MenuItem {
               {{ item.label }}
             </div>
           </ng-template>
-        </p-menu>
+        </core-menu>
         <button
-          pButton
+          coreButton
           text
           rounded
           class="size-8"
           aria-label="Add Field"
           coreTooltip="Add Field"
-          tooltipPosition="top"
+          tooltipPosition="above"
           (click)="openAddMenu($event)"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
           >
             add

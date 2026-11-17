@@ -1,6 +1,6 @@
 {
-  "name": "@ngx-formly/builder-material",
-  "version": "0.0.1",
+  "name": "@formly-studio/material-editor",
+  "version": "0.0.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,16 +11,13 @@
   "peerDependencies": {
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
-    "@ngx-formly/builder": ">=0.0.1 <0.1.0",
-    "@ngx-formly/builder-material-fields": ">=0.0.1 <0.1.0",
-    "@ngx-formly/core": "^11.0.0"
+    "@ngx-formly/builder": "workspace:*",
+    "@ngx-formly/core": "^11.0.0",
+    "@formly-studio/material-fields": "workspace:*"
   },
   "dependencies": {
     "tslib": "^2.3.0"
   },
   "sideEffects": false,
-  "publishConfig": {
-    "access": "public",
-    "directory": "../../../dist/builder-material"
-  }
+  "private": true
 }

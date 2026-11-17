@@ -1,7 +1,6 @@
-@layer theme, base, zorro-base, bootstrap, zorro-components, primeng;
+@layer theme, base, zorro-base, bootstrap, zorro-components;
 
 @import 'tailwindcss';
-@import 'tailwindcss-primeui';
 
 @source not '../e2e';
 
@@ -21,26 +20,26 @@
 
 html {
   font-size: 14px;
-  scrollbar-color: var(--p-text-muted-color) var(--p-content-background);
+  scrollbar-color: var(--builder-text-muted-color) var(--builder-content-background);
 }
 
 body {
   font-family: Ubuntu, sans-serif;
   font-size: 1rem;
-  color: var(--p-text-color);
-  background: var(--p-content-background);
+  color: var(--builder-text-color);
+  background: var(--builder-content-background);
 }
 
 app-form-editor core-form-panel:has(> core-empty-no-form),
-app-form-editor core-form-panel p-tabpanel[value='form'] {
-  background-color: var(--p-content-background);
+app-form-editor core-form-panel [role='tabpanel']:has(core-form-builder-content) {
+  background-color: var(--builder-content-background);
   background-image: radial-gradient(circle, rgba(248, 113, 113, 0.2) 0.75px, transparent 1px);
   background-size: 16px 16px;
 }
 
 ::selection {
-  color: var(--p-primary-contrast-color);
-  background: var(--p-primary-color);
+  color: var(--builder-primary-contrast-color);
+  background: var(--builder-primary-color);
 }
 
 html,

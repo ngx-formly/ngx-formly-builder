@@ -7,7 +7,8 @@ if (!consumerRoot) {
 
 export default defineConfig({
   testDir: '.',
-  testMatch: 'consumer.spec.ts',
+  testMatch:
+    process.env['FORMLY_CONSUMER_MODE'] === 'headless' ? 'headless.spec.ts' : 'consumer.spec.ts',
   outputDir: '../../tmp/package-consumer-results',
   reporter: 'list',
   use: {

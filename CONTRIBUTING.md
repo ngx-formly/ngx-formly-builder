@@ -8,8 +8,8 @@ Use an issue or discussion for changes that affect the document format, public A
 boundaries, extension contracts, or user workflows. Small fixes and test improvements can go
 directly to a pull request.
 
-The public builder package is `@ngx-formly/builder`, built from `libs/core`. State and UI packages
-use `@ngx-formly/builder-*`; see the [package map](README.md#package-names).
+The public builder package is `@ngx-formly/builder`, built from `libs/core`. The root is headless; the
+optional editor UI uses `@ngx-formly/builder/ui`. See the [package boundary](README.md#published-package).
 Avoid introducing new imports from application code into a library or exporting an internal
 service without discussing the compatibility cost.
 
@@ -48,27 +48,29 @@ Install Playwright Chromium once before running browser tests:
 ```sh
 pnpm exec playwright install chromium
 pnpm run test:e2e
-pnpm run build:builder-material
+pnpm run build:core
 pnpm run check:packages:e2e
 ```
 
 The production build includes package-contract validation. It checks built bundle imports against
-package manifests, packs the libraries, and installs their tarballs into an isolated Angular
-consumer for type-checking, export resolution, and a production build. `check:packages:e2e` also
+package manifests, packs the builder, and installs its tarball into an isolated Angular
+headless and UI consumers for type-checking, export resolution, and production builds. The headless
+fixture has a bundle budget and rejects UI peers in its installation or output. `check:packages:e2e` also
 opens that consumer in Chromium at desktop and mobile sizes, checks its styles, and creates a form.
 It uses port 4314 and does not reuse a running server. CI runs this alongside the Studio browser
 tests.
 
-See the [package architecture proposal](docs/package-architecture.md) for engine/shell ownership,
-public entry points and the extraction sequence.
+See the [package architecture](docs/package-architecture.md) for engine/shell ownership,
+the public entry point and private Studio examples.
 
 ## Architecture rules
 
 - Keep the Studio application dependent on libraries, not the reverse.
-- Keep `@ngx-formly/builder-state` headless: it must not depend on Angular CDK, UI frameworks, or the
+- Keep the engine in `libs/core/src/lib/state` independent from the UI: it must not depend on Angular CDK, UI frameworks, or the
   editor shell.
 - Keep reusable Material runtime fields independent from editor state.
-- Put editor-only Material adapters in `builder-material`.
+- Keep additional fields and editor integrations in private Studio workspaces until they move to a separate library.
+- Publish only `@ngx-formly/builder`; do not re-export Studio examples from its public API.
 - Use Formly type names and JSON-safe configuration as the persistence boundary.
 - Preserve unknown supported Formly properties during import and export.
 - Treat exported symbols and dependency-injection tokens as compatibility commitments.

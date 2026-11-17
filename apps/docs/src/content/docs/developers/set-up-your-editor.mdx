@@ -51,12 +51,12 @@ the editor's authoring controls:
 The
 [Material profile](https://github.com/ngx-formly/ngx-formly-builder/tree/main/apps/studio/src/app/form-editor/material)
 combines standard controls, custom components, and builder-only adaptations in the Material option
-shown in Studio. Runtime implementations live in `libs/ui/material`; the shared editor lives in
+shown in Studio. Private runtime examples live in `libs/ui/material`; the published editor lives in
 `libs/core`.
 
-Within this checkout, use the existing `@ngx-formly/builder`, `@ngx-formly/builder-material-fields`, and
-`@ngx-formly/builder-material` imports. They resolve to repository source; there is no editor
-package to install from npm.
+Within this checkout, the examples use the private `@formly-studio/material-fields` and
+`@formly-studio/material-editor` workspace imports. Consumers install only `@ngx-formly/builder`;
+additional fields and features must be supplied by their application or a separate library.
 
 ## Bring your application's components
 

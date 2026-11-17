@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Panel, PanelPassThrough } from 'primeng/panel';
+import { Panel, PanelLayout } from '../../ui/panel';
 import { Empty } from '../../empty/empty';
 import { Expression } from './expressions.types';
 import { ExpressionsPropertyConfig } from './expressions.config';
@@ -12,9 +11,9 @@ import { ExpressionItem } from './expression-item';
 @Component({
   selector: 'core-field-expressions-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, Panel, ExpressionItem, Empty, Tooltip],
+  imports: [Panel, ExpressionItem, Empty, Tooltip],
   template: `
-    <p-panel
+    <core-property-panel
       toggler="header"
       [pt]="panelPT"
       [toggleable]="true"
@@ -22,7 +21,7 @@ import { ExpressionItem } from './expression-item';
     >
       <ng-template #header>
         <span
-          class="p-panel-title"
+          class="core-property-panel-title"
           tooltipPosition="left"
           [coreTooltip]="property().description"
         >
@@ -33,18 +32,18 @@ import { ExpressionItem } from './expression-item';
       <ng-template #icons>
         <button
           class="mr-2"
-          pButton
+          coreButton
           text
           rounded
           aria-label="Add expression"
           coreTooltip="Add expression"
-          tooltipPosition="top"
+          tooltipPosition="above"
           [style.opacity]="isCollapsed() ? '0' : '1'"
           [style.pointerEvents]="isCollapsed() ? 'none' : 'auto'"
           (click)="onAddChild($event)"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             >add</i
           >
@@ -69,14 +68,14 @@ import { ExpressionItem } from './expression-item';
           description="Click the + button to add an expression."
         />
       }
-    </p-panel>
+    </core-property-panel>
   `,
 })
 export class FieldExpressionsProperty extends BaseProperty<
   ExpressionsPropertyConfig,
   Record<string, string>
 > {
-  panelPT: PanelPassThrough = {
+  panelPT: PanelLayout = {
     header: {
       class: 'cursor-pointer',
     },

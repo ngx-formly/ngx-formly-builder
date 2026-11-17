@@ -1,7 +1,7 @@
 import {
   BuilderEngineService,
   BuilderFieldStateService as EngineFieldState,
-} from '@ngx-formly/builder-state';
+} from '@ngx-formly/builder';
 import { CoreFormService } from './editor/core-form.service';
 import { BuilderFieldStateService } from './editor/builder-field-state.service';
 import { createEnvironmentInjector, EnvironmentInjector } from '@angular/core';

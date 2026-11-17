@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { UntypedFormGroup } from '@angular/forms';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { CoreFormService, CoreLibraryService } from '@ngx-formly/builder';
+import { CoreFormService, CoreLibraryService } from '@ngx-formly/builder/ui';
 import { FormlyConfig, FormlyForm } from '@ngx-formly/core';
 import { firstValueFrom } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';

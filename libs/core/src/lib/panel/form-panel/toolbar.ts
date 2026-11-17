@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { ButtonGroup } from 'primeng/buttongroup';
-import { SelectButton } from 'primeng/selectbutton';
+
 import { CoreFormService } from '../../editor/core-form.service';
 import { CoreLibraryService } from '../../config/core-library.service';
 import { ExportDialogService } from './export-dialog.service';
@@ -14,16 +12,7 @@ import { FormTitle } from './form-title';
 @Component({
   selector: 'core-form-toolbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
-    FormsModule,
-    Tooltip,
-    FormTitle,
-    SelectButton,
-    ButtonGroup,
-  ],
+  imports: [FormsModule, Tooltip, FormTitle],
   host: {
     class: 'flex min-h-(--panel-header-height) items-start px-4 py-2 md:items-center',
   },
@@ -43,79 +32,87 @@ import { FormTitle } from './form-title';
       </div>
       <ng-content />
       <div class="flex min-w-0 flex-wrap items-center gap-2 md:ml-auto md:justify-end md:gap-4">
-        <p-selectbutton
-          optionLabel="label"
-          optionValue="value"
-          allowEmpty="false"
-          [options]="displayModeOptions"
-          [ngModel]="activeFormDisplayMode()"
-          (ngModelChange)="setActiveFormDisplayMode($event)"
-        />
+        <div
+          class="core-segmented"
+          role="group"
+        >
+          @for (option of displayModeOptions; track option.value) {
+            <button
+              coreButton
+              text
+              type="button"
+              [attr.aria-pressed]="activeFormDisplayMode() === option.value"
+              (click)="setActiveFormDisplayMode(option.value)"
+            >
+              {{ option.label }}
+            </button>
+          }
+        </div>
         <div class="flex items-center gap-2 lg:gap-4">
           <div>
-            <p-buttongroup>
+            <div role="group">
               <button
-                pButton
+                coreButton
                 severity="secondary"
                 aria-label="Open preview"
                 coreTooltip="Open preview"
-                tooltipPosition="top"
+                tooltipPosition="above"
                 (click)="openPreviewDialog()"
               >
                 <i
-                  pButtonIcon
+                  coreButtonIcon
                   class="material-symbols-outlined"
                 >
                   fullscreen
                 </i>
               </button>
               <button
-                pButton
+                coreButton
                 severity="secondary"
                 aria-label="Clear Model"
                 coreTooltip="Clear Model"
-                tooltipPosition="top"
+                tooltipPosition="above"
                 (click)="clearModel()"
               >
                 <i
-                  pButtonIcon
+                  coreButtonIcon
                   class="material-symbols-outlined"
                 >
                   restart_alt
                 </i>
               </button>
-            </p-buttongroup>
+            </div>
           </div>
           <div>
-            <p-buttongroup>
+            <div role="group">
               <button
-                pButton
+                coreButton
                 severity="secondary"
                 aria-label="Export Form"
                 coreTooltip="Export Form"
-                tooltipPosition="top"
+                tooltipPosition="above"
                 (click)="openExportDialog()"
               >
                 <i
-                  pButtonIcon
+                  coreButtonIcon
                   class="material-symbols-outlined"
                 >
                   download
                 </i>
               </button>
               <button
-                pButton
+                coreButton
                 aria-label="Save Form"
                 coreTooltip="Save Form"
-                tooltipPosition="top"
+                tooltipPosition="above"
                 [disabled]="saveStatus() === 'saving'"
-                [severity]="saveStatus() !== 'saved' ? 'primary' : 'secondary'"
+                [attr.severity]="saveStatus() !== 'saved' ? 'primary' : 'secondary'"
                 (click)="saveActiveForm()"
               >
                 <i class="material-symbols-outlined"> save </i>
-                <span pButtonLabel>{{ saveButtonLabel() }}</span>
+                <span coreButtonLabel>{{ saveButtonLabel() }}</span>
               </button>
-            </p-buttongroup>
+            </div>
           </div>
         </div>
       </div>
@@ -134,7 +131,7 @@ export class FormToolbarComponent {
   activeFieldCount = this.formService.activeFieldCount;
   saveStatus = this.formService.saveStatus;
   activeLibraryLabel = this.libraryService.activeLibraryLabel;
-  displayModeOptions = [
+  displayModeOptions: { label: string; value: FormDisplayMode }[] = [
     { label: 'Builder', value: 'form' },
     { label: 'Preview', value: 'preview' },
     { label: 'JSON', value: 'json' },

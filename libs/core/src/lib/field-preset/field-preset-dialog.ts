@@ -3,14 +3,11 @@ import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@ang
 import { FormsModule } from '@angular/forms';
 import { FieldPresetDialogService } from './field-preset-dialog.service';
 import { JSONContentDialog } from '../json-content/json-content-dialog';
-import { Message } from 'primeng/message';
-import { FloatLabel } from 'primeng/floatlabel';
-import { InputText } from 'primeng/inputtext';
 
 @Component({
   selector: 'core-field-preset-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, JSONContentDialog, Message, FloatLabel, InputText],
+  imports: [FormsModule, JSONContentDialog],
   template: `
     <core-json-content-dialog
       header="Save Field as Preset"
@@ -23,12 +20,12 @@ import { InputText } from 'primeng/inputtext';
     >
       <ng-container formFields>
         <div>
-          <p-floatlabel variant="on">
+          <div class="core-labeled-control">
             <input
               #nameModel="ngModel"
               class="w-full"
               name="name"
-              pInputText
+              coreInput
               required
               autocomplete="off"
               data-bwignore
@@ -36,15 +33,18 @@ import { InputText } from 'primeng/inputtext';
               [(ngModel)]="formName"
             />
             <label for="preset-dialog-name-input">Name</label>
-          </p-floatlabel>
+          </div>
           @if (!nameModel.valid && nameModel.touched) {
-            <p-message
+            <div
+              role="alert"
+              class="core-message"
               class="mt-1 inline-block"
               severity="error"
               size="small"
               variant="simple"
-              >Name is required.</p-message
             >
+              Name is required.
+            </div>
           }
         </div>
       </ng-container>

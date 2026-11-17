@@ -1,4 +1,4 @@
-import { MenuItem } from 'primeng/api';
+import { MenuItem } from '../ui/menu-item';
 import { FieldTypePreset } from '../config/types';
 
 export interface CoreAddFieldOption extends MenuItem {
@@ -28,6 +28,6 @@ export interface DragOverData {
   clientY: number;
 }
 
-export type { FieldDropPosition } from '@ngx-formly/builder-state';
+export type { FieldDropPosition } from '@ngx-formly/builder';
 
 export type FormDisplayMode = 'form' | 'preview' | 'json';

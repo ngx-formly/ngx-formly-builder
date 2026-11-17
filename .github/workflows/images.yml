@@ -1,9 +1,6 @@
 name: Release Images
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       publish:
@@ -62,7 +59,7 @@ jobs:
         run: docker image inspect apps-studio:latest apps-docs:latest
 
       - name: Log in to GHCR
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish) }}
+        if: inputs.publish
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -70,7 +67,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tag and push release images
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish) }}
+        if: inputs.publish
         env:
           RELEASE: ${{ github.ref_name }}
           REF_TYPE: ${{ github.ref_type }}

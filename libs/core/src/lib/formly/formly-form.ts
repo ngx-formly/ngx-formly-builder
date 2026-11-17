@@ -7,22 +7,24 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FormlyConfig, FormlyField, FormlyForm, FormlyFormBuilder } from '@ngx-formly/core';
-import { Message } from 'primeng/message';
 import { FormlyFieldTemplates } from './formly.template';
 
 @Component({
   selector: 'core-formly-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FormlyFormBuilder, FormlyFieldTemplates],
-  imports: [FormlyField, Message],
+  imports: [FormlyField],
   template: `
     @if (formError()) {
-      <p-message severity="error">
-        <ng-template #icon>
-          <i class="material-symbols-outlined">error</i>
-        </ng-template>
+      <div
+        role="alert"
+        class="core-message"
+        severity="error"
+      >
+        <i class="material-symbols-outlined">error</i>
+
         {{ formError() }}
-      </p-message>
+      </div>
     } @else {
       <formly-field [field]="field" />
     }

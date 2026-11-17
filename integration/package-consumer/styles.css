@@ -1,4 +1,4 @@
-@layer theme, base, primeng;
+@layer theme, base;
 @import '@ngx-formly/builder/styles.css';
 
 html,

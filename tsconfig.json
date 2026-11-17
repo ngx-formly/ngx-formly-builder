@@ -4,10 +4,10 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "@ngx-formly/builder-state": ["./libs/state/src/public-api.ts"],
       "@ngx-formly/builder": ["./libs/core/src/public-api.ts"],
-      "@ngx-formly/builder-material-fields": ["./libs/ui/material/src/public-api.ts"],
-      "@ngx-formly/builder-material": ["./libs/ui/builder-material/src/public-api.ts"]
+      "@ngx-formly/builder/ui": ["./libs/core/src/ui-public-api.ts"],
+      "@formly-studio/material-fields": ["./libs/ui/material/src/public-api.ts"],
+      "@formly-studio/material-editor": ["./libs/ui/builder-material/src/public-api.ts"]
     },
     "lib": ["ES2023", "DOM"],
     "strict": true,
@@ -35,12 +35,6 @@
     },
     {
       "path": "./apps/studio/tsconfig.spec.json"
-    },
-    {
-      "path": "./libs/state/tsconfig.lib.json"
-    },
-    {
-      "path": "./libs/state/tsconfig.spec.json"
     },
     {
       "path": "./libs/core/tsconfig.lib.json"

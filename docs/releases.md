@@ -1,99 +1,98 @@
-# Independent package releases
+# Builder releases
 
-Proposal for issue #9. Review this workflow and policy before enabling publication. The four
-public packages keep separate versions; private Studio/docs workspaces are not published.
-Changesets 3.0.3 records release intent, updates versions/changelogs and publishes built packages.
-The exact CLI version is pinned because the peer-dependent option is marked experimental.
+Only `@ngx-formly/builder` is published. Its authoritative version and release notes are
+`libs/core/package.json` and `libs/core/CHANGELOG.md`. State and persistence are bundled into
+that package. Studio, docs, and the extra Material field examples are private workspaces.
 
-## Versions and peer ranges
+Changesets 3.0.3 prepares the builder version and changelog, then publishes the ng-packagr output
+from `dist/core`. There are no companion package releases or independent version relationships.
+The release guard rejects a second public package.
 
-| Current version        | Compatible fix or addition                                          | Breaking change                            |
-| ---------------------- | ------------------------------------------------------------------- | ------------------------------------------ |
-| `0.0.x`                | Patch, with peers `>=0.0.1 <0.1.0` until the next breaking boundary | Minor and explicit dependent range updates |
-| `0.y.x`, where `y > 0` | Patch within `^0.y.0`                                               | Minor and explicit dependent range updates |
-| `1.x` and later        | Patch for fixes, minor for additions                                | Major and explicit dependent range updates |
+## First release: 0.0.1
 
-The initial `0.0.x` range is intentional: caret `^0.0.1` would admit only `0.0.1`. A peer range
-must retain its actual minimum supported version. If a caller starts using an API introduced in
-`0.0.4`, raise its lower bound to `>=0.0.4 <0.1.0`. Test against that minimum as well as the new
-package combination before claiming support. Do not widen a range across a breaking boundary
-without testing the caller and documenting compatibility.
+The initial changelog contains the accumulated prerelease work. The pending headless-root
+changeset is an incompatible API move and must be versioned before publication. The release guard
+rejects publishing while changesets remain pending. The API is experimental.
 
-A compatible state patch does not bump core or the adapters. There are no fixed or linked version
-groups. `onlyUpdatePeerDependentsWhenOutOfRange` prevents Changesets from forcing peer consumers
-into an otherwise unnecessary release. The regression dry run checks that configuration.
+The optional `/ui` editor uses native controls, Angular Material 22 and CDK 22. Its hosts install
+UI peers explicitly and need the packaged stylesheet. Headless root consumers need neither.
+No PrimeNG providers or peer overrides are required. Additional fields and feature
+integrations are not shipped by the builder and must come from the host or a separate library.
 
-For breaking state changes, explicitly update core's peer range and add a core changeset; do the
-same for any affected adapter. Choose the dependent's bump based on its own public contract.
-Do not blindly accept an automatically proposed major bump for a `0.x` dependent. The move to
-`1.0.0` is an explicit stabilization decision coordinated with #6, #7 and #11.
+Configure the repository's `npm-release` environment with a required reviewer, a deployment
+rule restricted to `main`, and an `NPM_TOKEN` secret authorized to publish `@ngx-formly/builder`.
+Add the token through GitHub settings or the secure CLI prompt:
 
-## Authoring and reviewing a release
+```sh
+gh secret set NPM_TOKEN --env npm-release --repo ngx-formly/ngx-formly-builder
+```
 
-1. Run `pnpm run changeset` with a package change. Select only affected public packages and write
-   the user-visible change and migration steps. Docs-only changes outside packages need no entry.
-2. Inspect `pnpm run release:status` and `pnpm run release:dry-run`. The latter creates a temporary
-   manifest-only workspace, proposes one state patch and asserts that no dependent is released.
-   It changes no source files or registry state. With `--consumer`, it also packs a temporary
-   state patch alongside the unchanged packages and builds a clean consumer.
-3. Run the **Release packages** workflow on `main` with `publish` unchecked. After validation,
-   Changesets opens/updates a version PR. `pnpm run release:version` updates source manifests,
-   package changelogs and `pnpm-lock.yaml`; it never publishes.
-4. Review version numbers, changelogs, internal peers and the lockfile in that PR. Merge only when
-   the package/API migration is accepted. Rerun CI on the resulting version commit.
-5. Run the workflow again on that commit with `publish` checked. Pending changesets are rejected.
-   Build/package checks, clean tarball installation, consumer type-check/build, Studio tests and
-   desktop/mobile consumer browser tests run before any publish operation.
-6. Confirm the version commit has a successful production deployment in
-   [Netlify](https://app.netlify.com/projects/ngx-formly-builder/deploys), then open the
+Allow GitHub Actions to create pull requests for future version PRs. These settings and credentials
+are separate from the checked-in workflow. Never commit a token. The publish job fails explicitly
+when its environment secret is missing.
+
+Merge the reviewed preparation changes and wait for CI. Run **Release builder** on `main` with
+`action: validate`, review the checks and deployed Studio, then choose `action: publish` for the
+reviewed commit. The environment reviewer approves publication after validation succeeds.
+Publishing uses npm provenance and creates the package tag and GitHub release notes.
+
+## Subsequent releases
+
+1. Run `pnpm run changeset` for a builder change. Select only `@ngx-formly/builder` and describe
+   user-visible changes and migration steps. Private Studio/example changes need no builder release
+   unless they also change the published code or its contract.
+2. Inspect `pnpm run release:status` and run `pnpm run release:dry-run`. The dry run creates a temporary
+   workspace, proposes a builder patch, runs version preparation, and verifies that private
+   workspaces remain unchanged. With `--consumer`, it also packs that simulated version and builds
+   a clean consumer. It never changes repository versions, tags, or registry entries.
+3. Run **Release builder** on `main` with `action: version`. After validation, Changesets opens or
+   updates the version PR. Review the manifest, changelog, API report, and lockfile, then merge it.
+   `pnpm run release:version` performs the same preparation locally without publication.
+4. Wait for CI on the version commit and verify its production deployment in
+   [Netlify](https://app.netlify.com/projects/ngx-formly-builder/deploys). Open the
    [demo](https://builder.formly.dev/) and refresh the [editor](https://builder.formly.dev/form-editor).
-   Netlify automatically builds and publishes `main` when the version PR merges. If that deployment
-   fails, fix or retry it before announcing the release.
+5. Run the workflow on that reviewed `main` commit with `action: publish`. The workflow checks
+   release notes, the single-package boundary, lint, unit tests, docs, builds, API declarations,
+   tarball contracts, strict peer installation, and Studio/consumer browser tests before approval.
 
-Source package `publishConfig.directory` points to its ng-packagr output. Never run `npm publish`
-from a library source directory. `release:validate` checks built names, versions, peers, bundles
-and declarations against source before publication. The published tarballs must contain Angular
-partial-compilation output and public declarations, not workspace TypeScript aliases.
+The default action is `validate`, which performs no versioning or publication. Dispatches outside
+`main` are skipped. Publication checks out the exact commit validated by its run, even if `main`
+advances while approval is pending.
 
-Changesets publishes dependencies before dependents: state and runtime Material fields, then the
-builder shell, then Material builder adapters as needed. It skips versions already present in
-the registry and creates package-specific tags such as `@ngx-formly/builder-state@0.0.2`. The
-workflow records those tags and GitHub release notes. There is no shared repository version tag.
-If a publish partially fails, retry the same reviewed commit after inspecting registry versions;
-never overwrite or unpublish an existing version to repair a release.
+Compatible `0.x` fixes and additions use a patch; incompatible changes require a minor bump and
+migration notes. Moving to `1.0.0` is an explicit stabilization decision. After 1.0, use ordinary
+SemVer patch, minor, and major bumps. Update external peer ranges when the supported dependencies
+change, and test those combinations before claiming compatibility.
 
-Configure the repository's `npm-release` environment with required reviewers and an `NPM_TOKEN`
-that can publish the four `@ngx-formly` packages. Enable GitHub Actions to create pull requests.
-The workflow is manual and restricted to `main`; merging this tooling PR does not publish npm
-packages. Registry access and actual publication are not exercised by the local dry run.
+## Artifacts and retries
+
+Source `publishConfig.directory` points to `dist/core`. Never run `npm publish` from the source
+directory. `release:validate` builds the package, checks its manifest and public declarations,
+verifies README/LICENSE/CHANGELOG assets, and installs its tarball into a clean consumer.
+The tarball contains Angular partial-compilation output and declarations, not workspace aliases.
+
+Changesets skips a version already in the registry. Tags use the package name, for example
+`@ngx-formly/builder@0.0.2`. If publication partially fails, inspect npm, the tag, and the GitHub
+release before retrying the same reviewed commit. Never overwrite or unpublish an existing
+version to repair a release.
 
 ## Prereleases
 
-Use `pnpm run changeset pre enter next`, commit `.changeset/pre.json`, then add changesets and
-prepare/review versions through the same workflow. Publish under `next`, never `latest`. To exit,
-run `pnpm run changeset pre exit` and prepare a reviewed stable version PR. Do not hand-edit
-prerelease suffixes or delete the prerelease state file.
+Use `pnpm run changeset pre enter next`, commit `.changeset/pre.json`, then add a builder changeset
+and prepare/review versions through the same workflow. Publish under `next`, not `latest`.
+To exit, run `pnpm run changeset pre exit` and prepare a reviewed stable version PR. Do not
+hand-edit prerelease suffixes or delete the prerelease state file.
 
-A stable peer range does not accept a prerelease automatically. Changesets may include dependent
-packages to make prerelease peer ranges installable; inspect the plan and clean consumer results.
-A prerelease series is a coordinated repository mode, not a reason to synchronize numeric versions
-of unrelated packages. Do not introduce prereleases into an already-supported stable range.
+## Local validation
 
-## Tooling and validation
-
-This workflow uses pnpm 10.25.0 workspaces and Node 24. `release:version` refreshes
-`pnpm-lock.yaml`, CI uses frozen installs, and the dry-run fixture uses the same workspace layout.
+Use pnpm 10.25.0 and Node 24. Version preparation refreshes the lockfile; CI uses frozen installs.
 
 ```sh
-pnpm run release:dry-run
+pnpm run release:check
+pnpm run test:release
 pnpm run release:validate
 ```
 
-For example, the compatible state patch fixture reports `builder-state: 0.0.1 -> 0.0.2` and no
-other release. `release:validate` builds all four packages, then its dry-run consumer installs a simulated state
-patch alongside the unchanged dependent versions; version equality is not required. Intentional breaking changes
-must include dependency ranges, migration notes and the API report update once #11 is enabled.
-
 See the [Changesets configuration](https://changesets.dev/guide/config),
-[publishing guide](https://changesets.dev/guide/versioning-and-publishing) and
-[prerelease rules](https://changesets.dev/guide/prereleases) for the CLI behavior used here.
+[publishing guide](https://changesets.dev/guide/versioning-and-publishing), and
+[prerelease rules](https://changesets.dev/guide/prereleases).

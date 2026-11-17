@@ -6,8 +6,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Panel, PanelPassThrough } from 'primeng/panel';
+import { Panel, PanelLayout } from '../../ui/panel';
 import { Tooltip } from '../../shared/tooltip';
 import { ObjectProperty } from './object.directive';
 import { PropertyType } from '../types';
@@ -19,20 +18,12 @@ import { FieldSelectProperty } from '../select/select';
 @Component({
   selector: 'core-field-object-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    FieldSelectProperty,
-    FieldBooleanProperty,
-    FieldInputProperty,
-    Panel,
-    ButtonDirective,
-    ButtonIcon,
-    Tooltip,
-  ],
+  imports: [FieldSelectProperty, FieldBooleanProperty, FieldInputProperty, Panel, Tooltip],
   host: {
     class: 'flex flex-col gap-1',
   },
   template: `
-    <p-panel
+    <core-property-panel
       toggler="header"
       [pt]="panelPT()"
       [toggleable]="combinedIsCollpasible()"
@@ -41,7 +32,7 @@ import { FieldSelectProperty } from '../select/select';
     >
       <ng-template #header>
         <span
-          class="p-panel-title"
+          class="core-property-panel-title"
           tooltipPosition="left"
           [coreTooltip]="property().description"
         >
@@ -58,17 +49,17 @@ import { FieldSelectProperty } from '../select/select';
       @if (property().isRemovable) {
         <ng-template #icons>
           <button
-            pButton
+            coreButton
             text
             rounded
             severity="danger"
             aria-label="Remove"
             coreTooltip="Remove"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="remove.emit()"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
               >remove</i
             >
@@ -110,7 +101,7 @@ import { FieldSelectProperty } from '../select/select';
           </div>
         }
       </div>
-    </p-panel>
+    </core-property-panel>
   `,
 })
 export class FieldObjectProperty extends ObjectProperty {
@@ -123,7 +114,7 @@ export class FieldObjectProperty extends ObjectProperty {
       : this.isCollapsible(),
   );
 
-  readonly panelPT = computed<PanelPassThrough>(() => ({
+  readonly panelPT = computed<PanelLayout>(() => ({
     header: {
       class: this.isCollapsible() ? 'cursor-pointer' : '',
     },

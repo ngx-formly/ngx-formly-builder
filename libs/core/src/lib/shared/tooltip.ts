@@ -1,19 +1,23 @@
 import { Directive, inject } from '@angular/core';
-import { Tooltip as PrimeNGTooltip } from 'primeng/tooltip';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Directive({
   selector: '[coreTooltip]',
   hostDirectives: [
     {
-      directive: PrimeNGTooltip,
-      inputs: ['pTooltip: coreTooltip', 'tooltipPosition', 'tooltipEvent', 'showDelay'],
+      directive: MatTooltip,
+      inputs: [
+        'matTooltip: coreTooltip',
+        'matTooltipPosition: tooltipPosition',
+        'matTooltipShowDelay: showDelay',
+      ],
     },
   ],
 })
 export class Tooltip {
-  protected tooltip = inject(PrimeNGTooltip);
+  protected tooltip = inject(MatTooltip);
 
   constructor() {
-    this.tooltip.setOption({ showDelay: 500 });
+    this.tooltip.showDelay = 500;
   }
 }

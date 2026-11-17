@@ -2,14 +2,13 @@ import { CoreFieldService } from '../../config/core-field.service';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { get } from 'lodash-es';
-import { Textarea } from 'primeng/textarea';
 import { FieldPropertyWrapper } from '../property-wrapper';
 import { PropertyChange, PropertyChangeType } from '../types';
 
 @Component({
   selector: 'core-validation-message-input',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FieldPropertyWrapper, FormsModule, Textarea],
+  imports: [FieldPropertyWrapper, FormsModule],
   template: `
     <core-field-property-wrapper
       isClearable
@@ -19,7 +18,7 @@ import { PropertyChange, PropertyChangeType } from '../types';
     >
       <textarea
         class="field-property-control resize-y placeholder:whitespace-nowrap"
-        pTextarea
+        coreInput
         rows="1"
         placeholder="Defaults to global message"
         [id]="inputId"

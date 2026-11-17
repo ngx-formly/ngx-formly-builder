@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ToggleSwitch } from 'primeng/toggleswitch';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { BooleanProperty } from './boolean.directive';
 import { FieldPropertyWrapper } from '../property-wrapper';
 
 @Component({
   selector: 'core-field-boolean-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ToggleSwitch, FieldPropertyWrapper],
+  imports: [FormsModule, MatSlideToggle, FieldPropertyWrapper],
   template: `
     <core-field-property-wrapper
       [label]="property().label"
@@ -16,8 +16,9 @@ import { FieldPropertyWrapper } from '../property-wrapper';
       [isClearable]="true"
       (clear)="onClear()"
     >
-      <p-toggleswitch
+      <mat-slide-toggle
         [id]="switchId"
+        [aria-label]="property().label || 'Enabled'"
         [ngModel]="currentValue()"
         (ngModelChange)="onValueChange($event)"
       />

@@ -1,8 +1,9 @@
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgForm } from '@angular/forms';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { Select } from 'primeng/select';
+import { MatSelect } from '@angular/material/select';
 import { of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CoreFormService } from '../../editor/core-form.service';
@@ -56,7 +57,9 @@ describe('CreateFormDialog', () => {
   }
 
   function setName(name: string): void {
-    const nameInput = fixture.nativeElement.querySelector('#create-form-name') as HTMLInputElement;
+    const nameInput = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector('#create-form-name') as HTMLInputElement;
     nameInput.value = name;
     nameInput.dispatchEvent(new Event('input'));
     nameInput.dispatchEvent(new Event('blur'));
@@ -64,9 +67,9 @@ describe('CreateFormDialog', () => {
   }
 
   function createFromTemplate(templateId: string): void {
-    const button = fixture.nativeElement.querySelector(
-      `button[id="template-${templateId}"]`,
-    ) as HTMLButtonElement;
+    const button = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector(`button[id="template-${templateId}"]`) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
   }
@@ -82,13 +85,18 @@ describe('CreateFormDialog', () => {
       dataTransfer: { value: { types, files, dropEffect: 'none' } },
       relatedTarget: { value: relatedTarget },
     });
-    fixture.nativeElement.querySelector('#template-blank').dispatchEvent(event);
+    TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector<HTMLButtonElement>('#template-blank')!
+      .dispatchEvent(event);
     fixture.detectChanges();
     return event;
   }
 
   function selectFiles(files: File[]): void {
-    const input = fixture.nativeElement.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector('input[type="file"]') as HTMLInputElement;
     Object.defineProperty(input, 'files', { configurable: true, value: files });
     input.dispatchEvent(new Event('change'));
     fixture.detectChanges();
@@ -151,8 +159,8 @@ describe('CreateFormDialog', () => {
   }
 
   beforeEach(() => {
-    // Chromium tests cover the PrimeNG overlay, which stalls jsdom.
-    vi.spyOn(Select.prototype, 'show').mockImplementation(() => undefined);
+    // Browser tests cover selecting a library from the overlay.
+    vi.spyOn(MatSelect.prototype, 'open').mockImplementation(() => undefined);
     return setup();
   });
   afterEach(() => vi.restoreAllMocks());
@@ -160,30 +168,37 @@ describe('CreateFormDialog', () => {
   it('shows the primary border and download icon only while files are dragged over the card', async () => {
     openDialog();
     await fixture.whenStable();
-    const card = fixture.nativeElement.querySelector('#template-blank') as HTMLButtonElement;
+    const card = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector<HTMLButtonElement>('#template-blank') as HTMLButtonElement;
     expect(fileDrag('dragover', [], null, ['text/plain']).defaultPrevented).toBe(false);
-    expect(card.querySelector('i')?.textContent?.trim()).toBe('draft');
+    expect(card.querySelector('i')?.textContent?.trim()).toBe('draft')!;
 
     expect(fileDrag('dragenter').defaultPrevented).toBe(true);
     expect(fileDrag('dragover').defaultPrevented).toBe(true);
     expect(card.classList.contains('border-primary')).toBe(true);
     expect(card.classList.contains('border-surface')).toBe(false);
-    expect(card.querySelector('i')?.textContent?.trim()).toBe('download');
-    fileDrag('dragleave', [], card.querySelector('span'));
-    expect(card.querySelector('i')?.textContent?.trim()).toBe('download');
+    expect(card.querySelector('i')?.textContent?.trim()).toBe('download')!;
+    fileDrag('dragleave', [], card.querySelector('span')!);
+    expect(card.querySelector('i')?.textContent?.trim()).toBe('download')!;
     fileDrag('dragleave');
     expect(card.classList.contains('border-primary')).toBe(false);
     expect(card.classList.contains('border-surface')).toBe(true);
-    expect(card.querySelector('i')?.textContent?.trim()).toBe('draft');
+    expect(card.querySelector('i')?.textContent?.trim()).toBe('draft')!;
     expect(addForm$).not.toHaveBeenCalled();
   });
 
   it('opens the file picker without creating a blank form and ignores cancellation', async () => {
     openDialog();
     await fixture.whenStable();
-    const input = fixture.nativeElement.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector('input[type="file"]') as HTMLInputElement;
     const click = vi.spyOn(input, 'click').mockImplementation(() => undefined);
-    fixture.nativeElement.querySelector('[aria-label="Import form file"]').click();
+    TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector<HTMLButtonElement>('[aria-label="Import form file"]')!
+      .click();
 
     expect(click).toHaveBeenCalledOnce();
     expect(input.accept).toBe('.json,.txt');
@@ -214,9 +229,12 @@ describe('CreateFormDialog', () => {
         selectFiles(files);
       }
 
-      expect(fixture.nativeElement.querySelector('#template-blank i').textContent.trim()).toBe(
-        'draft',
-      );
+      expect(
+        TestBed.inject(OverlayContainer)
+          .getContainerElement()
+          .querySelector('#template-blank i')!
+          .textContent.trim(),
+      ).toBe('draft');
       await vi.waitFor(() =>
         expect(addForm$).toHaveBeenCalledExactlyOnceWith(
           'Imported form',
@@ -256,11 +274,17 @@ describe('CreateFormDialog', () => {
       fileDrag('drop', [new File([content], 'invalid.json')]);
       await vi.waitFor(() => {
         fixture.detectChanges();
-        expect(fixture.nativeElement.querySelector('p-message')).toBeTruthy();
+        expect(
+          TestBed.inject(OverlayContainer).getContainerElement().querySelector('[role=alert]')!,
+        ).toBeTruthy();
       });
       expect(addForm$).not.toHaveBeenCalled();
       expect(TestBed.inject(CreateFormDialogService).close).not.toHaveBeenCalled();
-      expect(fixture.nativeElement.querySelector('#template-blank').disabled).toBe(false);
+      expect(
+        TestBed.inject(OverlayContainer)
+          .getContainerElement()
+          .querySelector<HTMLButtonElement>('#template-blank')!.disabled,
+      ).toBe(false);
     },
   );
 
@@ -271,7 +295,9 @@ describe('CreateFormDialog', () => {
     fileDrag('drop', [new File(['[{"type":"unknown"}]'], 'form.json')]);
     await vi.waitFor(() => {
       fixture.detectChanges();
-      expect(fixture.nativeElement.textContent).toContain('does not match the selected UI library');
+      expect(TestBed.inject(OverlayContainer).getContainerElement().textContent).toContain(
+        'does not match the selected UI library',
+      );
     });
     expect(addForm$).not.toHaveBeenCalled();
   });
@@ -284,7 +310,7 @@ describe('CreateFormDialog', () => {
       [new File(['[]'], 'one.json'), new File(['[]'], 'two.json')],
     ]) {
       fileDrag('drop', files);
-      expect(fixture.nativeElement.textContent).toContain(
+      expect(TestBed.inject(OverlayContainer).getContainerElement().textContent).toContain(
         'Choose or drop one JSON or TXT form file at a time.',
       );
     }
@@ -300,10 +326,14 @@ describe('CreateFormDialog', () => {
     openDialog();
     await fixture.whenStable();
     fileDrag('drop', [new File(['[]'], 'form.json')]);
-    expect(fixture.nativeElement.textContent).toContain(
+    expect(TestBed.inject(OverlayContainer).getContainerElement().textContent).toContain(
       'Could not read the file. Please try again.',
     );
-    expect(fixture.nativeElement.querySelector('#template-blank').disabled).toBe(false);
+    expect(
+      TestBed.inject(OverlayContainer)
+        .getContainerElement()
+        .querySelector<HTMLButtonElement>('#template-blank')!.disabled,
+    ).toBe(false);
     expect(addForm$).not.toHaveBeenCalled();
     read.mockRestore();
     fileDrag('drop', [new File(['[]'], 'form.json')]);
@@ -333,7 +363,11 @@ describe('CreateFormDialog', () => {
     openDialog();
     await fixture.whenStable();
     fileDrag('drop', [new File(['[]'], 'form.json')]);
-    expect(fixture.nativeElement.querySelector('#template-blank').disabled).toBe(true);
+    expect(
+      TestBed.inject(OverlayContainer)
+        .getContainerElement()
+        .querySelector<HTMLButtonElement>('#template-blank')!.disabled,
+    ).toBe(true);
     fileDrag('drop', [new File(['[]'], 'second.json')]);
     expect(FileReader.prototype.readAsText).toHaveBeenCalledOnce();
     isOpen.set(false);
@@ -341,7 +375,11 @@ describe('CreateFormDialog', () => {
     expect(abort).toHaveBeenCalledOnce();
     openDialog();
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('#template-blank').disabled).toBe(false);
+    expect(
+      TestBed.inject(OverlayContainer)
+        .getContainerElement()
+        .querySelector<HTMLButtonElement>('#template-blank')!.disabled,
+    ).toBe(false);
     expect(addForm$).not.toHaveBeenCalled();
   });
 
@@ -370,7 +408,11 @@ describe('CreateFormDialog', () => {
         null,
       );
       expect(TestBed.inject(CreateFormDialogService).close).toHaveBeenCalledOnce();
-      expect(fixture.nativeElement.querySelector('.p-dialog-footer')).toBeNull();
+      expect(
+        TestBed.inject(OverlayContainer)
+          .getContainerElement()
+          .querySelector('.core-dialog-footer')!,
+      ).toBeNull();
       isOpen.set(false);
       fixture.componentInstance.createForm('starter');
       expect(addForm$).toHaveBeenCalledOnce();
@@ -385,7 +427,9 @@ describe('CreateFormDialog', () => {
     fixture.detectChanges();
     openDialog();
 
-    const nameInput = fixture.nativeElement.querySelector('#create-form-name') as HTMLInputElement;
+    const nameInput = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector('#create-form-name') as HTMLInputElement;
     expect(nameInput.value).toBe('');
     expect(fixture.componentInstance.selectedLibrary()).toBeNull();
     expect(addForm$).not.toHaveBeenCalled();
@@ -393,7 +437,9 @@ describe('CreateFormDialog', () => {
 
   it('lists blank and Quick Start actions without library badges', () => {
     openDialog();
-    const actions = fixture.nativeElement.querySelectorAll('form button');
+    const actions = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelectorAll('form button');
     expect(
       Array.from(actions as NodeListOf<HTMLButtonElement>, (button) =>
         button.getAttribute('aria-label'),
@@ -405,10 +451,13 @@ describe('CreateFormDialog', () => {
       'Material Draft',
       'Ng Zorro Showcase',
     ]);
-    expect(fixture.nativeElement.querySelector('#quick-start-heading').textContent).toContain(
-      'Quick Start',
-    );
-    expect(fixture.nativeElement.querySelector('form').textContent).not.toContain('•');
+    expect(
+      TestBed.inject(OverlayContainer).getContainerElement().querySelector('#quick-start-heading')!
+        .textContent,
+    ).toContain('Quick Start');
+    expect(
+      TestBed.inject(OverlayContainer).getContainerElement().querySelector('form')!.textContent,
+    ).not.toContain('•');
   });
 
   it('creates a blank form without an empty Quick Start panel when no examples are configured', async () => {
@@ -416,7 +465,9 @@ describe('CreateFormDialog', () => {
     openDialog();
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.querySelector('#quick-start-heading')).toBeNull();
+    expect(
+      TestBed.inject(OverlayContainer).getContainerElement().querySelector('#quick-start-heading')!,
+    ).toBeNull();
     createFromTemplate('blank');
     expect(addForm$).toHaveBeenCalledExactlyOnceWith(
       'New form',
@@ -432,12 +483,14 @@ describe('CreateFormDialog', () => {
     openDialog();
     setName(name);
     await fixture.whenStable();
-    const actions = fixture.nativeElement.querySelectorAll(
-      'form button',
-    ) as NodeListOf<HTMLButtonElement>;
+    const actions = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelectorAll('form button') as NodeListOf<HTMLButtonElement>;
     expect(Array.from(actions).every((button) => !button.disabled)).toBe(true);
     expect(getForm(fixture.componentInstance).valid).toBe(true);
-    expect(fixture.nativeElement.textContent).not.toContain('Name is required.');
+    expect(TestBed.inject(OverlayContainer).getContainerElement().textContent).not.toContain(
+      'Name is required.',
+    );
     createFromTemplate('blank');
     expect(addForm$).toHaveBeenCalledExactlyOnceWith(
       'New form',
@@ -500,14 +553,16 @@ describe('CreateFormDialog', () => {
     hasStorageRecoveryIssues.set(true);
     await fixture.whenStable();
 
-    const createButton = fixture.nativeElement.querySelector(
-      '#template-blank',
-    ) as HTMLButtonElement;
+    const createButton = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector<HTMLButtonElement>('#template-blank') as HTMLButtonElement;
     expect(createButton.disabled).toBe(true);
-    expect(fixture.nativeElement.querySelector('[aria-label="Import form file"]').disabled).toBe(
-      true,
-    );
-    expect(fixture.nativeElement.textContent).toContain(
+    expect(
+      TestBed.inject(OverlayContainer)
+        .getContainerElement()
+        .querySelector<HTMLButtonElement>('[aria-label="Import form file"]')!.disabled,
+    ).toBe(true);
+    expect(TestBed.inject(OverlayContainer).getContainerElement().textContent).toContain(
       'Recover saved data in the Workspace panel',
     );
     fixture.componentInstance.createForm();
@@ -524,7 +579,7 @@ describe('CreateFormDialog', () => {
 
     expect(TestBed.inject(CreateFormDialogService).close).not.toHaveBeenCalled();
     expect(fixture.componentInstance.formName()).toBe('My draft');
-    expect(fixture.nativeElement.textContent).toContain(
+    expect(TestBed.inject(OverlayContainer).getContainerElement().textContent).toContain(
       'Recover saved data in the Workspace panel',
     );
   });
@@ -539,10 +594,12 @@ describe('CreateFormDialog', () => {
     await fixture.whenStable();
 
     expect(TestBed.inject(CreateFormDialogService).close).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.textContent).toContain(
+    expect(TestBed.inject(OverlayContainer).getContainerElement().textContent).toContain(
       'Could not create the form. Please try again.',
     );
-    expect(fixture.nativeElement.textContent).not.toContain('private storage failure');
+    expect(TestBed.inject(OverlayContainer).getContainerElement().textContent).not.toContain(
+      'private storage failure',
+    );
 
     fixture.componentInstance.createForm();
     expect(TestBed.inject(CreateFormDialogService).close).toHaveBeenCalledOnce();
@@ -556,9 +613,9 @@ describe('CreateFormDialog', () => {
     fixture.componentInstance.createForm();
 
     await fixture.whenStable();
-    const actions = fixture.nativeElement.querySelectorAll(
-      'form button',
-    ) as NodeListOf<HTMLButtonElement>;
+    const actions = TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelectorAll('form button') as NodeListOf<HTMLButtonElement>;
     expect(Array.from(actions).every((button) => button.disabled)).toBe(true);
     expect(TestBed.inject(CreateFormDialogService).close).not.toHaveBeenCalled();
     fixture.componentInstance.createForm('Material Showcase-form-material');

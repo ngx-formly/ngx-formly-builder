@@ -25,11 +25,10 @@ cards, and repeating sections, providing runtime registrations and editor metada
   [add custom components](/developers/add-custom-components/).
 - **Render an existing export:** [Use an exported form](/developers/use-an-exported-form/).
 
-These guides target Angular 22 and Formly 11.x. The embedding guide uses locally packed packages,
-matching the isolated package-consumer fixture verified by the repository.
-The editor shell in `libs/core` uses `@ngx-formly/builder`. Headless state uses
-`@ngx-formly/builder-state`, reusable Material fields use `@ngx-formly/builder-material-fields`,
-and editor-only Material adapters use `@ngx-formly/builder-material`. Public APIs remain
-provisional until the first public prerelease.
+These guides target Angular 22 and Formly 11.x. The embedding guide uses one locally packed
+`@ngx-formly/builder` tarball, matching the isolated consumer fixture. Its root contains the headless engine and persistence; `/ui` adds the editor, native baseline
+fields and UI extension contracts. UI peers are optional and installed explicitly by editor hosts. Additional fields and features
+belong in separate libraries. Studio examples are private and are not included in the package.
+The public API is experimental in 0.0.x.
 
 For component authoring and runtime APIs, use the [ngx-formly documentation](https://formly.dev/).

@@ -9,10 +9,7 @@ import {
 } from '@angular/core';
 import { FormGroup, FormsModule } from '@angular/forms';
 import { FormlyFormBuilder } from '@ngx-formly/core';
-import { isValidationRuleName } from '@ngx-formly/builder-state';
-import { ButtonDirective, ButtonLabel } from 'primeng/button';
-import { InputText } from 'primeng/inputtext';
-import { Textarea } from 'primeng/textarea';
+import { isValidationRuleName } from '@ngx-formly/builder';
 import { FieldPropertyWrapper } from '../property-wrapper';
 
 export interface ValidationExpression {
@@ -24,7 +21,7 @@ export interface ValidationExpression {
   selector: 'core-validation-expression-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FormlyFormBuilder],
-  imports: [FormsModule, InputText, Textarea, ButtonDirective, ButtonLabel, FieldPropertyWrapper],
+  imports: [FormsModule, FieldPropertyWrapper],
   host: { class: 'flex min-w-0 flex-col gap-3' },
   template: `
     <core-field-property-wrapper
@@ -32,7 +29,7 @@ export interface ValidationExpression {
       [labelForId]="id + '-name'"
     >
       <input
-        pInputText
+        coreInput
         class="field-property-control"
         placeholder="e.g., minimumAge"
         [id]="id + '-name'"
@@ -45,7 +42,7 @@ export interface ValidationExpression {
       [labelForId]="id + '-expression'"
     >
       <textarea
-        pTextarea
+        coreInput
         class="field-property-control resize-y"
         rows="3"
         placeholder="control.value >= 18"
@@ -68,7 +65,7 @@ export interface ValidationExpression {
       [labelForId]="id + '-message'"
     >
       <textarea
-        pTextarea
+        coreInput
         class="field-property-control resize-y"
         rows="2"
         placeholder="Enter an age of at least 18."
@@ -87,19 +84,19 @@ export interface ValidationExpression {
     }
     <div class="flex flex-wrap justify-end gap-2">
       <button
-        pButton
+        coreButton
         text
         [disabled]="saving()"
         (click)="cancelled.emit()"
       >
-        <span pButtonLabel>Cancel</span>
+        <span coreButtonLabel>Cancel</span>
       </button>
       <button
-        pButton
+        coreButton
         [disabled]="saving()"
         (click)="save()"
       >
-        <span pButtonLabel>Save validation</span>
+        <span coreButtonLabel>Save validation</span>
       </button>
     </div>
   `,

@@ -6,9 +6,9 @@
     "outDir": "../../../out-tsc/lib",
     "rootDir": "../../../",
     "paths": {
-      "@ngx-formly/builder-state": ["../../../dist/state"],
       "@ngx-formly/builder": ["../../../dist/core"],
-      "@ngx-formly/builder-material-fields": ["../../../dist/material"]
+      "@ngx-formly/builder/ui": ["../../../dist/core/types/ngx-formly-builder-ui.d.ts"],
+      "@formly-studio/material-fields": ["../../../dist/material"]
     },
     "declaration": true,
     "declarationMap": true,

@@ -11,7 +11,7 @@ import {
   FieldTypeOption,
   nativeFieldTypes,
   FieldWrapperOption,
-} from '@ngx-formly/builder';
+} from '@ngx-formly/builder/ui';
 
 export const labelProp = createInputProperty({
   label: 'Label',

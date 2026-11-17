@@ -1,9 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { InputText } from 'primeng/inputtext';
-import { Panel } from 'primeng/panel';
-import { Textarea } from 'primeng/textarea';
+import { Panel } from '../../ui/panel';
 import { ExpressionDialogService } from './expression-dialog.service';
 import { beautifyCode, flattenToOneLine } from '../../shared/code-editor-utils';
 import { Tooltip } from '../../shared/tooltip';
@@ -13,23 +10,14 @@ import { Expression } from './expressions.types';
 @Component({
   selector: 'core-expression-item',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ButtonDirective,
-    ButtonIcon,
-    Panel,
-    InputText,
-    Textarea,
-    FormsModule,
-    Tooltip,
-    FieldPropertyWrapper,
-  ],
+  imports: [Panel, FormsModule, Tooltip, FieldPropertyWrapper],
   template: `
-    <p-panel [header]="'Expression ' + (index() + 1)">
+    <core-property-panel [header]="'Expression ' + (index() + 1)">
       <ng-template #icons>
         <span class="inline-flex items-center gap-2">
           @if (dialogService) {
             <button
-              pButton
+              coreButton
               text
               rounded
               aria-label="Open expression editor"
@@ -38,24 +26,24 @@ import { Expression } from './expressions.types';
               (click)="openEditor()"
             >
               <i
-                pButtonIcon
+                coreButtonIcon
                 class="material-symbols-outlined"
                 >code_blocks</i
               >
             </button>
           }
           <button
-            pButton
+            coreButton
             text
             rounded
             severity="danger"
             aria-label="Remove expression"
             coreTooltip="Remove expression"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="remove.emit()"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
               >remove</i
             >
@@ -70,7 +58,7 @@ import { Expression } from './expressions.types';
           [labelForId]="keyInputId"
         >
           <input
-            pInputText
+            coreInput
             class="field-property-control"
             type="text"
             placeholder="e.g., model.myKey"
@@ -88,7 +76,7 @@ import { Expression } from './expressions.types';
           <textarea
             class="field-property-control"
             rows="3"
-            pTextarea
+            coreInput
             placeholder="e.g., model.siblingKey.nested + 68"
             [id]="valueInputId"
             [ngModel]="value()"
@@ -97,7 +85,7 @@ import { Expression } from './expressions.types';
           ></textarea>
         </core-field-property-wrapper>
       </div>
-    </p-panel>
+    </core-property-panel>
   `,
 })
 export class ExpressionItem {

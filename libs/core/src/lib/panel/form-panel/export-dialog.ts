@@ -1,9 +1,6 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import saveAs from 'file-saver';
-import { FloatLabel } from 'primeng/floatlabel';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { CoreFormService } from '../../editor/core-form.service';
 import { ExportDialogService } from './export-dialog.service';
 import { JSONContentDialog } from '../../json-content/json-content-dialog';
@@ -11,7 +8,7 @@ import { JSONContentDialog } from '../../json-content/json-content-dialog';
 @Component({
   selector: 'core-export-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [JSONContentDialog, FormsModule, FloatLabel, InputText, Message],
+  imports: [JSONContentDialog, FormsModule],
   template: `
     <core-json-content-dialog
       header="Export Form"
@@ -25,12 +22,12 @@ import { JSONContentDialog } from '../../json-content/json-content-dialog';
     >
       <ng-container formFields>
         <div>
-          <p-floatlabel variant="on">
+          <div class="core-labeled-control">
             <input
               #nameModel="ngModel"
               class="w-full"
               name="name"
-              pInputText
+              coreInput
               required
               autocomplete="off"
               data-bwignore
@@ -38,15 +35,18 @@ import { JSONContentDialog } from '../../json-content/json-content-dialog';
               [(ngModel)]="formName"
             />
             <label for="export-dialog-name-input">Name</label>
-          </p-floatlabel>
+          </div>
           @if (!nameModel.valid && nameModel.touched) {
-            <p-message
+            <div
+              role="alert"
+              class="core-message"
               class="mt-1 inline-block"
               severity="error"
               size="small"
               variant="simple"
-              >Name is required.</p-message
             >
+              Name is required.
+            </div>
           }
         </div>
       </ng-container>

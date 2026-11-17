@@ -2,10 +2,21 @@
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../dist/core",
   "assets": [
-    { "input": "src", "glob": "styles.css", "output": "." },
-    { "input": "src/assets", "glob": "*.css", "output": "assets" }
+    {
+      "input": "src",
+      "glob": "styles.css",
+      "output": "."
+    },
+    {
+      "input": "src/assets",
+      "glob": "*.css",
+      "output": "assets"
+    },
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "allowedNonPeerDependencies": ["lodash-es", "mutative", "uuid"]
 }

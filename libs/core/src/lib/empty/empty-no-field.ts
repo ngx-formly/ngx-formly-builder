@@ -1,19 +1,18 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ButtonDirective } from 'primeng/button';
 import { PanelService } from '../editor/panel.service';
 import { Empty } from './empty';
 
 @Component({
   selector: 'core-empty-no-field',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Empty, ButtonDirective],
+  imports: [Empty],
   template: `
     <core-empty
       label="No field in this form"
       description="Add a field from the Add Field panel"
     >
       <button
-        pButton
+        coreButton
         (click)="openAddFieldPanel()"
       >
         <i

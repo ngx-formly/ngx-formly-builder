@@ -3,20 +3,22 @@ import { join } from 'node:path';
 
 const packages = [
   {
-    source: 'libs/state/package.json',
-    dist: 'dist/state',
+    source: 'libs/core/package.json',
+    dist: 'dist/core',
     forbiddenImports: [
-      '@angular/cdk',
-      '@angular/material',
-      '@ngx-formly/builder',
-      '@ngx-formly/builder-material',
-      '@ngx-formly/builder-material-fields',
       'primeng',
+      '@primeuix/themes',
+      'tailwindcss-primeui',
+      '@formly-studio/material-fields',
+      '@formly-studio/material-editor',
+      '@ngx-formly/builder-state',
+      '@ngx-formly/builder-material-fields',
+      '@ngx-formly/builder-material',
+      '@ngx-formly/material',
+      'dompurify',
+      'marked',
     ],
   },
-  { source: 'libs/core/package.json', dist: 'dist/core' },
-  { source: 'libs/ui/material/package.json', dist: 'dist/material' },
-  { source: 'libs/ui/builder-material/package.json', dist: 'dist/builder-material' },
 ];
 
 function readJson(path) {
@@ -74,10 +76,43 @@ for (const definition of packages) {
   }
 
   const declared = new Set([
+    sourceManifest.name,
     ...Object.keys(distManifest.dependencies ?? {}),
     ...Object.keys(distManifest.peerDependencies ?? {}),
     ...Object.keys(distManifest.optionalDependencies ?? {}),
   ]);
+  const extraPeers = (definition.forbiddenImports ?? []).filter((dependency) =>
+    declared.has(dependency),
+  );
+  if (extraPeers.length)
+    failures.push(
+      `${sourceManifest.name}: forbidden package dependencies: ${extraPeers.join(', ')}`,
+    );
+  const headlessSource = readFileSync(join(definition.dist, distManifest.module), 'utf8');
+  const allowedHeadlessImports = new Set([
+    '@angular/core',
+    '@ngx-formly/core',
+    'rxjs',
+    'lodash-es',
+    'mutative',
+    'uuid',
+    'tslib',
+  ]);
+  for (const match of headlessSource.matchAll(/(?:from\s+|import\s*)['"]([^'"]+)['"]/g)) {
+    if (!allowedHeadlessImports.has(packageName(match[1]))) {
+      failures.push(`${sourceManifest.name}: non-headless root import: ${match[1]}`);
+    }
+  }
+  for (const dependency of Object.keys(distManifest.peerDependencies)) {
+    if (
+      !['@angular/core', '@angular/common', '@angular/forms', '@ngx-formly/core', 'rxjs'].includes(
+        dependency,
+      ) &&
+      !distManifest.peerDependenciesMeta?.[dependency]?.optional
+    ) {
+      failures.push(`${sourceManifest.name}: UI peer must be optional: ${dependency}`);
+    }
+  }
   const bundleImports = collectBundleImports(bundleDirectory);
   const missing = [...bundleImports].filter((dependency) => !declared.has(dependency));
 

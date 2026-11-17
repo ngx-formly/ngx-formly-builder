@@ -20,7 +20,7 @@ export function getChildPath(path: string[], key: string | number | undefined): 
   return [...path, ...key.toString().split('.')];
 }
 
-export { modifyPropertyTarget } from '@ngx-formly/builder-state';
+export { modifyPropertyTarget } from '@ngx-formly/builder';
 
 export const getDefaultProperty = (
   type: PropertyType,

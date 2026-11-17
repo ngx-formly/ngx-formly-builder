@@ -8,13 +8,11 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { get } from 'lodash-es';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { Dialog, DialogPassThrough } from 'primeng/dialog';
-import { InputText } from 'primeng/inputtext';
-import { Select } from 'primeng/select';
-import type { TableRowReorderEvent } from 'primeng/table';
-import { TableModule } from 'primeng/table';
-import { ToggleSwitch } from 'primeng/toggleswitch';
+import { Dialog, DialogLayout } from '../../ui/dialog';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
+import { CdkDrag, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 
 import { ArrayTableDialogService } from './array-table-dialog.service';
 import { Tooltip } from '../../shared/tooltip';
@@ -39,19 +37,17 @@ interface TableColumn {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
     Dialog,
-    InputText,
-    Select,
-    TableModule,
-    ToggleSwitch,
+    MatSelect,
+    MatOption,
+    CdkDrag,
+    CdkDragHandle,
+    CdkDropList,
+    MatSlideToggle,
     Tooltip,
   ],
   template: `
-    <p-dialog
-      modal
+    <core-dialog
       [pt]="dialogPT"
       [header]="data()?.title || 'Edit items'"
       [style]="{
@@ -63,134 +59,164 @@ interface TableColumn {
       [visible]="isOpen()"
       (visibleChange)="updateVisibility($event)"
     >
-      <p-table
-        scrollHeight="flex"
-        [value]="displayRows()"
-        [rowTrackBy]="rowTrackBy"
-        [scrollable]="true"
-        [tableStyle]="{ 'min-width': '42rem' }"
-        (onRowReorder)="onRowReorder($event)"
-      >
-        <ng-template #header>
-          <tr>
-            <th
-              class="w-12"
-              aria-label="Reorder"
-            ></th>
-            @for (column of columns(); track column.key) {
-              <th>{{ column.label }}</th>
-            }
-            <th class="w-32">Actions</th>
-          </tr>
-        </ng-template>
-        <ng-template
-          #body
-          let-row
-          let-rowIndex="rowIndex"
-        >
-          <tr [pReorderableRow]="rowIndex">
-            <td>
-              <span
-                pReorderableRowHandle
-                class="material-symbols-outlined"
-                aria-label="Reorder row"
-                coreTooltip="Reorder row"
-                tooltipPosition="top"
-                >drag_indicator</span
-              >
-            </td>
-            @for (column of columns(); track column.key) {
-              <td>
-                @switch (column.property.type) {
-                  @case (propertyType.INPUT) {
-                    <input
-                      pInputText
-                      fluid
-                      [type]="column.property.dataType"
-                      [ngModel]="getValue(row, column)"
-                      (ngModelChange)="updateCell(row, column, $event)"
-                    />
-                  }
-                  @case (propertyType.BOOLEAN) {
-                    <p-toggleswitch
-                      [ngModel]="getValue(row, column)"
-                      (ngModelChange)="updateCell(row, column, $event)"
-                    />
-                  }
-                  @case (propertyType.SELECT) {
-                    <p-select
-                      fluid
-                      optionLabel="label"
-                      optionValue="value"
-                      [options]="getSelectOptions(column)"
-                      [ngModel]="getValue(row, column)"
-                      (ngModelChange)="updateCell(row, column, $event)"
-                    />
-                  }
-                }
-              </td>
-            }
-            <td>
-              <div class="flex items-center justify-center gap-1">
-                @if (data()?.canRemove) {
+      <div class="min-h-0 overflow-auto">
+        <table class="core-data-table">
+          <thead>
+            <tr>
+              <th
+                class="w-12"
+                aria-label="Reorder"
+              ></th>
+              @for (column of columns(); track column.key) {
+                <th>{{ column.label }}</th>
+              }
+              <th class="w-32">Actions</th>
+            </tr>
+          </thead>
+          <tbody
+            cdkDropList
+            (cdkDropListDropped)="
+              onRowReorder({ dragIndex: $event.previousIndex, dropIndex: $event.currentIndex })
+            "
+          >
+            @for (row of displayRows(); track row.id; let rowIndex = $index) {
+              <tr cdkDrag>
+                <td>
                   <button
-                    pButton
+                    coreButton
                     text
-                    rounded
-                    severity="danger"
                     type="button"
-                    aria-label="Delete row"
-                    coreTooltip="Delete row"
-                    tooltipPosition="top"
-                    (click)="removeRow(row)"
+                    aria-label="Move row up"
+                    [disabled]="rowIndex === 0"
+                    (click)="onRowReorder({ dragIndex: rowIndex, dropIndex: rowIndex - 1 })"
                   >
                     <i
-                      pButtonIcon
                       class="material-symbols-outlined"
-                      >delete</i
+                      aria-hidden="true"
+                      >arrow_upward</i
                     >
                   </button>
+                  <button
+                    coreButton
+                    text
+                    type="button"
+                    aria-label="Move row down"
+                    [disabled]="rowIndex === $count - 1"
+                    (click)="onRowReorder({ dragIndex: rowIndex, dropIndex: rowIndex + 1 })"
+                  >
+                    <i
+                      class="material-symbols-outlined"
+                      aria-hidden="true"
+                      >arrow_downward</i
+                    >
+                  </button>
+                  <span
+                    cdkDragHandle
+                    class="material-symbols-outlined"
+                    aria-label="Reorder row"
+                    coreTooltip="Reorder row"
+                    tooltipPosition="above"
+                    >drag_indicator</span
+                  >
+                </td>
+                @for (column of columns(); track column.key) {
+                  <td>
+                    @switch (column.property.type) {
+                      @case (propertyType.INPUT) {
+                        <input
+                          coreInput
+                          class="w-full"
+                          [type]="column.property.dataType"
+                          [attr.aria-label]="column.label"
+                          [ngModel]="getValue(row, column)"
+                          (ngModelChange)="updateCell(row, column, $event)"
+                        />
+                      }
+                      @case (propertyType.BOOLEAN) {
+                        <mat-slide-toggle
+                          [aria-label]="column.label"
+                          [ngModel]="getValue(row, column)"
+                          (ngModelChange)="updateCell(row, column, $event)"
+                        />
+                      }
+                      @case (propertyType.SELECT) {
+                        <mat-select
+                          class="w-full"
+                          [aria-label]="column.label"
+                          [ngModel]="getValue(row, column)"
+                          (ngModelChange)="updateCell(row, column, $event)"
+                        >
+                          @for (option of getSelectOptions(column); track $index) {
+                            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                          }
+                        </mat-select>
+                      }
+                    }
+                  </td>
                 }
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
+                <td>
+                  <div class="flex items-center justify-center gap-1">
+                    @if (data()?.canRemove) {
+                      <button
+                        coreButton
+                        text
+                        rounded
+                        severity="danger"
+                        type="button"
+                        aria-label="Delete row"
+                        coreTooltip="Delete row"
+                        tooltipPosition="above"
+                        (click)="removeRow(row)"
+                      >
+                        <i
+                          coreButtonIcon
+                          class="material-symbols-outlined"
+                          >delete</i
+                        >
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
       <ng-template #footer>
         <span>
           @if (data()?.canAdd) {
             <button
-              pButton
+              coreButton
               text
               aria-label="Add item"
               coreTooltip="Add item"
-              tooltipPosition="top"
+              tooltipPosition="above"
               (click)="addRow()"
             >
               <i
-                pButtonIcon
+                coreButtonIcon
                 class="material-symbols-outlined"
                 >add</i
               >
-              <span pButtonLabel>Add item</span>
+              <span coreButtonLabel>Add item</span>
             </button>
           }
         </span>
         <button
-          pButton
+          coreButton
           type="button"
           (click)="save()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             >save</i
           >
-          <span pButtonLabel>Save</span>
+          <span coreButtonLabel>Save</span>
         </button>
       </ng-template>
-    </p-dialog>
+    </core-dialog>
   `,
 })
 export class FieldTableDialog {
@@ -201,12 +227,8 @@ export class FieldTableDialog {
   readonly isOpen = this.dialogService.isOpen;
   readonly workingRows = signal<TableRow[]>([]);
   readonly propertyType = PropertyType;
-  readonly rowTrackBy = (_: number, row: TableRow): string => row.id;
 
-  dialogPT: DialogPassThrough = {
-    root: {
-      style: { overflow: 'hidden' },
-    },
+  dialogPT: DialogLayout = {
     header: {
       style: { height: '5rem' },
     },
@@ -285,7 +307,7 @@ export class FieldTableDialog {
     this.updateRow(row.id, updatedValue);
   }
 
-  onRowReorder(event: TableRowReorderEvent): void {
+  onRowReorder(event: { dragIndex?: number; dropIndex?: number }): void {
     const { dragIndex, dropIndex } = event;
     if (dragIndex === undefined || dropIndex === undefined) {
       return;

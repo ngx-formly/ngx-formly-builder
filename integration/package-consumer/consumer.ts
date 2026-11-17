@@ -1,32 +1,32 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
-  FormlyBuilder,
-  CoreFormService,
-  createLibrary,
-  primengPreset,
-  provideFormlyBuilder,
-  tailwindConfig,
-  type StylesConfig,
-} from '@ngx-formly/builder';
-import { withMarkdownType, withTabsType } from '@ngx-formly/builder-material-fields';
-import { withTabsTypeBuilder } from '@ngx-formly/builder-material';
-import {
   BuilderEngineService,
   createEmptyWorkspaceHierarchy,
   type FormStoreService,
-} from '@ngx-formly/builder-state';
-import { definePreset } from '@primeuix/themes';
-import Aura from '@primeuix/themes/aura';
-import { providePrimeNG } from 'primeng/config';
+} from '@ngx-formly/builder';
+import {
+  FormlyBuilder,
+  CoreFormService,
+  createLibrary,
+  provideFormlyBuilder,
+  tailwindConfig,
+  type StylesConfig,
+} from '@ngx-formly/builder/ui';
+
+// A future extension library supplies custom fields; the barebones package must not export them.
+// @ts-expect-error Extra runtime fields are outside the builder's public API.
+type ExtraMaterialField = typeof import('@ngx-formly/builder').withTabsType;
+// @ts-expect-error Extra editor integrations are outside the builder's public API.
+type ExtraMaterialEditor = typeof import('@ngx-formly/builder').withTabsTypeBuilder;
 
 export const consumerLibrary = createLibrary({
-  id: 'consumer-material',
-  label: 'Consumer Material',
+  id: 'consumer-extension',
+  label: 'Consumer extension',
   fieldCategoryOptions: [],
   formTemplates: [],
-  configOptions: [withMarkdownType(), withTabsType()],
-  builderConfigOptions: [withTabsTypeBuilder()],
+  configOptions: [],
+  builderConfigOptions: [],
 });
 
 export const consumerStyles: StylesConfig = {
@@ -50,15 +50,6 @@ export const consumerStyles: StylesConfig = {
 };
 
 export const consumerProviders = [
-  providePrimeNG({
-    theme: {
-      preset: definePreset(Aura, primengPreset),
-      options: {
-        darkModeSelector: '.dark',
-        cssLayer: { name: 'primeng', order: 'theme, base, primeng' },
-      },
-    },
-  }),
   provideFormlyBuilder({
     libraries: [consumerLibrary],
     editorType: 'consumer-form-editor',

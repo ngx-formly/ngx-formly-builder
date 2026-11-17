@@ -12,20 +12,18 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { MenuItem } from 'primeng/api';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Chip } from 'primeng/chip';
-import { TieredMenu } from 'primeng/tieredmenu';
+
+import { Menu } from '../../ui/menu';
+import { MenuItem } from '../../ui/menu-item';
 import { CoreFieldService } from '../../config/core-field.service';
 import { CoreFormService } from '../../editor/core-form.service';
 import { FieldPresetDialogService } from '../../field-preset/field-preset-dialog.service';
 import { Tooltip, TreeItem } from '../../shared';
-import { ChipStyleFix } from '../../shared/chip-style-fix';
 
 @Component({
   selector: 'core-panel-field-item',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, Tooltip, Chip, ChipStyleFix, TieredMenu, TreeItem],
+  imports: [Tooltip, Menu, TreeItem],
   template: `
     <core-tree-item
       #folderTreeItem
@@ -46,7 +44,7 @@ import { ChipStyleFix } from '../../shared/chip-style-fix';
           @if (fieldIcon(); as icon) {
             <i
               class="material-symbols-outlined text-muted-color"
-              tooltipPosition="top"
+              tooltipPosition="above"
               [style.fontSize]="'1.25rem'"
               [coreTooltip]="fieldInfo().name"
               >{{ icon }}</i
@@ -62,13 +60,12 @@ import { ChipStyleFix } from '../../shared/chip-style-fix';
         }
         @if (fieldInfo().badges; as badges) {
           @for (badge of badges; track badge.label) {
-            <p-chip
-              coreChipStyleFix
-              class="py-0 text-sm"
-              tooltipPosition="top"
+            <span
+              class="core-chip"
+              tooltipPosition="above"
               [coreTooltip]="badge.description"
-              [label]="badge.label"
-            />
+              >{{ badge.label }}</span
+            >
           }
         }
       </span>
@@ -76,14 +73,11 @@ import { ChipStyleFix } from '../../shared/chip-style-fix';
       <ng-container actions>
         @if (menuOptions().length) {
           <span class="inline-flex">
-            <!-- shortcut: PrimeNG popup hover requires dirty; remove when upstream enables it on show. -->
-            <p-tiered-menu
+            <core-menu
               #optionsMenu
-              appendTo="body"
               [model]="menuOptions()"
-              [popup]="true"
-              (onShow)="optionsMenu.dirty = true; optionsMenuVisible.set(true)"
-              (onHide)="optionsMenuVisible.set(false)"
+              (opened)="optionsMenuVisible.set(true)"
+              (dismissed)="optionsMenuVisible.set(false)"
             >
               <ng-template
                 #item
@@ -101,19 +95,19 @@ import { ChipStyleFix } from '../../shared/chip-style-fix';
                   {{ item.label }}
                 </div>
               </ng-template>
-            </p-tiered-menu>
+            </core-menu>
             <button
-              pButton
+              coreButton
               text
               rounded
               class="size-8"
               aria-label="Field options"
               coreTooltip="Field options"
-              tooltipPosition="top"
+              tooltipPosition="above"
               (click)="openOptionsMenu($event)"
             >
               <i
-                pButtonIcon
+                coreButtonIcon
                 class="material-symbols-outlined"
               >
                 more_horiz
@@ -153,7 +147,7 @@ export class FieldItem {
   readonly level = input(0, { transform: numberAttribute });
   readonly isTabRoot = input(false, { transform: booleanAttribute });
   expandParent = output<void>();
-  readonly optionsMenu = viewChild('optionsMenu', { read: TieredMenu });
+  readonly optionsMenu = viewChild('optionsMenu', { read: Menu });
 
   protected document = inject(DOCUMENT);
   protected formService = inject(CoreFormService);

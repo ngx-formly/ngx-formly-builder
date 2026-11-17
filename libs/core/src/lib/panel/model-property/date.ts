@@ -6,8 +6,8 @@ import {
   numberAttribute,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { DatePicker, DatePickerPassThrough } from 'primeng/datepicker';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { DateProperty } from '../../properties/date/date.directive';
 import { Tooltip } from '../../shared/tooltip';
 import { ModelPropertyKey } from './property-key';
@@ -16,15 +16,8 @@ import { ModelPropertyWrapper } from './property-wrapper';
 @Component({
   selector: 'core-model-date-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ModelPropertyKey,
-    FormsModule,
-    ButtonDirective,
-    ButtonIcon,
-    ModelPropertyWrapper,
-    Tooltip,
-    DatePicker,
-  ],
+  providers: [provideNativeDateAdapter()],
+  imports: [ModelPropertyKey, FormsModule, ModelPropertyWrapper, Tooltip, MatDatepickerModule],
   template: `
     <core-model-property-wrapper [level]="level()">
       <span class="inline-flex min-w-0 grow items-center gap-2">
@@ -36,31 +29,32 @@ import { ModelPropertyWrapper } from './property-wrapper';
           />
           <span>:</span>
         </span>
-        <p-datepicker
-          class="h-9 min-w-0 grow truncate"
-          showIcon
-          appendTo="body"
-          [pt]="datePickerPT"
-          [inputId]="inputId"
-          [ngModel]="currentValue()"
-          (ngModelChange)="onValueChange($event)"
-        />
+        <span class="flex min-w-0 items-center"
+          ><input
+            coreInput
+            class="h-9 min-w-0 grow truncate"
+            [matDatepicker]="calendar"
+            [id]="inputId"
+            [ngModel]="currentValue()"
+            (ngModelChange)="onValueChange($event)" /><mat-datepicker-toggle
+            [for]="calendar" /><mat-datepicker #calendar
+        /></span>
       </span>
       <ng-container actions>
         @if (property().isRemovable) {
           <button
-            pButton
+            coreButton
             text
             class="size-8"
             rounded
             severity="danger"
             aria-label="Remove"
             coreTooltip="Remove"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="remove.emit()"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
             >
               delete
@@ -76,16 +70,6 @@ export class ModelDateProperty extends DateProperty {
 
   inputId = `input-property-input-${Math.random().toString(36).substring(2, 15)}`;
   inputStyle = { minWidth: '0' };
-  datePickerPT: DatePickerPassThrough = {
-    pcInputText: {
-      root: {
-        style: { minWidth: '0' },
-      },
-    },
-    dropdown: {
-      style: { flexShrink: '0' },
-    },
-  };
 
   readonly stringValue = computed(() => {
     const currValue = this.currentValue();

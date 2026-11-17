@@ -1,8 +1,6 @@
 import { CoreFormService } from '../../editor/core-form.service';
 import { computed, NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { ButtonGroup } from 'primeng/buttongroup';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Empty } from '../../empty/empty';
 import { CreateFormDialogService } from './create-form-dialog.service';
@@ -42,15 +40,7 @@ describe('FormsPanel', () => {
     TestBed.resetTestingModule();
     TestBed.overrideComponent(FormsPanel, {
       set: {
-        imports: [
-          Empty,
-          ButtonDirective,
-          ButtonIcon,
-          ButtonLabel,
-          ButtonGroup,
-          Tooltip,
-          WorkspaceToolbar,
-        ],
+        imports: [Empty, Tooltip, WorkspaceToolbar],
         schemas: [NO_ERRORS_SCHEMA],
         providers: [
           MouseInsideService,
@@ -196,7 +186,7 @@ describe('FormsPanel', () => {
   });
 
   it('groups actions and opens the import dialog', () => {
-    const group = fixture.nativeElement.querySelector('p-buttongroup');
+    const group = fixture.nativeElement.querySelector('[role=group]');
     const buttons = Array.from(group.querySelectorAll('button')) as HTMLButtonElement[];
 
     expect(group).toBeTruthy();
@@ -279,7 +269,7 @@ describe('FormsPanel', () => {
       const deleteButton = () =>
         fixture.nativeElement.querySelector('button[aria-label^="Delete selected items"]');
       expect(deleteButton().disabled).toBe(true);
-      expect(deleteButton().querySelector('[pButtonLabel]').textContent).toBe('0');
+      expect(deleteButton().querySelector('[coreButtonLabel]').textContent).toBe('0');
 
       panel.toggleNodeSelection('child');
       fixture.detectChanges();
@@ -289,7 +279,7 @@ describe('FormsPanel', () => {
       panel.toggleNodeSelection('child');
       fixture.detectChanges();
       expect(deleteButton().disabled).toBe(true);
-      expect(deleteButton().querySelector('[pButtonLabel]').textContent).toBe('0');
+      expect(deleteButton().querySelector('[coreButtonLabel]').textContent).toBe('0');
     });
 
     it('deletes selected items across filters and retains only selections still in storage', () => {

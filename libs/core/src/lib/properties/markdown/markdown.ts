@@ -1,7 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Textarea } from 'primeng/textarea';
 import { MarkdownDialogService } from './markdown-dialog.service';
 import { Tooltip } from '../../shared/tooltip';
 import { BaseProperty } from '../base.directive';
@@ -12,7 +10,7 @@ import { FieldPropertyWrapper } from '../property-wrapper';
 @Component({
   selector: 'core-field-markdown-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, FieldPropertyWrapper, FormsModule, Textarea, Tooltip],
+  imports: [FieldPropertyWrapper, FormsModule, Tooltip],
   template: `
     <core-field-property-wrapper
       [label]="property().label"
@@ -23,7 +21,7 @@ import { FieldPropertyWrapper } from '../property-wrapper';
     >
       <span class="inline-flex w-full items-start gap-2">
         <textarea
-          pTextarea
+          coreInput
           class="field-property-control"
           rows="5"
           [id]="textareaId"
@@ -33,17 +31,17 @@ import { FieldPropertyWrapper } from '../property-wrapper';
         ></textarea>
         <button
           class="shrink-0"
-          pButton
+          coreButton
           text
           rounded
           type="button"
           aria-label="Open Markdown editor"
           coreTooltip="Open Markdown editor"
-          tooltipPosition="top"
+          tooltipPosition="above"
           (click)="openEditor()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             >code_blocks</i
           >

@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { get } from 'lodash-es';
-import { Select } from 'primeng/select';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 import { CoreFieldService } from '../../config/core-field.service';
 import { CoreFormService } from '../../editor/core-form.service';
 import { FieldPropertyWrapper } from '../../properties/property-wrapper';
@@ -18,7 +19,7 @@ import {
 @Component({
   selector: 'core-styling-option',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Select, FormsModule, FieldPropertyWrapper],
+  imports: [MatSelect, MatOption, FormsModule, FieldPropertyWrapper],
   template: `
     <core-field-property-wrapper
       [label]="option().name"
@@ -27,22 +28,18 @@ import {
       [isClearable]="true"
       (clear)="clear()"
     >
-      <p-select
+      <mat-select
         class="w-full"
-        checkmark
-        optionLabel="label"
-        optionValue="value"
-        [inputId]="selectId"
-        [ariaLabel]="option().name"
-        [pt]="{
-          label: {
-            'aria-describedby': option().description ? selectId + '-description' : undefined,
-          },
-        }"
-        [options]="variantOptions()"
+        [id]="selectId"
+        [aria-label]="option().name"
         [ngModel]="selectedVariant()"
-        (onChange)="selectVariant($event.value)"
-      />
+        [attr.aria-describedby]="option().description ? selectId + '-description' : undefined"
+        (selectionChange)="selectVariant($event.value)"
+      >
+        @for (option of variantOptions(); track $index) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
     </core-field-property-wrapper>
     @if (option().description) {
       <p

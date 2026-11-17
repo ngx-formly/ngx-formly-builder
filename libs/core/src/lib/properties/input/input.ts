@@ -1,14 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { InputText } from 'primeng/inputtext';
-import { KeyFilter } from 'primeng/keyfilter';
 import { InputProperty } from './input.directive';
 import { FieldPropertyWrapper } from '../property-wrapper';
 
 @Component({
   selector: 'core-field-input-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, InputText, KeyFilter, FieldPropertyWrapper],
+  imports: [FormsModule, FieldPropertyWrapper],
   template: `
     <core-field-property-wrapper
       [label]="property().label"
@@ -20,8 +18,7 @@ import { FieldPropertyWrapper } from '../property-wrapper';
       @if (property().dataType === 'number') {
         <input
           class="field-property-control"
-          pInputText
-          pKeyFilter="num"
+          coreInput
           type="number"
           [id]="inputId"
           [placeholder]="property().placeholder || ''"
@@ -31,7 +28,7 @@ import { FieldPropertyWrapper } from '../property-wrapper';
       } @else {
         <input
           class="field-property-control"
-          pInputText
+          coreInput
           [id]="inputId"
           [type]="property().dataType"
           [placeholder]="property().placeholder || ''"

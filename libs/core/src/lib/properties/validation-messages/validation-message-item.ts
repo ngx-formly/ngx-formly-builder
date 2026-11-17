@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { InputText } from 'primeng/inputtext';
-import { Panel } from 'primeng/panel';
-import { Select } from 'primeng/select';
+import { Panel } from '../../ui/panel';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 import { ValidationOption } from './validation-messages.config';
 import { Tooltip } from '../../shared/tooltip';
 import { FieldPropertyWrapper } from '../property-wrapper';
@@ -11,31 +10,22 @@ import { FieldPropertyWrapper } from '../property-wrapper';
 @Component({
   selector: 'core-validation-message-item',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ButtonDirective,
-    ButtonIcon,
-    Panel,
-    InputText,
-    Select,
-    FormsModule,
-    Tooltip,
-    FieldPropertyWrapper,
-  ],
+  imports: [Panel, MatSelect, MatOption, FormsModule, Tooltip, FieldPropertyWrapper],
   template: `
-    <p-panel [header]="'Message ' + (index() + 1)">
+    <core-property-panel [header]="'Message ' + (index() + 1)">
       <ng-template #icons>
         <button
-          pButton
+          coreButton
           text
           rounded
           severity="danger"
           aria-label="Remove message"
           coreTooltip="Remove message"
-          tooltipPosition="top"
+          tooltipPosition="above"
           (click)="remove.emit()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             >remove</i
           >
@@ -48,16 +38,18 @@ import { FieldPropertyWrapper } from '../property-wrapper';
           description="Validator (e.g., required, minLength)"
           [labelForId]="keyInputId"
         >
-          <p-select
+          <mat-select
             class="field-property-control"
-            placeholder="Select Validation"
-            optionLabel="label"
-            optionValue="value"
-            [checkmark]="true"
-            [options]="validationOptions()"
+            placeholder="Select validation"
+            aria-label="Validation"
+            [id]="keyInputId"
             [ngModel]="key()"
             (ngModelChange)="keyChange.emit($event)"
-          />
+          >
+            @for (option of validationOptions(); track $index) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
         </core-field-property-wrapper>
         <core-field-property-wrapper
           label="Message"
@@ -66,7 +58,7 @@ import { FieldPropertyWrapper } from '../property-wrapper';
         >
           <input
             class="field-property-control"
-            pInputText
+            coreInput
             type="text"
             placeholder="e.g., Invalid field!"
             [id]="valueInputId"
@@ -75,7 +67,7 @@ import { FieldPropertyWrapper } from '../property-wrapper';
           />
         </core-field-property-wrapper>
       </div>
-    </p-panel>
+    </core-property-panel>
   `,
 })
 export class ValidationMessageItem {

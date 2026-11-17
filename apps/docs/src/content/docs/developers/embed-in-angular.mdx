@@ -3,61 +3,84 @@ title: Embed in Angular
 description: Install and configure ngx-formly Builder inside an existing Angular application.
 ---
 
-Embed the editor with `FormlyBuilder` and `provideFormlyBuilder()`. Your application owns the
+The package root is headless. Import the ready-made editor and `provideFormlyBuilder()` from
+`@ngx-formly/builder/ui` when you want its panels and controls. Your application owns the
 routing, styles, initialization settings, and persistence. Studio uses the same component and
 provider; you do not need its application shell.
 
-## Install matching packages
+## Install the builder
 
-This example targets the repository's tested Angular 22, Formly 11, and PrimeNG 21 combination.
+This example targets Angular 22, Angular Material/CDK 22, and Formly 11. The editor has no PrimeNG dependency.
 The public API is provisional. Locally built tarballs provide a reproducible integration path
 without depending on npm publication status.
 
-In a checkout of this repository, build and pack the two required packages:
+In a checkout of this repository, build and pack the builder:
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm run build:core
 mkdir -p packages
-pnpm --dir libs/state pack --pack-destination ../../packages
 pnpm --dir libs/core pack --pack-destination ../../packages
 ```
 
-Copy both generated `.tgz` files into a `vendor/` directory in your Angular application's repo.
-Install them together from that application's root:
+Copy the generated `.tgz` file into a `vendor/` directory in your Angular application's repo.
+Install it from that application's root:
 
 ```sh
-pnpm add ./vendor/ngx-formly-builder-state-*.tgz ./vendor/ngx-formly-builder-0*.tgz
-pnpm add @ngx-formly/core@^11 @angular/cdk@^22 primeng@^21.1.10 @primeuix/themes@^2.0.3
-pnpm add tailwindcss@^4 tailwindcss-primeui@^0.6
+pnpm add ./vendor/ngx-formly-builder-0*.tgz
+pnpm add @ngx-formly/core@^11
+```
+
+Keep Angular packages on matching versions. The root requires Angular core/common/forms,
+Formly 11 and RxJS 7.8. Its implementation dependencies are installed with the package.
+
+## Headless embedding
+
+Use the root API with your own controls. No builder stylesheet, Material, Tailwind or CodeMirror
+installation is needed:
+
+```ts
+import { BuilderEngineService, provideBuilderEngine } from '@ngx-formly/builder';
+
+const providers = [provideBuilderEngine({
+  editorType: 'survey-designer',
+  libraries: [{
+    id: 'survey',
+    fieldTypes: [{ name: 'input', displayName: 'Text', defaultConfig: {} }],
+  }],
+})];
+// In a component under this provider scope:
+// const engine = inject(BuilderEngineService);
+// engine.addForm$('Survey', [], {}, 'survey').subscribe();
+// engine.addField('input');
+// Render engine.activePreviewFormFields() with your own Formly runtime.
+```
+
+Register the provider on a route or a child environment injector and destroy that injector with
+its host. Each independent editor needs its own scope and storage namespace. The default store
+uses local storage; pass `formStore: YourStore` for another implementation of the exported
+`FormStoreService` contract. `autoSave: false` disables automatic edit saves, but creating a form
+still writes to the supplied store. See the [store lifecycle guide](https://github.com/ngx-formly/ngx-formly-builder/blob/main/docs/asynchronous-stores.md).
+
+`moveField(id, fromIndex, toIndex)` takes an insertion boundary in the original list. To move a
+root field down one position, use `fromIndex + 2`; to move up, use `fromIndex - 1`.
+
+## Optional editor UI
+
+The following sections apply to `@ngx-formly/builder/ui`. Install its optional peers explicitly;
+package managers do not install these for headless consumers:
+
+```sh
+pnpm add @angular/cdk@^22 @angular/material@^22 ngx-drag-drop@^22
+pnpm add codemirror@^6 @codemirror/state@^6 @codemirror/view@^6 @codemirror/lang-javascript@^6 @codemirror/lang-json@^6 @codemirror/lang-markdown@^6 @uiw/codemirror-theme-vscode@^4
+pnpm add date-fns@^4 file-saver@^2 js-beautify@^1 terser@^5 zod@^4 tailwindcss@^4
 pnpm add -D @tailwindcss/postcss@^4 postcss
 ```
 
-Use pnpm's default automatic peer installation for the builder's remaining declared peer
-dependencies. Keep Angular packages on matching versions. If your project disables automatic peer
-installation, install the peers listed in the packed `@ngx-formly/builder/package.json` explicitly.
-
-PrimeNG 21 currently declares Angular 21 peers. The tested Angular 22 consumer uses these scoped
-pnpm overrides in its `package.json`; merge them with your application's existing overrides,
-then run `pnpm install`:
-
-```json
-{
-  "pnpm": {
-    "overrides": {
-      "primeng>@angular/cdk": "$@angular/cdk",
-      "primeng>@angular/common": "$@angular/common",
-      "primeng>@angular/core": "$@angular/core",
-      "primeng>@angular/forms": "$@angular/forms",
-      "primeng>@angular/platform-browser": "$@angular/platform-browser",
-      "primeng>@angular/router": "$@angular/router"
-    }
-  }
-}
-```
-
-All referenced Angular packages must be direct dependencies of your host app. This compatibility
-setup is verified by the repository's isolated consumer; it is not a stable compatibility guarantee.
+When migrating from the earlier combined root API, move editor components, `provideFormlyBuilder`,
+UI configuration helpers, property editors and theme imports to `/ui`. Engine, model, persistence
+and `withValidationExpressions` imports stay at the root. Saved documents and storage keys are
+unchanged. The UI reuses the root engine; do not also register `provideBuilderEngine` in that scope.
 
 ## Configure global styles
 
@@ -75,7 +98,7 @@ Use the packaged stylesheet in your global CSS. It contains Tailwind source and 
 by PostCSS:
 
 ```css
-@layer theme, base, primeng;
+@layer theme, base;
 @import '@ngx-formly/builder/styles.css';
 
 html,
@@ -108,10 +131,7 @@ This minimal `main.ts` uses native HTML fields, so no Formly UI profile is requi
 ```ts
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { FormlyBuilder, primengPreset, provideFormlyBuilder } from '@ngx-formly/builder';
-import { definePreset } from '@primeuix/themes';
-import Aura from '@primeuix/themes/aura';
-import { providePrimeNG } from 'primeng/config';
+import { FormlyBuilder, provideFormlyBuilder } from '@ngx-formly/builder/ui';
 
 @Component({
   selector: 'app-root',
@@ -123,15 +143,6 @@ class App {}
 
 bootstrapApplication(App, {
   providers: [
-    providePrimeNG({
-      theme: {
-        preset: definePreset(Aura, primengPreset),
-        options: {
-          darkModeSelector: '.dark',
-          cssLayer: { name: 'primeng', order: 'theme, base, primeng' },
-        },
-      },
-    }),
     provideFormlyBuilder({
       editorType: 'customer-surveys',
       autoSave: true,
@@ -143,23 +154,23 @@ bootstrapApplication(App, {
 ```
 
 In an existing app, put the provider setup in your application or route configuration and import
-`FormlyBuilder` into the page component. Merge the theme into an existing `providePrimeNG()` call.
+`FormlyBuilder` into the page component. The packaged stylesheet supplies the editor theme.
 Open **Builder settings** to inspect the values supplied by your host.
 
 To offer your own components, pass `libraries` using a
 [UI profile](/developers/configure-a-ui-profile/). Register its runtime dependencies and styles in
-the host. The optional Material field and builder-adapter packages can be packed the same way after
-running `pnpm run build:builder-material`.
+the host. Additional fields and feature integrations must come from your application or a separate
+library. They are not bundled or re-exported by `@ngx-formly/builder`. The Material fields shown
+in Studio are private examples, not installable companion packages.
 
 ## Separate builder contexts
 
 For independent editors, register the provider on separate routes with distinct `editorType`
-values. Omit the application-level `provideFormlyBuilder()` in this setup. Keep the PrimeNG theme
-at application level:
+values. Omit the application-level `provideFormlyBuilder()` in this setup. Keep the builder stylesheet at application level:
 
 ```ts
 import { Routes } from '@angular/router';
-import { provideFormlyBuilder } from '@ngx-formly/builder';
+import { provideFormlyBuilder } from '@ngx-formly/builder/ui';
 import { FormEditorPage } from './form-editor-page';
 
 export const routes: Routes = [

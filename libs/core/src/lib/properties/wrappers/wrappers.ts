@@ -4,9 +4,10 @@ import {
   Component,
   computed,
   input,
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MultiSelect } from 'primeng/multiselect';
+import { MatSelectModule } from '@angular/material/select';
 import { BaseProperty } from '../base.directive';
 import { PropertyType } from '../types';
 import { FieldPropertyWrapper } from '../property-wrapper';
@@ -15,7 +16,7 @@ import { WrappersPropertyConfig, WrappersPropertyOption } from './wrappers.confi
 @Component({
   selector: 'core-field-wrappers-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, MultiSelect, FieldPropertyWrapper],
+  imports: [FormsModule, MatSelectModule, FieldPropertyWrapper],
   template: `
     <core-field-property-wrapper
       [label]="property().label"
@@ -24,23 +25,37 @@ import { WrappersPropertyConfig, WrappersPropertyOption } from './wrappers.confi
       [isClearable]="isClearable()"
       (clear)="onClear()"
     >
-      <p-multiselect
+      <input
+        coreInput
+        class="mb-1 w-full"
+        aria-label="Filter wrappers"
+        placeholder="Filter wrappers"
+        [ngModel]="filter()"
+        (ngModelChange)="filter.set($event)"
+      />
+      <mat-select
         class="field-property-control"
-        optionLabel="label"
-        optionValue="value"
-        display="chip"
-        [inputId]="inputId"
-        [options]="property().options"
+        multiple
+        [id]="inputId"
+        [aria-label]="property().label || 'Wrappers'"
         [placeholder]="property().placeholder || 'Select Wrappers'"
-        [filter]="true"
         [ngModel]="orderedValue()"
         (ngModelChange)="onValueChange($event)"
-      />
+      >
+        @for (option of property().options; track option.value) {
+          <mat-option
+            [value]="option.value"
+            [hidden]="!option.label.toLowerCase().includes(filter().toLowerCase())"
+            >{{ option.label }}</mat-option
+          >
+        }
+      </mat-select>
     </core-field-property-wrapper>
   `,
 })
 export class FieldWrappersProperty extends BaseProperty<WrappersPropertyConfig, string[] | null> {
   readonly isClearable = input(true, { transform: booleanAttribute });
+  readonly filter = signal('');
   readonly orderedValue = computed(() =>
     orderValues(this.currentValue() ?? [], this.property().options),
   );

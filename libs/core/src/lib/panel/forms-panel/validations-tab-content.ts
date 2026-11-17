@@ -10,8 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import saveAs from 'file-saver';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
+import { Dialog } from '../../ui/dialog';
 import { concatMap, defer, finalize, from, Observable } from 'rxjs';
 import { CoreFormService } from '../../editor/core-form.service';
 import { Empty } from '../../empty/empty';
@@ -27,17 +26,7 @@ import { WorkspaceToolbar } from './workspace-toolbar';
 @Component({
   selector: 'core-validations-tab-content',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
-    Dialog,
-    Empty,
-    Tooltip,
-    TreeItem,
-    ValidationExpressionEditor,
-    WorkspaceToolbar,
-  ],
+  imports: [Dialog, Empty, Tooltip, TreeItem, ValidationExpressionEditor, WorkspaceToolbar],
   host: { class: 'flex min-h-0 flex-1 flex-col gap-2 overflow-hidden' },
   template: `
     @if (!forms.validationStorageAvailable) {
@@ -59,22 +48,22 @@ import { WorkspaceToolbar } from './workspace-toolbar';
       >
         <button
           #createButton
-          pButton
+          coreButton
           class="min-w-0 @max-[13.5rem]:w-10 @max-[13.5rem]:px-1"
           aria-label="Create validation"
           coreTooltip="Create validation"
-          tooltipPosition="top"
+          tooltipPosition="above"
           [disabled]="unavailable()"
           (click)="open('new')"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             aria-hidden="true"
             >add</i
           >
           <span
-            pButtonLabel
+            coreButtonLabel
             class="truncate @max-[13.5rem]:hidden"
             >Create validation</span
           >
@@ -99,14 +88,14 @@ import { WorkspaceToolbar } from './workspace-toolbar';
           </p>
           <div class="flex flex-wrap gap-2">
             <button
-              pButton
+              coreButton
               severity="secondary"
               (click)="downloadBackup()"
             >
               Download backup
             </button>
             <button
-              pButton
+              coreButton
               severity="danger"
               [disabled]="busy()"
               (click)="reset()"
@@ -122,7 +111,7 @@ import { WorkspaceToolbar } from './workspace-toolbar';
         >
           <p>{{ forms.validationsLoadError() }}</p>
           <button
-            pButton
+            coreButton
             text
             [disabled]="forms.validationsLoading()"
             (click)="forms.loadValidations()"
@@ -163,19 +152,19 @@ import { WorkspaceToolbar } from './workspace-toolbar';
                   </div>
                   <button
                     actions
-                    pButton
+                    coreButton
                     type="button"
                     text
                     rounded
                     class="size-8"
                     coreTooltip="Edit validation"
-                    tooltipPosition="top"
+                    tooltipPosition="above"
                     [disabled]="busy()"
                     [attr.aria-label]="'Edit validation ' + rule.name"
                     (click)="open(rule)"
                   >
                     <i
-                      pButtonIcon
+                      coreButtonIcon
                       class="material-symbols-outlined"
                       aria-hidden="true"
                       >edit</i
@@ -183,7 +172,7 @@ import { WorkspaceToolbar } from './workspace-toolbar';
                   </button>
                   <button
                     actions
-                    pButton
+                    coreButton
                     text
                     rounded
                     class="size-8"
@@ -194,7 +183,7 @@ import { WorkspaceToolbar } from './workspace-toolbar';
                     (click)="remove(rule)"
                   >
                     <i
-                      pButtonIcon
+                      coreButtonIcon
                       class="material-symbols-outlined"
                       aria-hidden="true"
                       >delete</i
@@ -220,10 +209,7 @@ import { WorkspaceToolbar } from './workspace-toolbar';
       }
     }
 
-    <p-dialog
-      modal
-      appendTo="body"
-      styleClass="core-root"
+    <core-dialog
       [header]="editing() === 'new' ? 'Create validation' : 'Edit validation'"
       [visible]="!!editing()"
       [closable]="!busy()"
@@ -252,7 +238,7 @@ import { WorkspaceToolbar } from './workspace-toolbar';
           (cancelled)="close()"
         />
       }
-    </p-dialog>
+    </core-dialog>
   `,
 })
 export class ValidationsTabContent {

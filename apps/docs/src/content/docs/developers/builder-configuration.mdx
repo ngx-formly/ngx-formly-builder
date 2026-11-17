@@ -3,7 +3,7 @@ title: Builder configuration
 description: Configure initialization settings, styling choices, readable labels, and settings visibility.
 ---
 
-Pass initialization settings to `provideFormlyBuilder()` from `@ngx-formly/builder`. Settings apply
+Pass initialization settings to `provideFormlyBuilder()` from `@ngx-formly/builder/ui`. Settings apply
 to the builder's Angular provider scope. They are not saved in exported forms and cannot be changed
 from the read-only **Builder settings** panel. Recreate the provider scope to apply a new configuration.
 
@@ -24,7 +24,7 @@ The settings panel works without an open form. It shows effective settings, libr
 names, and styling choices. It does not display stored form data or serialize services and components.
 
 ```ts
-import { provideFormlyBuilder } from '@ngx-formly/builder';
+import { provideFormlyBuilder } from '@ngx-formly/builder/ui';
 
 provideFormlyBuilder({
   editorType: 'survey-designer',
@@ -43,7 +43,7 @@ A custom `styles` object **replaces the whole default catalogue**. There is no d
 `tailwindConfig` explicitly when retaining parts of the default setup:
 
 ```ts
-import { provideFormlyBuilder, tailwindConfig, type StylesConfig } from '@ngx-formly/builder';
+import { provideFormlyBuilder, tailwindConfig, type StylesConfig } from '@ngx-formly/builder/ui';
 
 const surveyStyles: StylesConfig = {
   ...tailwindConfig,

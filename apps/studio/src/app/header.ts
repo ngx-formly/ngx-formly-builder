@@ -7,8 +7,6 @@ import {
   isDevMode,
   type TemplateRef,
 } from '@angular/core';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { Divider } from 'primeng/divider';
 
 import { RouterLink } from '@angular/router';
 import { ResponsiveService } from './responsive.service';
@@ -17,15 +15,7 @@ import { ThemeToggle } from './theme-toggle';
 @Component({
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    NgTemplateOutlet,
-    ThemeToggle,
-    Divider,
-    RouterLink,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
-  ],
+  imports: [NgTemplateOutlet, ThemeToggle, RouterLink],
   host: {
     class: 'flex flex-col overflow-hidden',
   },
@@ -64,7 +54,7 @@ import { ThemeToggle } from './theme-toggle';
       }
       <div class="flex shrink-0 items-center justify-end gap-1">
         <a
-          pButton
+          coreButton
           text
           rounded
           class="shrink-0"
@@ -75,17 +65,17 @@ import { ThemeToggle } from './theme-toggle';
           [href]="docsUrl"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
           >
             menu_book
           </i>
           @if (!isMobile()) {
-            <span pButtonLabel>Docs</span>
+            <span coreButtonLabel>Docs</span>
           }
         </a>
         <a
-          pButton
+          coreButton
           text
           rounded
           class="shrink-0"
@@ -96,7 +86,7 @@ import { ThemeToggle } from './theme-toggle';
           href="https://github.com/ngx-formly/ngx-formly-builder"
         >
           <svg
-            pButtonIcon
+            coreButtonIcon
             class="shrink-0"
             width="20"
             height="20"
@@ -112,11 +102,11 @@ import { ThemeToggle } from './theme-toggle';
             />
           </svg>
           @if (!isMobile()) {
-            <span pButtonLabel>GitHub</span>
+            <span coreButtonLabel>GitHub</span>
           }
         </a>
         <a
-          pButton
+          coreButton
           text
           rounded
           class="shrink-0"
@@ -127,19 +117,19 @@ import { ThemeToggle } from './theme-toggle';
           [href]="formlyUrl"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
           >
             language
           </i>
           @if (!isMobile()) {
-            <span pButtonLabel>ngx-formly</span>
+            <span coreButtonLabel>ngx-formly</span>
           }
         </a>
         <app-theme-toggle />
       </div>
     </div>
-    <p-divider class="h-0.5" />
+    <hr class="h-0.5" />
   `,
 })
 export class Header {

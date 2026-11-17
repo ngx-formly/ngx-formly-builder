@@ -3,7 +3,7 @@ import { FORMLY_CONFIG, FormlyConfig } from '@ngx-formly/core';
 import { CORE_BUILDER_FORM } from './types';
 import { CoreLibraryService } from '../config/core-library.service';
 import { ReadonlyWrapper } from './readonly-wrapper';
-import { withValidationExpressions } from './validation-expressions';
+import { withValidationExpressions } from '@ngx-formly/builder';
 
 @Injectable()
 export class FormlyConfigService {

@@ -1,92 +1,67 @@
 # Package architecture
 
-Proposal for review in issue #6. Merging this document accepts the boundary; it does not freeze
-all current exports or decide the rendering proposal in #2.
+`@ngx-formly/builder` is the only published package. Its root API is a headless editing engine;
+the ready-made editor is an optional secondary entry point at `@ngx-formly/builder/ui`.
 
-## Published packages
+## Public boundary
 
-```text
-host application
-  @ngx-formly/builder                 editor shell and embedding provider
-    @ngx-formly/builder-state         Angular editing engine and persistence
-  @ngx-formly/builder-material        editor adapters
-    @ngx-formly/builder
-    @ngx-formly/builder-material-fields
-  @ngx-formly/builder-material-fields runtime fields
-    @ngx-formly/material
-```
+The root exports `BuilderEngineService`, `provideBuilderEngine`, transient field state, document
+models, persistence contracts and `withValidationExpressions`. It depends on Angular, Formly
+and RxJS, with lodash-es, mutative, uuid and tslib as implementation dependencies. It must not
+import the UI entry point, Material/CDK, editor tooling or styles.
 
-These are four independently published packages, not secondary entry points. The builder's
-`styles.css` is a stylesheet export, not a JavaScript entry point. Source folders and the private
-Studio/docs applications are implementation details. No new engine package is needed.
+`@ngx-formly/builder/ui` exports `FormlyBuilder`, `provideFormlyBuilder`, configuration helpers,
+property editors, themes and native baseline fields. It imports the engine and injection tokens
+from the root so both entry points share their identities. Its Material/CDK, CodeMirror,
+Tailwind, drag/drop and editor utility peers are optional in the package manifest and must be
+installed explicitly by UI consumers. UI styles remain at `@ngx-formly/builder/styles.css`.
 
-| Package                   | Public responsibility                                                                                                 | Excluded responsibility                                           |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `builder-state`           | Document types, hierarchy operations, storage contracts and recovery; editing engine as extracted in #7               | CDK, PrimeNG, Material, dialogs, panels, runtime field components |
-| `builder`                 | `FormlyBuilder`, `provideFormlyBuilder`, library/property configuration, builder extension contracts, packaged styles | Application routes, deployment metadata, host business rules      |
-| `builder-material-fields` | Runtime Formly field types and their configuration                                                                    | Editor state and editor wrappers                                  |
-| `builder-material`        | Editor adapters for composite Material fields                                                                         | Persistence and standalone runtime behavior                       |
+Migration from the combined API: move editor components, providers, theme and UI configuration
+imports to `/ui`. Keep engine, model and persistence imports at the root. Stored documents and
+storage namespaces do not change. The pending minor changeset records this breaking API move.
 
-Only package entry points are supported imports. A service exported today remains a compatibility
-commitment until explicitly deprecated or migrated, even when its implementation is internal.
-Do not remove exports as part of a file move. In particular, keep `CoreFormService`,
-`BuilderFieldStateService`, storage tokens and model re-exports working during extraction.
+Additional fields and feature integrations belong in separate libraries. They register through
+`LibraryConfig.configOptions`, `builderConfigOptions`, palette metadata and the existing
+extension contracts. Studio's examples are private and are not re-exported by either entry point.
 
-## Engine and shell
+## Source ownership
 
-The Angular engine owns active form/field selection, normalized documents, nested add/remove/move/
-replace operations, Formly import/export conversion, model/property edits, hierarchy operations,
-autosave, save failures, recovery state and storage namespaces. Transient field state belongs
-beside those operations and must be cleared when its field disappears.
+| Source                                                           | Responsibility                                                  | Public API                                       |
+| ---------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| `libs/core/src/public-api.ts`                                    | Headless package boundary                                       | `@ngx-formly/builder`                            |
+| `libs/core/src/lib/state`                                        | Models, editing operations, hierarchy, persistence and recovery | Root                                             |
+| `libs/core/src/ui-public-api.ts`, `libs/core/ui/ng-package.json` | Optional UI package boundary                                    | `@ngx-formly/builder/ui`                         |
+| Other `libs/core/src/lib` modules                                | Editor shell, configuration, baseline fields, property editors  | UI, except the root validation-expression helper |
+| `libs/ui/material`, `libs/ui/builder-material`                   | Additional field examples and editor integrations               | Private Studio workspaces                        |
+| `apps/studio`, `apps/docs`                                       | Demo application and documentation                              | Private workspaces                               |
 
-Its configuration describes libraries and field defaults as data. It does not register runtime
-components or import shell property editors. The shell maps its richer `LibraryConfig` to that
-configuration. Keep the existing JSON-safe Formly document format and storage keys.
+The private example imports are `@formly-studio/material-fields` and
+`@formly-studio/material-editor`. They are not supported consumer packages.
 
-The shell owns selected panels, hover state, edit/preview/JSON display modes, responsive layouts,
-menus, drag/drop interactions, dialogs, theme integration and schema-validation presentation.
-It delegates document mutations to the engine. Selecting a loaded form may open the fields panel
-in the shell, but must not require a `PanelService` in the engine.
+## Internal boundaries
 
-`FormStoreService` and `CORE_FORM_STORE` belong to state. A headless provider should create one
-engine per environment injector and accept a storage namespace, autosave options, field-library
-definitions and optional custom store. `provideFormlyBuilder` remains the host's shell provider;
-it must expose that same engine instance to shell adapters, not create a second document state.
-Use separate route/environment injectors and distinct namespaces for independent editors.
+State owns active form/field selection, normalized documents, nested editing operations,
+Formly import/export conversion, model/property edits, hierarchy operations, autosave, recovery
+and storage namespaces. It uses Angular signals and DI without the editor UI or field examples.
 
-Runtime Formly `ConfigOption` registrations, property editor descriptors and builder-only wrappers
-remain shell extension contracts. The Material runtime package must remain usable without those
-contracts. The public `CoreAddFieldOption` currently inherits PrimeNG's `MenuItem`; removing that
-coupling requires a documented migration under #8, not a silent signature change.
+The shell owns panels, hover state, edit/preview/JSON modes, layouts, menus, drag/drop, themes
+and property presentation. It delegates document mutations to the engine. `provideFormlyBuilder`
+exposes the same engine through `BuilderEngineService` and `CoreFormService` and shares transient
+field state with extensions. UI modules must import root symbols through `@ngx-formly/builder`,
+not through relative source paths that could compile a second copy of the engine or its tokens.
 
-## Host integration
+Use separate injectors and storage namespaces for independent editors. Do not register both
+`provideBuilderEngine` and `provideFormlyBuilder` in the same injector. The default store uses
+local storage; hosts can provide their own `FormStoreService` for server or in-memory storage.
 
-For the complete shell, import `FormlyBuilder` and `provideFormlyBuilder` from
-`@ngx-formly/builder`, register a library, and process `@ngx-formly/builder/styles.css` with the
-host's Tailwind/PostCSS setup. The [embedding guide](../README.md#embedding-contract-prerelease)
-and [tarball consumer](../integration/package-consumer) are the executable reference. The
-current PrimeNG theme setup remains required until the migration in #8 finishes.
+## Verification
 
-A headless host imports `provideBuilderEngine`, `BuilderEngineService`, store contracts, document
-types and hierarchy helpers from `@ngx-formly/builder-state`. Provide the engine in an Angular
-environment injector with a dedicated editor ID. This loads no shell. The
-[store and lifecycle guide](asynchronous-stores.md) defines asynchronous store, selection, save and
-teardown behavior. Headless hosts supply their own controls and call
-engine operations, without `provideFormlyBuilder`, PrimeNG providers or builder styles.
+The API report captures root, UI and stylesheet exports and their declarations. Package checks
+reject non-headless root imports, required UI-only peers, undeclared dependencies, private
+examples and extra field packages. The clean headless consumer installs without UI peers, builds
+under a 400 kB initial budget and rejects UI code in its bundle graph. The clean UI consumer
+installs optional peers explicitly, tests shared engine identity and renders the editor in
+Chromium. Both consumers install a packed tarball with strict peer checking.
 
-## Follow-up sequence and rationale
-
-1. Review this boundary before moving code. Keeping Angular signals and DI avoids a second
-   reactive model; reusing state avoids another package/version relationship.
-2. In #7, move document operations and pure conversion/property helpers into state. Keep shell
-   facades and exports, bridge providers, then move transient field state. Exercise operations
-   with Angular TestBed without shell services; retain Studio and packed-consumer regression tests.
-3. In #8, inventory and replace shell UI dependencies in bounded components. A UI-independent
-   runtime component skeleton remains a separate experiment in #2.
-4. In #9, define independent version ranges and validate packed consumers before publication.
-5. In #11, record reviewable API declarations. Make them a required compatibility gate only when
-   maintainers explicitly designate supported entry points for stabilization.
-
-Each implementation PR must preserve nested selection, unknown Formly properties, autosave error
-handling, storage isolation and recovery backups. Validate state dependencies in built bundles,
-then run the Studio and packaged-consumer desktop/mobile checks before changing the shell facade.
+See the [embedding guide](../README.md#embedding-contract-experimental),
+[store lifecycle guide](asynchronous-stores.md) and [release process](releases.md).

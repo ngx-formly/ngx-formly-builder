@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Panel, PanelPassThrough } from 'primeng/panel';
+import { Panel, PanelLayout } from '../../ui/panel';
 import { Empty } from '../../empty/empty';
 import { ValidationMessage, ValidationMessagesPropertyConfig } from './validation-messages.config';
 import { BaseProperty } from '../base.directive';
@@ -11,9 +10,9 @@ import { ValidationMessageItem } from './validation-message-item';
 @Component({
   selector: 'core-field-validation-messages-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, Panel, ValidationMessageItem, Empty, Tooltip],
+  imports: [Panel, ValidationMessageItem, Empty, Tooltip],
   template: `
-    <p-panel
+    <core-property-panel
       toggler="header"
       [pt]="panelPT"
       [toggleable]="true"
@@ -21,7 +20,7 @@ import { ValidationMessageItem } from './validation-message-item';
     >
       <ng-template #header>
         <span
-          class="p-panel-title"
+          class="core-property-panel-title"
           tooltipPosition="left"
           [coreTooltip]="property().description"
         >
@@ -32,18 +31,18 @@ import { ValidationMessageItem } from './validation-message-item';
       <ng-template #icons>
         <button
           class="mr-2"
-          pButton
+          coreButton
           text
           rounded
           aria-label="Add message"
           coreTooltip="Add message"
-          tooltipPosition="top"
+          tooltipPosition="above"
           [style.opacity]="isCollapsed() ? '0' : '1'"
           [style.pointerEvents]="isCollapsed() ? 'none' : 'auto'"
           (click)="onAddChild($event)"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             >add</i
           >
@@ -68,14 +67,14 @@ import { ValidationMessageItem } from './validation-message-item';
           description="Click the + button to add a message."
         />
       }
-    </p-panel>
+    </core-property-panel>
   `,
 })
 export class FieldValidationMessagesProperty extends BaseProperty<
   ValidationMessagesPropertyConfig,
   Record<string, string>
 > {
-  panelPT: PanelPassThrough = {
+  panelPT: PanelLayout = {
     header: {
       class: 'cursor-pointer',
     },

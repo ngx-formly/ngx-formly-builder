@@ -8,8 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule, NgForm, NgModel } from '@angular/forms';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { Dialog, DialogPassThrough } from 'primeng/dialog';
+import { Dialog, DialogLayout } from '../ui/dialog';
 import { ZodType } from 'zod';
 import { Tooltip } from '../shared';
 import { JSONArrayValidator } from './json-array-validator';
@@ -22,9 +21,6 @@ import { JSONSchemaValidator } from './json-schema-validator';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     Dialog,
-    ButtonDirective,
-    ButtonIcon,
-    ButtonLabel,
     JSONContent,
     FormsModule,
     JSONFormatValidator,
@@ -33,8 +29,7 @@ import { JSONSchemaValidator } from './json-schema-validator';
     Tooltip,
   ],
   template: `
-    <p-dialog
-      modal
+    <core-dialog
       [style]="{
         width: '800px',
         maxWidth: 'calc(100vw - 32px)',
@@ -70,43 +65,43 @@ import { JSONSchemaValidator } from './json-schema-validator';
       <ng-template #footer>
         <span class="inline-flex items-center gap-2">
           <button
-            pButton
+            coreButton
             text
             aria-label="Beautify JSON"
             coreTooltip="Beautify JSON"
-            tooltipPosition="top"
+            tooltipPosition="above"
             [disabled]="!jsonModel()?.valid"
             (click)="beautify()"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
             >
               wand_stars
             </i>
             <span
               class="hidden sm:inline"
-              pButtonLabel
+              coreButtonLabel
               >Beautify</span
             >
           </button>
           <ng-content select="[lhsActions]" />
         </span>
         <button
-          pButton
+          coreButton
           [disabled]="!this.form().valid"
           (click)="saveForm()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
           >
             {{ saveButtonIcon() }}
           </i>
-          <span pButtonLabel>{{ saveButtonLabel() }}</span>
+          <span coreButtonLabel>{{ saveButtonLabel() }}</span>
         </button>
       </ng-template>
-    </p-dialog>
+    </core-dialog>
   `,
 })
 export class JSONContentDialog {
@@ -123,10 +118,7 @@ export class JSONContentDialog {
   save = output<{ name: string; json: string }>();
 
   inputId = `dialog-input-${Math.random().toString(36).substring(2, 15)}`;
-  dialogPT: DialogPassThrough = {
-    root: {
-      style: { overflow: 'hidden' },
-    },
+  dialogPT: DialogLayout = {
     header: {
       style: { height: '5rem' },
     },

@@ -36,7 +36,7 @@ refer to components without containing Angular classes. See Formly's
 Replace the catalog alias with a composed catalog:
 
 ```ts title="app-material.options.ts"
-import { createInputProperty, FieldTypeOption } from '@ngx-formly/builder';
+import { createInputProperty, FieldTypeOption } from '@ngx-formly/builder/ui';
 import {
   formFieldWrapperOptions,
   keyProp,
@@ -105,8 +105,9 @@ For groups, use `isParent: true` with `fieldGroup`; repeaters also use `isFieldA
 editor state model.
 
 Tabs and steppers need special authoring behavior in Studio. Their `builderConfigOptions` use
-adapters from `@ngx-formly/builder-material`; `configOptions` retain the real runtime components
-for Preview. Simple fields such as postal code do not need a builder override.
+private adapters from `@formly-studio/material-editor`; `configOptions` retain the runtime components
+for Preview. These examples are not exported by `@ngx-formly/builder`; a separate extension library
+can supply equivalent registrations. Simple fields such as postal code do not need a builder override.
 
 ## Runtime portability and checks
 

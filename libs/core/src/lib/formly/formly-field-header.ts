@@ -7,23 +7,20 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { MenuItem } from 'primeng/api';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { Chip } from 'primeng/chip';
-import { Menu } from 'primeng/menu';
-import { TieredMenu } from 'primeng/tieredmenu';
+
+import { Menu } from '../ui/menu';
+import { MenuItem } from '../ui/menu-item';
 import { CoreFieldService } from '../config/core-field.service';
 import { CoreFormService } from '../editor/core-form.service';
 import { FieldPresetDialogService } from '../field-preset/field-preset-dialog.service';
-import { isLayoutRow } from '@ngx-formly/builder-state';
+import { isLayoutRow } from '@ngx-formly/builder';
 import { EditorField, FieldInfo } from '../model/types';
 import { Tooltip } from '../shared';
-import { ChipStyleFix } from '../shared/chip-style-fix';
 
 @Component({
   selector: 'core-formly-field-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, Tooltip, Chip, ChipStyleFix, Menu, TieredMenu],
+  imports: [Tooltip, Menu],
   host: {
     class: 'flex justify-between rounded-t-sm bg-primary/20 px-2',
     '[class.cursor-grab]': 'isDraggable()',
@@ -37,7 +34,7 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
       @if (fieldIcon(); as icon) {
         <i
           class="material-symbols-outlined text-muted-color"
-          tooltipPosition="top"
+          tooltipPosition="above"
           [style.fontSize]="'1rem'"
           [coreTooltip]="fieldInfo().name"
         >
@@ -47,13 +44,12 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
       <span class="truncate">{{ fieldKey() || fieldInfo().name }} </span>
       @if (fieldInfo().badges; as badges) {
         @for (badge of badges; track badge.label) {
-          <p-chip
-            coreChipStyleFix
-            class="py-0 text-sm"
-            tooltipPosition="top"
+          <span
+            class="core-chip"
+            tooltipPosition="above"
             [coreTooltip]="badge.description"
-            [label]="badge.label"
-          />
+            >{{ badge.label }}</span
+          >
         }
       }
     </div>
@@ -63,25 +59,21 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
     >
       @if (addOptions().length) {
         <span class="inline-flex">
-          <!-- shortcut: PrimeNG popup hover requires dirty; remove when upstream enables it on show. -->
-          <p-tiered-menu
-            #addTieredMenu
-            appendTo="body"
+          <core-menu
+            #addMenu
             [model]="addOptions()"
-            [popup]="true"
-            (onShow)="addTieredMenu.dirty = true"
           />
           <button
-            pButton
+            coreButton
             text
             class="size-6"
             aria-label="Add Field"
             coreTooltip="Add Field"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="openAddMenu($event)"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
             >
               add
@@ -91,24 +83,21 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
       }
       @if (replaceOptions().length) {
         <span class="inline-flex">
-          <p-tiered-menu
+          <core-menu
             #replaceOptionsMenu
-            appendTo="body"
             [model]="replaceOptions()"
-            [popup]="true"
-            (onShow)="replaceOptionsMenu.dirty = true"
           />
           <button
-            pButton
+            coreButton
             text
             class="size-6"
             aria-label="Replace Field"
             coreTooltip="Replace Field"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="openReplaceOptionsMenu($event)"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
             >
               swap_horiz
@@ -118,11 +107,9 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
       }
       @if (otherOptions().length) {
         <span class="inline-flex">
-          <p-menu
+          <core-menu
             #otherOptionsMenu
-            appendTo="body"
             [model]="otherOptions()"
-            [popup]="true"
           >
             <ng-template
               #item
@@ -142,18 +129,18 @@ import { ChipStyleFix } from '../shared/chip-style-fix';
                 {{ item.label }}
               </button>
             </ng-template>
-          </p-menu>
+          </core-menu>
           <button
-            pButton
+            coreButton
             text
             class="size-6"
             aria-label="Options"
             coreTooltip="Options"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="openOtherOptionsMenu($event)"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
             >
               more_horiz
@@ -169,9 +156,9 @@ export class FormlyFieldHeader {
   readonly fieldInfo = input.required<FieldInfo>();
   readonly fieldKey = input<string | number | (string | number)[]>();
   readonly isMouseInside = input.required<boolean>();
-  readonly addTieredMenuChild = viewChild('addTieredMenu', { read: TieredMenu });
+  readonly addMenuChild = viewChild('addMenu', { read: Menu });
   readonly otherOptionsMenuChild = viewChild('otherOptionsMenu', { read: Menu });
-  readonly replaceOptionsMenuChild = viewChild('replaceOptionsMenu', { read: TieredMenu });
+  readonly replaceOptionsMenuChild = viewChild('replaceOptionsMenu', { read: Menu });
 
   formService = inject(CoreFormService);
   fieldService = inject(CoreFieldService);
@@ -256,13 +243,13 @@ export class FormlyFieldHeader {
   readonly areOptionsVisible = computed(
     () =>
       this.isMouseInside() ||
-      this.addTieredMenuChild()?.visible ||
+      this.addMenuChild()?.visible ||
       this.otherOptionsMenuChild()?.visible ||
       this.replaceOptionsMenuChild()?.visible,
   );
 
   openAddMenu(event: MouseEvent) {
-    this.addTieredMenuChild()?.show(event);
+    this.addMenuChild()?.show(event);
     event.preventDefault();
   }
 

@@ -38,7 +38,7 @@ by the UI library is not necessarily supported by its Formly adapter.
 ## 2. Add a starter form
 
 ```ts title="app-material.forms.ts"
-import { FormTemplate } from '@ngx-formly/builder';
+import { FormTemplate } from '@ngx-formly/builder/ui';
 
 export const appFormTemplates: FormTemplate[] = [
   {
@@ -62,7 +62,7 @@ keep that ID stable; an unknown ID fails rather than silently selecting Material
 ## 3. Compose the profile
 
 ```ts title="app-material.library.ts"
-import { createLibrary } from '@ngx-formly/builder';
+import { createLibrary } from '@ngx-formly/builder/ui';
 import { materialBuilderConfigOptions } from '../material/material.config';
 import { appMaterialConfigOptions } from './app-material.config';
 import { appMaterialFieldCategoryOptions } from './app-material.options';

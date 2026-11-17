@@ -1,4 +1,4 @@
-import { MenuItem } from 'primeng/api';
+import { MenuItem } from '../../ui/menu-item';
 
 export interface AddFieldAction extends MenuItem {
   icon: string;

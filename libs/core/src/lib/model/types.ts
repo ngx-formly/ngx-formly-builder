@@ -12,4 +12,4 @@ export type {
   WorkspaceNode,
   WorkspaceNodeType,
   WorkspaceValidation,
-} from '@ngx-formly/builder-state';
+} from '@ngx-formly/builder';

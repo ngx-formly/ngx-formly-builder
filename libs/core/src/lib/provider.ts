@@ -1,8 +1,8 @@
 import {
   BuilderEngineService,
   BuilderFieldStateService as EngineFieldState,
-} from '@ngx-formly/builder-state';
-import { EnvironmentProviders, makeEnvironmentProviders, signal, Type } from '@angular/core';
+} from '@ngx-formly/builder';
+import { EnvironmentProviders, makeEnvironmentProviders, signal } from '@angular/core';
 import {
   ConfigOption,
   FormlyFieldConfig,
@@ -31,7 +31,7 @@ import { FieldInfo } from './model/types';
 import { tailwindConfig } from './panel/styling-panel/config/tailwind';
 import { CORE_STYLES_CONFIG, StylesConfig } from './panel/styling-panel/types';
 import { LocalFormStoreService } from './persistence/local-form-store.service';
-import { CORE_FORM_STORE, FormStoreService } from './persistence/types';
+import { CORE_FORM_STORE } from './persistence/types';
 import { ArrayTableDialogService } from './properties/array/array-table-dialog.service';
 import { ExpressionDialogService } from './properties/expressions/expression-dialog.service';
 import { MarkdownDialogService } from './properties/markdown/markdown-dialog.service';
@@ -135,20 +135,4 @@ export function provideFormlyBuilder(config: FormlyBuilderConfig = {}): Environm
   ]);
 }
 
-export function provideFormStore(service: Type<FormStoreService>): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    {
-      provide: CORE_FORM_STORE,
-      useExisting: service,
-    },
-  ]);
-}
-
-export function provideLocalFormStore(): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    {
-      provide: CORE_FORM_STORE,
-      useClass: LocalFormStoreService,
-    },
-  ]);
-}
+export { provideFormStore, provideLocalFormStore } from '@ngx-formly/builder';

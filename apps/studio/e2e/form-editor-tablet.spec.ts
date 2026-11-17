@@ -12,10 +12,10 @@ test.describe('Form Editor tablet composition', () => {
   });
 
   test('renders all panels beside the canvas without document overflow', async ({ page }) => {
-    const splitter = page.locator('p-splitter');
+    const splitter = page.locator('core-splitter');
 
     await expect(splitter).toBeVisible();
-    await expect(splitter.locator('.p-splitterpanel')).toHaveCount(2);
+    await expect(splitter.locator('.core-splitter-panel')).toHaveCount(2);
     await expect(page.locator('core-tablet-sidebar')).toBeVisible();
     await expect(page.locator('core-lhs-sidebar, core-rhs-sidebar')).toHaveCount(0);
     await expect(page.locator('core-panel-option')).toHaveCount(8);
@@ -68,8 +68,8 @@ test.describe('Form Editor tablet composition', () => {
 
   test('persists a tablet pane resize after reload', async ({ page }) => {
     await createContactForm(page);
-    const panels = page.locator('p-splitter .p-splitterpanel');
-    const gutterHandle = page.locator('p-splitter .p-splitter-gutter-handle').first();
+    const panels = page.locator('core-splitter .core-splitter-panel');
+    const gutterHandle = page.locator('core-splitter .core-splitter-handle').first();
     await expect(gutterHandle).toBeVisible();
 
     const initialWidths = await panels.evaluateAll((elements) =>
@@ -94,7 +94,7 @@ test.describe('Form Editor tablet composition', () => {
     expect(storedState).not.toBeNull();
 
     await page.reload();
-    await expect(page.locator('p-splitter')).toBeVisible();
+    await expect(page.locator('core-splitter')).toBeVisible();
     await expect(panels).toHaveCount(2);
     const restoredWidths = await panels.evaluateAll((elements) =>
       elements.map((element) => element.getBoundingClientRect().width),
@@ -107,7 +107,7 @@ test.describe('Form Editor tablet composition', () => {
     await page.setViewportSize({ width: 1535, height: 900 });
 
     await expect(page.locator('core-tablet-sidebar')).toBeVisible();
-    await expect(page.locator('p-splitter .p-splitterpanel')).toHaveCount(2);
+    await expect(page.locator('core-splitter .core-splitter-panel')).toHaveCount(2);
     await expect(page.locator('core-lhs-sidebar, core-rhs-sidebar')).toHaveCount(0);
   });
 
@@ -119,7 +119,7 @@ test.describe('Form Editor tablet composition', () => {
 
     await page.setViewportSize({ width: 1536, height: 900 });
 
-    await expect(page.locator('p-splitter .p-splitterpanel')).toHaveCount(3);
+    await expect(page.locator('core-splitter .core-splitter-panel')).toHaveCount(3);
     await expect(page.locator('core-tablet-sidebar')).toHaveCount(0);
     await expect(page.locator('core-rhs-sidebar core-model-edit-panel')).toBeVisible();
   });

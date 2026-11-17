@@ -62,7 +62,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check independent release planning
+      - name: Check single-package release planning
         run: pnpm run test:release
 
       - name: Run all unit tests
@@ -94,8 +94,8 @@ jobs:
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Build library packages
-        run: pnpm run build:builder-material
+      - name: Build the builder package
+        run: pnpm run build:core
 
       - name: Test the packed editor in a consumer application
         run: pnpm run check:packages:e2e
@@ -138,5 +138,4 @@ jobs:
         run: pnpm run build
 
       - name: Check the stabilized public API
-        if: vars.BUILDER_API_COMPATIBILITY == 'true'
         run: node scripts/check-api.mjs

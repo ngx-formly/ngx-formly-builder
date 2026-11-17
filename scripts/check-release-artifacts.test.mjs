@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 import { test } from 'node:test';
 
 const root = resolve(import.meta.dirname, '..');
-const packages = ['libs/state', 'libs/core', 'libs/ui/material', 'libs/ui/builder-material'];
+const packages = ['libs/core'];
 
 test('release artifacts reject stale versions, peer ranges and missing declarations', () => {
   const fixture = mkdtempSync(join(tmpdir(), 'builder-artifacts-'));
@@ -23,11 +23,18 @@ test('release artifacts reject stale versions, peer ranges and missing declarati
           ...source,
           typings: 'index.d.ts',
           module: 'index.mjs',
-          exports: { '.': './index.mjs' },
+          exports: {
+            '.': './index.mjs',
+            './package.json': './package.json',
+            './styles.css': './styles.css',
+            './ui': './ui.mjs',
+          },
         }),
       );
       writeFileSync(join(output, 'index.d.ts'), 'export {};');
       writeFileSync(join(output, 'index.mjs'), 'export {};');
+      for (const file of ['LICENSE', 'README.md', 'CHANGELOG.md'])
+        writeFileSync(join(output, file), file);
     }
     const check = () =>
       spawnSync(process.execPath, [join(root, 'scripts/check-release-artifacts.mjs')], {
@@ -35,18 +42,27 @@ test('release artifacts reject stale versions, peer ranges and missing declarati
         encoding: 'utf8',
       });
     assert.equal(check().status, 0);
-    const manifest = join(fixture, 'dist/state/package.json');
+    const manifest = join(fixture, 'dist/core/package.json');
     const original = JSON.parse(readFileSync(manifest, 'utf8'));
     for (const [override, error] of [
       [{ version: '99.0.0' }, 'stale built version'],
       [{ peerDependencies: {} }, 'stale peer ranges'],
+      [{ dependencies: {} }, 'stale dependencies'],
+      [{ peerDependenciesMeta: {} }, 'stale optional peers'],
       [{ typings: 'missing.d.ts' }, 'missing declarations'],
+      [
+        { exports: { ...original.exports, './material': './extra.mjs' } },
+        'unexpected public entry points',
+      ],
     ]) {
       writeFileSync(manifest, JSON.stringify({ ...original, ...override }));
       const result = check();
       assert.notEqual(result.status, 0);
       assert.ok(result.stderr.includes(error), result.stderr);
     }
+    writeFileSync(manifest, JSON.stringify(original));
+    rmSync(join(fixture, 'dist/core/LICENSE'));
+    assert.match(check().stderr, /missing LICENSE/);
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }

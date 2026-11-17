@@ -3,4 +3,4 @@ export {
   convertField,
   generateFieldId,
   generateFormId,
-} from '@ngx-formly/builder-state';
+} from '@ngx-formly/builder';

@@ -10,7 +10,6 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, NgControl } from '@angular/forms';
 import { isEmpty } from 'lodash-es';
-import { Message } from 'primeng/message';
 import { map } from 'rxjs';
 import { CodeEditor } from '../shared';
 import { JSONValidationError } from './types';
@@ -18,7 +17,7 @@ import { JSONValidationError } from './types';
 @Component({
   selector: 'core-json-content',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CodeEditor, Message],
+  imports: [CodeEditor],
   host: { class: 'relative block w-full' },
   template: `
     <core-code-editor
@@ -31,24 +30,30 @@ import { JSONValidationError } from './types';
     @if (editable()) {
       <div class="absolute right-4 bottom-4 flex flex-col gap-2">
         @for (error of validationErrors(); track $index) {
-          <p-message severity="error">
-            <ng-template #icon>
-              <i class="material-symbols-outlined">error</i>
-            </ng-template>
+          <div
+            role="alert"
+            class="core-message"
+            severity="error"
+          >
+            <i class="material-symbols-outlined">error</i>
+
             <div>
               <div>{{ error.label }}</div>
               @for (message of error.messages; track $index) {
                 <div>{{ message }}</div>
               }
             </div>
-          </p-message>
+          </div>
         } @empty {
-          <p-message severity="success">
-            <ng-template #icon>
-              <i class="material-symbols-outlined">check</i>
-            </ng-template>
+          <div
+            role="status"
+            class="core-message"
+            severity="success"
+          >
+            <i class="material-symbols-outlined">check</i>
+
             JSON is valid
-          </p-message>
+          </div>
         }
       </div>
     }

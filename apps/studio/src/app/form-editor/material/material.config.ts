@@ -1,4 +1,4 @@
-import { withStepperTypeBuilder, withTabsTypeBuilder } from '@ngx-formly/builder-material';
+import { withStepperTypeBuilder, withTabsTypeBuilder } from '@formly-studio/material-editor';
 import {
   withButtonGroupType,
   withCardType,
@@ -11,8 +11,8 @@ import {
   withStepType,
   withTabsType,
   withTabType,
-} from '@ngx-formly/builder-material-fields';
-import { nativeFieldConfig } from '@ngx-formly/builder';
+} from '@formly-studio/material-fields';
+import { nativeFieldConfig } from '@ngx-formly/builder/ui';
 import { ConfigOption } from '@ngx-formly/core';
 import { withFormlyMaterial } from '@ngx-formly/material';
 import { withFormlyFieldDatepicker } from '@ngx-formly/material/datepicker';

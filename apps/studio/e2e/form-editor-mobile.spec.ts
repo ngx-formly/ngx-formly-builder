@@ -26,7 +26,7 @@ test.describe('Form Editor mobile composition', () => {
     await page.setViewportSize({ width: 375, height: 812 });
 
     await expect(page.locator('core-form-panel')).toBeVisible();
-    await expect(page.locator('p-splitter')).toHaveCount(0);
+    await expect(page.locator('core-splitter')).toHaveCount(0);
     await expect(page.locator('core-panel-option')).toHaveCount(8);
 
     await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
@@ -48,7 +48,10 @@ test.describe('Form Editor mobile composition', () => {
     await expect(page.locator('core-form-panel')).toBeVisible();
     await expect(page.locator('core-tablet-sidebar')).toBeVisible();
 
-    await page.locator('.p-drawer-close-button').click();
+    await page
+      .getByRole('complementary')
+      .getByRole('button', { name: 'Close', exact: true })
+      .click();
     await expect(page.getByRole('complementary')).toBeHidden();
     await page.getByRole('main').getByRole('button', { name: 'Open Model panel' }).click();
     await expect(page.locator('core-model-edit-panel')).toBeVisible();
@@ -78,7 +81,9 @@ test.describe('Form Editor mobile composition', () => {
     await page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' }).click();
 
     await expect(page.getByRole('complementary')).toBeVisible();
-    await page.locator('.p-drawer-mask').click({ position: { x: 370, y: 400 } });
+    await page
+      .locator('.cdk-overlay-backdrop.cdk-overlay-dark-backdrop')
+      .click({ position: { x: 370, y: 400 } });
     await expect(page.getByRole('complementary')).toBeHidden();
   });
 
@@ -129,10 +134,10 @@ test.describe('Form Editor mobile composition', () => {
     await createContactForm(page);
     await page.setViewportSize({ width: 1023, height: 768 });
     await expect(page.locator('core-form-panel')).toBeVisible();
-    await expect(page.locator('p-splitter')).toHaveCount(0);
+    await expect(page.locator('core-splitter')).toHaveCount(0);
 
     await page.setViewportSize({ width: 1024, height: 768 });
-    await expect(page.locator('p-splitter .p-splitterpanel')).toHaveCount(2);
+    await expect(page.locator('core-splitter .core-splitter-panel')).toHaveCount(2);
     await expect(page.locator('core-tablet-sidebar')).toBeVisible();
   });
 });

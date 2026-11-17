@@ -37,7 +37,11 @@ for (const width of [1440, 390]) {
       await page.emulateMedia({ colorScheme: theme });
       await page.goto('/workspaces/forms/readonly-test/fields');
       if (width < 1024) {
-        await page.locator('.p-drawer-close-button').click();
+        await expect(page.locator('core-form-builder-content input').first()).toBeVisible();
+        await page
+          .getByRole('complementary')
+          .getByRole('button', { name: 'Close', exact: true })
+          .click();
         await expect(page.getByRole('complementary')).toBeHidden();
       }
       const builder = page.locator('core-form-builder-content');
@@ -109,10 +113,12 @@ test('updates readonly opacity when the property is toggled', async ({ page }) =
     .filter({ hasText: 'Readonly' })
     .getByRole('switch');
 
-  await toggle.uncheck();
+  await toggle.click();
+  await expect(toggle).not.toBeChecked();
   await expect(builder.locator('core-readonly-wrapper.opacity-50')).toHaveCount(1);
   await expect(builder.getByRole('textbox', { name: 'Reference', exact: true })).toBeEditable();
-  await toggle.check();
+  await toggle.click();
+  await expect(toggle).toBeChecked();
   await expect(builder.locator('core-readonly-wrapper.opacity-50')).toHaveCount(2);
   await expect(builder.getByRole('textbox', { name: 'Reference', exact: true })).not.toBeEditable();
   await page.getByRole('button', { name: 'Save Form', exact: true }).click();

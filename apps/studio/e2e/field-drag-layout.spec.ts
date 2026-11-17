@@ -75,8 +75,8 @@ test('groups, reorders and extracts fields while preserving values and responsiv
     .click();
   const menu = page.getByRole('menu');
   await menu.press('Home');
-  await menu.press('ArrowDown');
-  await menu.press('Enter');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
   await expect(row.locator(':scope > formly-field')).toHaveCount(1);
   await drop(name, reference, 'left');
   await expect(row.locator(':scope > formly-field')).toHaveCount(2);

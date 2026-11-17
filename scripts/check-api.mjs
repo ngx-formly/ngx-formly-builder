@@ -30,7 +30,7 @@ export function normalizeDeclarations(content) {
   }
 }
 
-const packages = ['state', 'core', 'material', 'builder-material'];
+const packages = ['core'];
 
 /** Capture the complete rolled declarations, including types omitted by the consumer fixture. */
 export function snapshotPackage(directory) {

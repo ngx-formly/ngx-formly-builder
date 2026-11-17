@@ -1,17 +1,15 @@
 import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
-import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { Dialog, DialogPassThrough } from 'primeng/dialog';
+import { Dialog, DialogLayout } from '../../ui/dialog';
 import { MarkdownDialogService } from './markdown-dialog.service';
 import { CodeEditor } from '../../shared/code-editor';
 
 @Component({
   selector: 'core-markdown-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonDirective, ButtonIcon, ButtonLabel, CodeEditor, Dialog],
+  imports: [CodeEditor, Dialog],
   template: `
-    <p-dialog
+    <core-dialog
       header="Edit Markdown"
-      modal
       [style]="{
         width: '800px',
         maxWidth: 'calc(100vw - 32px)',
@@ -32,32 +30,32 @@ import { CodeEditor } from '../../shared/code-editor';
       }
       <ng-template #footer>
         <button
-          pButton
+          coreButton
           text
           type="button"
           (click)="cancel()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             >close</i
           >
-          <span pButtonLabel>Cancel</span>
+          <span coreButtonLabel>Cancel</span>
         </button>
         <button
-          pButton
+          coreButton
           type="button"
           (click)="save()"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             >save</i
           >
-          <span pButtonLabel>Save</span>
+          <span coreButtonLabel>Save</span>
         </button>
       </ng-template>
-    </p-dialog>
+    </core-dialog>
   `,
 })
 export class MarkdownDialog {
@@ -66,10 +64,7 @@ export class MarkdownDialog {
 
   readonly isOpen = this.dialogService.isOpen;
   readonly data = this.dialogService.data;
-  readonly dialogPT: DialogPassThrough = {
-    root: {
-      style: { overflow: 'hidden' },
-    },
+  readonly dialogPT: DialogLayout = {
     content: {
       style: { height: 'calc(100% - 10rem)', overflow: 'hidden' },
     },

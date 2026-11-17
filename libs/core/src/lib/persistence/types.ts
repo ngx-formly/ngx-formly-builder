@@ -4,4 +4,4 @@ export {
   type FormStoreDataKind,
   type FormStoreRecoveryIssue,
   type FormStoreService,
-} from '@ngx-formly/builder-state';
+} from '@ngx-formly/builder';

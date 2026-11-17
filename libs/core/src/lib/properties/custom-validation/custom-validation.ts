@@ -8,11 +8,11 @@ import {
 } from '@angular/core';
 import { FormlyConfig } from '@ngx-formly/core';
 import { CoreFormService } from '../../editor/core-form.service';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { get } from 'lodash-es';
-import { MenuItem } from 'primeng/api';
-import { Menu } from 'primeng/menu';
-import { Panel, PanelPassThrough } from 'primeng/panel';
+
+import { Menu } from '../../ui/menu';
+import { MenuItem } from '../../ui/menu-item';
+import { Panel, PanelLayout } from '../../ui/panel';
 import { Empty } from '../../empty/empty';
 import { CustomValidation, CustomValidationPropertyConfig } from './custom-validation.config';
 import { BaseProperty } from '../base.directive';
@@ -25,18 +25,9 @@ import { ValidationExpression, ValidationExpressionEditor } from './validation-e
 @Component({
   selector: 'core-field-custom-validation-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ButtonDirective,
-    ButtonIcon,
-    Menu,
-    Panel,
-    CustomValidationItem,
-    Empty,
-    Tooltip,
-    ValidationExpressionEditor,
-  ],
+  imports: [Menu, Panel, CustomValidationItem, Empty, Tooltip, ValidationExpressionEditor],
   template: `
-    <p-panel
+    <core-property-panel
       toggler="header"
       [pt]="panelPT"
       [toggleable]="true"
@@ -44,7 +35,7 @@ import { ValidationExpression, ValidationExpressionEditor } from './validation-e
     >
       <ng-template #header>
         <span
-          class="p-panel-title"
+          class="core-property-panel-title"
           tooltipPosition="left"
           [coreTooltip]="property().description"
         >
@@ -53,12 +44,10 @@ import { ValidationExpression, ValidationExpressionEditor } from './validation-e
         </span>
       </ng-template>
       <ng-template #icons>
-        <p-menu
+        <core-menu
           #addMenu
-          appendTo="body"
           ariaLabel="Add validation"
           [model]="addMenuItems()"
-          [popup]="true"
         >
           <ng-template
             #item
@@ -75,22 +64,22 @@ import { ValidationExpression, ValidationExpressionEditor } from './validation-e
               {{ item.label }}
             </div>
           </ng-template>
-        </p-menu>
+        </core-menu>
         <button
           class="mr-2"
-          pButton
+          coreButton
           text
           rounded
           aria-label="Add custom validation"
           aria-haspopup="menu"
           coreTooltip="Add custom validation"
-          tooltipPosition="top"
+          tooltipPosition="above"
           [attr.aria-expanded]="!!addMenu.visible"
           [disabled]="!addMenuItems().length || editingName() !== null"
           (click)="$event.stopPropagation(); isCollapsed.set(false); addMenu.toggle($event)"
         >
           <i
-            pButtonIcon
+            coreButtonIcon
             class="material-symbols-outlined"
             aria-hidden="true"
             >add</i
@@ -111,10 +100,10 @@ import { ValidationExpression, ValidationExpressionEditor } from './validation-e
         />
       }
       @for (entry of expressionRules(); track entry.name) {
-        <p-panel [header]="entry.name">
+        <core-property-panel [header]="entry.name">
           <ng-template #icons>
             <button
-              pButton
+              coreButton
               text
               rounded
               coreTooltip="Edit validation"
@@ -122,13 +111,13 @@ import { ValidationExpression, ValidationExpressionEditor } from './validation-e
               (click)="editingName.set(entry.name)"
             >
               <i
-                pButtonIcon
+                coreButtonIcon
                 class="material-symbols-outlined"
                 >edit</i
               >
             </button>
             <button
-              pButton
+              coreButton
               text
               rounded
               severity="danger"
@@ -137,7 +126,7 @@ import { ValidationExpression, ValidationExpressionEditor } from './validation-e
               (click)="removeExpression(entry.name)"
             >
               <i
-                pButtonIcon
+                coreButtonIcon
                 class="material-symbols-outlined"
                 >remove</i
               >
@@ -155,7 +144,7 @@ import { ValidationExpression, ValidationExpressionEditor } from './validation-e
             <p class="font-mono text-sm break-words">{{ entry.rule.expression }}</p>
             <p class="mt-2 text-sm break-words">{{ entry.rule.message }}</p>
           }
-        </p-panel>
+        </core-property-panel>
       }
       @if (editingName() === '') {
         <core-validation-expression-editor
@@ -174,14 +163,14 @@ import { ValidationExpression, ValidationExpressionEditor } from './validation-e
           "
         />
       }
-    </p-panel>
+    </core-property-panel>
   `,
 })
 export class FieldCustomValidationProperty extends BaseProperty<
   CustomValidationPropertyConfig,
   (string | CustomValidation)[]
 > {
-  panelPT: PanelPassThrough = {
+  panelPT: PanelLayout = {
     header: {
       class: 'cursor-pointer',
     },

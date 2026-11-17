@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, numberAttribute } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { ButtonDirective, ButtonIcon } from 'primeng/button';
-import { ToggleSwitch } from 'primeng/toggleswitch';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { BooleanProperty } from '../../properties/boolean/boolean.directive';
 import { Tooltip } from '../../shared/tooltip';
 import { ModelPropertyKey } from './property-key';
@@ -11,15 +10,7 @@ import { ModelPropertyWrapper } from './property-wrapper';
 @Component({
   selector: 'core-model-boolean-property',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ModelPropertyKey,
-    ButtonDirective,
-    ButtonIcon,
-    ModelPropertyWrapper,
-    ToggleSwitch,
-    FormsModule,
-    Tooltip,
-  ],
+  imports: [ModelPropertyKey, ModelPropertyWrapper, MatSlideToggle, FormsModule, Tooltip],
   template: `
     <core-model-property-wrapper [level]="level()">
       <span class="inline-flex min-w-0 items-center gap-2">
@@ -33,8 +24,9 @@ import { ModelPropertyWrapper } from './property-wrapper';
         </span>
 
         <span class="inline-flex h-9 min-w-0 grow items-center truncate">
-          <p-toggleswitch
+          <mat-slide-toggle
             [id]="switchId"
+            [aria-label]="property().label"
             [ngModel]="currentValue()"
             (ngModelChange)="onValueChange($event)"
           />
@@ -43,18 +35,18 @@ import { ModelPropertyWrapper } from './property-wrapper';
       <ng-container actions>
         @if (property().isRemovable) {
           <button
-            pButton
+            coreButton
             text
             class="size-8"
             rounded
             severity="danger"
             aria-label="Remove"
             coreTooltip="Remove"
-            tooltipPosition="top"
+            tooltipPosition="above"
             (click)="remove.emit()"
           >
             <i
-              pButtonIcon
+              coreButtonIcon
               class="material-symbols-outlined"
             >
               delete
