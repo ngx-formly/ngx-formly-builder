@@ -359,6 +359,36 @@ describe('workspace routes', () => {
     },
   );
 
+  it('adds the active form ID to workspace preview links only while needed', async () => {
+    const { harness, forms, panels, router } = await open('/workspaces/forms/second/fields');
+    panels.setActiveLHSPanel('forms');
+    panels.activeWorkspaceTab.set('validations');
+    forms.setActiveFormDisplayMode('preview');
+    await harness.fixture.whenStable();
+    expect(router.parseUrl(router.url).queryParams).toEqual({ view: 'preview', formId: 'second' });
+    panels.setActiveLHSPanel('fields');
+    await harness.fixture.whenStable();
+    expect(router.url).toBe('/workspaces/forms/second/fields?view=preview');
+  });
+
+  it('restores the selected form when reopening a workspace preview', async () => {
+    const { forms, panels, router } = await open(
+      '/workspaces/validations?field=styling&view=preview&formId=second',
+    );
+    expect(forms.activeFormId()).toBe('second');
+    expect(panels.activePanel()).toBe('forms');
+    expect(panels.activeWorkspaceTab()).toBe('validations');
+    expect(router.parseUrl(router.url).queryParams['formId']).toBe('second');
+  });
+
+  it('uses the only saved form for a workspace preview link without a form ID', async () => {
+    const { first } = JSON.parse(localStorage.getItem(storageKey)!);
+    localStorage.setItem(storageKey, JSON.stringify({ first }));
+    const { forms, router } = await open('/workspaces/validations?field=styling&view=preview');
+    expect(forms.activeFormId()).toBe('first');
+    expect(router.parseUrl(router.url).queryParams['formId']).toBe('first');
+  });
+
   it('opens Validations without a form and restores tab navigation', async () => {
     const { harness, forms, panels, router } = await open('/workspaces/validations?field=model');
     expect(forms.activeFormId()).toBeUndefined();

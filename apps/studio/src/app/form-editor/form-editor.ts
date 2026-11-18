@@ -67,7 +67,13 @@ export class FormEditorApp {
         if (formId === pending.formId) {
           this.pendingRoute.set(null);
           this.panels.setActiveLHSPanel(pending.panel);
-          this.restoreFieldPanel();
+          if (pending.panel === 'forms') {
+            this.panels.activeWorkspaceTab.set(
+              this.route.snapshot.firstChild?.data['workspaceTab'],
+            );
+          } else {
+            this.restoreFieldPanel();
+          }
         } else if (
           this.forms.formLoadError()?.formId === pending.formId ||
           this.forms.saveStatus() === 'error'
@@ -102,7 +108,11 @@ export class FormEditorApp {
                 panel === 'fields' ? 'fields' : addFieldTab === 'presets' ? 'preset' : 'field',
               ],
         {
-          queryParams: { field, view: displayMode === 'form' ? null : displayMode },
+          queryParams: {
+            field,
+            view: displayMode === 'form' ? null : displayMode,
+            formId: panel === 'forms' && displayMode === 'preview' ? formId : null,
+          },
           queryParamsHandling: 'merge',
           preserveFragment: true,
         },
@@ -123,8 +133,15 @@ export class FormEditorApp {
   private restoreRoute(): void {
     const route = this.route.snapshot.firstChild;
     const panel = route?.data['panel'] as 'forms' | 'fields' | 'add-field' | 'settings';
-    const formId = route?.paramMap.get('formId');
     const view = this.route.snapshot.queryParamMap.get('view');
+    const workspacePreview = panel === 'forms' && view === 'preview';
+    const savedForms = this.forms.formList();
+    const formId =
+      route?.paramMap.get('formId') ??
+      (workspacePreview
+        ? (this.route.snapshot.queryParamMap.get('formId') ??
+          (!this.forms.activeFormId() && savedForms.length === 1 ? savedForms[0].id : null))
+        : null);
     this.forms.setActiveFormDisplayMode(view === 'preview' || view === 'json' ? view : 'form');
     this.panels.activeWorkspaceTab.set(route?.data['workspaceTab'] ?? 'forms');
     if (panel === 'add-field') {
