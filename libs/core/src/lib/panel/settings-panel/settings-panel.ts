@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Panel } from '../../ui/panel';
 import { CORE_EDITOR_CONFIG, CORE_FORM_TEMPLATES, CORE_LIBRARY_CONFIGS } from '../../config/types';
-import { LocalFormStoreService } from '../../persistence/local-form-store.service';
 import { CORE_FORM_STORE } from '../../persistence/types';
 import { PanelHeader } from '../../shared/panel-header';
 import { CORE_STYLES_CONFIG } from '../styling-panel/types';
@@ -175,10 +174,7 @@ export class SettingsPanel {
     this.libraries
       .filter((library) => !library.hidden)
       .flatMap((library) => library.formTemplates ?? []);
-  protected readonly storageLabel =
-    inject(CORE_FORM_STORE) instanceof LocalFormStoreService
-      ? 'Browser local storage'
-      : 'Custom storage';
+  protected readonly storageLabel = inject(CORE_FORM_STORE).label ?? 'Custom storage';
   protected readonly styleGroups = [
     { label: 'Self', categories: this.styles.className },
     { label: 'Children', categories: this.styles.fieldGroupClassName },

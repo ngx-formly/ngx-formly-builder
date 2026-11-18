@@ -24,6 +24,7 @@ import {
 
 @Injectable()
 export class LocalFormStoreService implements FormStoreService {
+  readonly label = 'Browser local storage';
   readonly storageKey = 'formly-studio-forms';
   readonly hierarchyStorageKey = 'formly-studio-hierarchy';
   readonly validationsStorageKey = 'formly-studio-validations';
