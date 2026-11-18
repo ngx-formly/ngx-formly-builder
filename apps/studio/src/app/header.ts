@@ -56,7 +56,6 @@ import { ThemeToggle } from './theme-toggle';
         <a
           coreButton
           text
-          rounded
           class="shrink-0"
           aria-label="Open ngx-formly Builder documentation"
           title="Documentation"
@@ -77,7 +76,6 @@ import { ThemeToggle } from './theme-toggle';
         <a
           coreButton
           text
-          rounded
           class="shrink-0"
           aria-label="Open ngx-formly Builder GitHub repository"
           title="GitHub"
@@ -108,7 +106,6 @@ import { ThemeToggle } from './theme-toggle';
         <a
           coreButton
           text
-          rounded
           class="shrink-0"
           aria-label="Open ngx-formly website"
           title="ngx-formly"

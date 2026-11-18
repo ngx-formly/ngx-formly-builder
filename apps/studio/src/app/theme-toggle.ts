@@ -10,7 +10,6 @@ import { ResponsiveService } from './responsive.service';
     <button
       coreButton
       text
-      rounded
       aria-label="Toggle Light/Dark Theme"
       (click)="toggleTheme()"
     >
