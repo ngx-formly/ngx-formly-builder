@@ -6,6 +6,7 @@
     "paths": {
       "@ngx-formly/builder": ["./libs/core/src/public-api.ts"],
       "@ngx-formly/builder/ui": ["./libs/core/src/ui-public-api.ts"],
+      "@ngx-formly/builder/http": ["./libs/core/src/http-public-api.ts"],
       "@formly-studio/material-fields": ["./libs/ui/material/src/public-api.ts"],
       "@formly-studio/material-editor": ["./libs/ui/builder-material/src/public-api.ts"]
     },

@@ -28,7 +28,7 @@ for (const directory of packages) {
   }
   assert.deepEqual(
     Object.keys(built.exports).sort(),
-    ['.', './package.json', './styles.css', './ui'],
+    ['.', './http', './package.json', './styles.css', './ui'],
     `${source.name}: unexpected public entry points`,
   );
 }
