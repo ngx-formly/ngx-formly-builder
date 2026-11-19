@@ -17,6 +17,10 @@ Generated declarations for review. Update with `pnpm run update:api`.
     "types": "./types/ngx-formly-builder.d.ts",
     "default": "./fesm2022/ngx-formly-builder.mjs"
   },
+  "./http": {
+    "types": "./types/ngx-formly-builder-http.d.ts",
+    "default": "./fesm2022/ngx-formly-builder-http.mjs"
+  },
   "./ui": {
     "types": "./types/ngx-formly-builder-ui.d.ts",
     "default": "./fesm2022/ngx-formly-builder-ui.mjs"
@@ -27,6 +31,35 @@ Generated declarations for review. Update with `pnpm run update:api`.
 ## Declarations
 
 ```ts
+// types/ngx-formly-builder-http.d.ts
+import * as i0 from "@angular/core";
+import { InjectionToken } from "@angular/core";
+import { BaseEditorForm, DefaultForm, FormStoreService, WorkspaceHierarchy, WorkspaceValidation } from "@ngx-formly/builder";
+import { Observable } from "rxjs";
+interface HttpFormStoreConfig {
+    /** Backend root, e.g. `https://api.example.com` */
+    baseUrl: string;
+}
+export declare const HTTP_FORM_STORE_CONFIG: InjectionToken<HttpFormStoreConfig>;
+export declare class HttpFormStoreService implements FormStoreService {
+    readonly label: string;
+    private readonly http;
+    private readonly baseUrl;
+    addForm$(workspaceId: string, form: DefaultForm): Observable<void>;
+    updateForm$(workspaceId: string, form: DefaultForm): Observable<void>;
+    removeForm$(workspaceId: string, formId: string): Observable<void>;
+    getForm$(workspaceId: string, formId: string): Observable<DefaultForm | undefined>;
+    getFormList$(workspaceId: string): Observable<BaseEditorForm[]>;
+    getHierarchy$(workspaceId: string): Observable<WorkspaceHierarchy>;
+    saveHierarchy$(workspaceId: string, hierarchy: WorkspaceHierarchy): Observable<void>;
+    getValidations$(workspaceId: string): Observable<WorkspaceValidation[]>;
+    saveValidations$(workspaceId: string, validations: WorkspaceValidation[]): Observable<void>;
+    private url;
+    static ɵfac: i0.ɵɵFactoryDeclaration<HttpFormStoreService, never>;
+    static ɵprov: i0.ɵɵInjectableDeclaration<any>;
+}
+export type { HttpFormStoreConfig };
+
 // types/ngx-formly-builder-ui.d.ts
 import { BaseEditorForm, BaseWorkspaceNode, BuilderEngineService, CORE_FORM_STORE, DefaultForm, EditorField, EditorForm, FieldInfo, FieldInfoBadge, FormStoreDataKind, FormStoreRecoveryIssue, FormStoreRecoveryRequiredError, FormStoreService, PropertyChange, PropertyChangeType, WorkspaceFolderNode, WorkspaceFormNode, WorkspaceHierarchy, WorkspaceNode, WorkspaceNodeType, WorkspaceValidation, addNodeToHierarchy, buildHierarchyFromFlatForms, createEmptyWorkspaceHierarchy, getDescendantNodeIds, isAncestorOf, modifyPropertyTarget, moveNodeInHierarchy, provideFormStore, provideLocalFormStore, recalculateNodePaths, removeNodeFromHierarchy, renameNodeInHierarchy, toggleFolderExpansion } from "@ngx-formly/builder";
 import * as i0 from "@angular/core";

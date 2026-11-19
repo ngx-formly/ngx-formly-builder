@@ -16,6 +16,10 @@ from the root so both entry points share their identities. Its Material/CDK, Cod
 Tailwind, drag/drop and editor utility peers are optional in the package manifest and must be
 installed explicitly by UI consumers. UI styles remain at `@ngx-formly/builder/styles.css`.
 
+`@ngx-formly/builder/http` exports the opt-in `HttpFormStoreService` and `HTTP_FORM_STORE_CONFIG`.
+It depends on `@angular/common/http`, which the headless root must not import, and imports root
+symbols through `@ngx-formly/builder`. It needs no UI peers.
+
 Migration from the combined API: move editor components, providers, theme and UI configuration
 imports to `/ui`. Keep engine, model and persistence imports at the root. Stored documents and
 storage namespaces do not change. The pending minor changeset records this breaking API move.
@@ -26,14 +30,15 @@ extension contracts. Studio's examples are private and are not re-exported by ei
 
 ## Source ownership
 
-| Source                                                           | Responsibility                                                  | Public API                                       |
-| ---------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------ |
-| `libs/core/src/public-api.ts`                                    | Headless package boundary                                       | `@ngx-formly/builder`                            |
-| `libs/core/src/lib/state`                                        | Models, editing operations, hierarchy, persistence and recovery | Root                                             |
-| `libs/core/src/ui-public-api.ts`, `libs/core/ui/ng-package.json` | Optional UI package boundary                                    | `@ngx-formly/builder/ui`                         |
-| Other `libs/core/src/lib` modules                                | Editor shell, configuration, baseline fields, property editors  | UI, except the root validation-expression helper |
-| `libs/ui/material`, `libs/ui/builder-material`                   | Additional field examples and editor integrations               | Private Studio workspaces                        |
-| `apps/studio`, `apps/docs`                                       | Demo application and documentation                              | Private workspaces                               |
+| Source                                                                                         | Responsibility                                                  | Public API                                       |
+| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| `libs/core/src/public-api.ts`                                                                  | Headless package boundary                                       | `@ngx-formly/builder`                            |
+| `libs/core/src/lib/state`                                                                      | Models, editing operations, hierarchy, persistence and recovery | Root                                             |
+| `libs/core/src/ui-public-api.ts`, `libs/core/ui/ng-package.json`                               | Optional UI package boundary                                    | `@ngx-formly/builder/ui`                         |
+| `libs/core/src/http-public-api.ts`, `libs/core/http/ng-package.json`, `libs/core/src/lib/http` | Optional REST form store                                        | `@ngx-formly/builder/http`                       |
+| Other `libs/core/src/lib` modules                                                              | Editor shell, configuration, baseline fields, property editors  | UI, except the root validation-expression helper |
+| `libs/ui/material`, `libs/ui/builder-material`                                                 | Additional field examples and editor integrations               | Private Studio workspaces                        |
+| `apps/studio`, `apps/docs`                                                                     | Demo application and documentation                              | Private workspaces                               |
 
 The private example imports are `@formly-studio/material-fields` and
 `@formly-studio/material-editor`. They are not supported consumer packages.
