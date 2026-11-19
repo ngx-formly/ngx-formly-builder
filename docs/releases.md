@@ -46,13 +46,13 @@ Publishing uses npm provenance and creates the package tag and GitHub release no
    workspaces remain unchanged. With `--consumer`, it also packs that simulated version and builds
    a clean consumer. It never changes repository versions, tags, or registry entries.
 3. Run **Release builder** on `main` with `action: version`. After validation, Changesets opens or
-   updates the version PR. Review the manifest, changelog, API report, and lockfile, then merge it.
+   updates the version PR. Review the manifest, changelog, and lockfile, then merge it.
    `pnpm run release:version` performs the same preparation locally without publication.
 4. Wait for CI on the version commit and verify its production deployment in
    [Netlify](https://app.netlify.com/projects/ngx-formly-builder/deploys). Open the
    [demo](https://builder.formly.dev/) and refresh the [editor](https://builder.formly.dev/form-editor).
 5. Run the workflow on that reviewed `main` commit with `action: publish`. The workflow checks
-   release notes, the single-package boundary, lint, unit tests, docs, builds, API declarations,
+   release notes, the single-package boundary, lint, unit tests, docs, builds, release artifacts,
    tarball contracts, strict peer installation, and Studio/consumer browser tests before approval.
 
 The default action is `validate`, which performs no versioning or publication. Dispatches outside
@@ -67,7 +67,7 @@ change, and test those combinations before claiming compatibility.
 ## Artifacts and retries
 
 Source `publishConfig.directory` points to `dist/core`. Never run `npm publish` from the source
-directory. `release:validate` builds the package, checks its manifest and public declarations,
+directory. `release:validate` builds the package, checks its manifest and required declarations,
 verifies README/LICENSE/CHANGELOG assets, and installs its tarball into a clean consumer.
 The tarball contains Angular partial-compilation output and declarations, not workspace aliases.
 
