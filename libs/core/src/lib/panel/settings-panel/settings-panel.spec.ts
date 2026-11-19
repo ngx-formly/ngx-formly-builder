@@ -8,12 +8,12 @@ import { tailwindConfig } from '../styling-panel/config/tailwind';
 import { SettingsPanel } from './settings-panel';
 
 describe('SettingsPanel', () => {
-  async function render(config: FormlyBuilderConfig = {}, customStore = false) {
+  async function render(config: FormlyBuilderConfig = {}, customStore?: object) {
     TestBed.configureTestingModule({
       imports: [SettingsPanel],
       providers: [provideFormlyBuilder(config)],
     });
-    if (customStore) TestBed.overrideProvider(CORE_FORM_STORE, { useValue: {} });
+    if (customStore) TestBed.overrideProvider(CORE_FORM_STORE, { useValue: customStore });
     const fixture = TestBed.createComponent(SettingsPanel);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -49,7 +49,7 @@ describe('SettingsPanel', () => {
           fieldGroupClassName: [],
         },
       },
-      true,
+      {},
     );
     expect(element.textContent).toContain('customer-surveys');
     expect(element.textContent).toContain('Disabled');
@@ -60,6 +60,12 @@ describe('SettingsPanel', () => {
     expect(element.textContent).toContain('Custom styles');
     expect(element.textContent).toContain('No breakpoints configured.');
     expect(element.textContent).toContain('No styling categories configured.');
+  });
+
+  it('shows the label a custom store declares', async () => {
+    const element = await render({}, { label: 'Team API' });
+    expect(element.textContent).toContain('Team API');
+    expect(element.textContent).not.toContain('Custom storage');
   });
 
   it('matches template precedence and marks libraries retained for saved forms', async () => {

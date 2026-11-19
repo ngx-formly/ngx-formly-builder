@@ -11,6 +11,8 @@ import {
  * Form store interface describing persistence operations.
  */
 export interface FormStoreService {
+  /** Storage name shown in builder settings. Defaults to "Custom storage". */
+  readonly label?: string;
   /** Add a new form to storage. */
   addForm$(editorType: string, form: DefaultForm): Observable<void>;
   /** Update an existing form in storage. */

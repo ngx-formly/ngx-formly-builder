@@ -1151,6 +1151,8 @@ export declare function buildHierarchyFromFlatForms(workspaceId: string, forms: 
  * Form store interface describing persistence operations.
  */
 interface FormStoreService {
+    /** Storage name shown in builder settings. Defaults to "Custom storage". */
+    readonly label?: string;
     /** Add a new form to storage. */
     addForm$(editorType: string, form: DefaultForm): Observable<void>;
     /** Update an existing form in storage. */
@@ -1192,6 +1194,7 @@ export declare class FormStoreRecoveryRequiredError extends Error {
 }
 export declare const CORE_FORM_STORE: InjectionToken<FormStoreService>;
 export declare class LocalFormStoreService implements FormStoreService {
+    readonly label: string;
     readonly storageKey = "formly-studio-forms";
     readonly hierarchyStorageKey = "formly-studio-hierarchy";
     readonly validationsStorageKey = "formly-studio-validations";
