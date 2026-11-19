@@ -1194,7 +1194,7 @@ export declare class FormStoreRecoveryRequiredError extends Error {
 }
 export declare const CORE_FORM_STORE: InjectionToken<FormStoreService>;
 export declare class LocalFormStoreService implements FormStoreService {
-    readonly label = "Browser local storage";
+    readonly label: string;
     readonly storageKey = "formly-studio-forms";
     readonly hierarchyStorageKey = "formly-studio-hierarchy";
     readonly validationsStorageKey = "formly-studio-validations";
