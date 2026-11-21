@@ -61,8 +61,7 @@ local storage; hosts can provide their own `FormStoreService` for server or in-m
 
 ## Verification
 
-The API report captures root, UI and stylesheet exports and their declarations. Package checks
-reject non-headless root imports, required UI-only peers, undeclared dependencies, private
+Package checks reject non-headless root imports, required UI-only peers, undeclared dependencies, private
 examples and extra field packages. The clean headless consumer installs without UI peers, builds
 under a 400 kB initial budget and rejects UI code in its bundle graph. The clean UI consumer
 installs optional peers explicitly, tests shared engine identity and renders the editor in

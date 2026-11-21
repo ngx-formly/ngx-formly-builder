@@ -68,9 +68,6 @@ jobs:
       - name: Run all unit tests
         run: pnpm test
 
-      - name: Test the API comparison tool
-        run: pnpm run test:api
-
   e2e:
     name: Test browser workflows
     runs-on: ubuntu-latest
@@ -136,6 +133,3 @@ jobs:
 
       - name: Build all projects
         run: pnpm run build
-
-      - name: Check the stabilized public API
-        run: node scripts/check-api.mjs

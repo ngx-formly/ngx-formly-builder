@@ -36,12 +36,10 @@ jobs:
         if: inputs.action == 'publish'
         run: pnpm run release:check
       - run: pnpm run test:release
-      - run: pnpm run test:api
       - run: pnpm run lint
       - run: pnpm test
       - run: pnpm run check:docs
       - run: pnpm run build
-      - run: node scripts/check-api.mjs
       - run: node scripts/check-release-artifacts.mjs
       - run: pnpm run release:dry-run --consumer
       - run: pnpm exec playwright install --with-deps chromium

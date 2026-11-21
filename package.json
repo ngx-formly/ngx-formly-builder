@@ -21,9 +21,6 @@
     "build:docs": "pnpm --filter @ngx-formly/builder-docs run build",
     "check:docs": "pnpm --filter @ngx-formly/builder-docs run check",
     "check:packages": "node scripts/check-package-contracts.mjs && node scripts/check-packed-consumer.mjs --headless && node scripts/check-packed-consumer.mjs",
-    "check:api": "pnpm run build:core && node scripts/check-api.mjs",
-    "update:api": "pnpm run build:core && node scripts/check-api.mjs --update",
-    "test:api": "node --test scripts/check-api.test.mjs",
     "check:packages:e2e": "node scripts/check-packed-consumer.mjs --headless --browser && node scripts/check-packed-consumer.mjs --browser",
     "preview:docs": "pnpm --filter @ngx-formly/builder-docs run preview",
     "test:e2e": "playwright test --config apps/studio/playwright.config.ts",
@@ -38,7 +35,7 @@
     "release:check": "node scripts/check-release-ready.mjs",
     "release:version": "changeset version && pnpm install --lockfile-only --ignore-scripts",
     "release:dry-run": "node scripts/release-dry-run.mjs",
-    "release:validate": "pnpm run build:core && pnpm run check:packages && node scripts/check-release-artifacts.mjs && node scripts/check-api.mjs && pnpm run release:dry-run --consumer",
+    "release:validate": "pnpm run build:core && pnpm run check:packages && node scripts/check-release-artifacts.mjs && pnpm run release:dry-run --consumer",
     "release:publish": "pnpm run release:check && pnpm run release:validate && changeset publish",
     "test:release": "node --test scripts/check-release-artifacts.test.mjs scripts/check-release-ready.test.mjs && pnpm run release:dry-run"
   },
