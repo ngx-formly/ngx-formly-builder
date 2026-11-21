@@ -27,6 +27,7 @@ test('release artifacts reject stale versions, peer ranges and missing declarati
             '.': './index.mjs',
             './package.json': './package.json',
             './styles.css': './styles.css',
+            './http': './http.mjs',
             './ui': './ui.mjs',
           },
         }),

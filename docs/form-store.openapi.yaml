@@ -1,0 +1,322 @@
+openapi: 3.1.0
+info:
+  title: ngx-formly-builder form store
+  version: 0.1.0
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    REST contract behind `HttpFormStoreService` (`@ngx-formly/builder/http`). Each operation maps
+    one-to-one to a `FormStoreService` method. `workspaceId` is the editor namespace
+    (`editorType`), which is also `WorkspaceHierarchy.workspaceId`.
+
+    Rules a backend must follow:
+
+    - **Client-generated ids.** The builder generates a form id before `POST` and opens that id
+      right after, so the server must store the `id` it receives.
+    - **Form writes keep the hierarchy in sync.** Creating, updating or deleting a form also
+      inserts, renames/updates or removes the matching form node in the workspace hierarchy.
+      The builder reads the form list and the hierarchy again right after each write.
+    - **No concurrency control.** `PUT /hierarchy` and `PUT /validations` replace the whole
+      resource; the last writer wins. Ordering is only guaranteed within one builder instance.
+    - **No atomicity across calls.** Some builder actions take several requests (renaming a form
+      is a read, a form update and a hierarchy save; deleting a folder deletes each form). A
+      failure part-way leaves the successful requests applied.
+    - **Authentication is out of scope.** Hosts add credentials with `HttpClient` interceptors.
+servers:
+  - url: https://api.example.com
+paths:
+  /workspaces/{workspaceId}/forms:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+    get:
+      operationId: getFormList
+      summary: List form metadata
+      description: Metadata only, without `fields` or `model`.
+      responses:
+        '200':
+          description: Forms in the workspace.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BaseEditorForm'
+    post:
+      operationId: addForm
+      summary: Create a form
+      description: Stores the form under the client-generated `id` and adds its node to the hierarchy.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewForm'
+      responses:
+        '201':
+          description: Created.
+        '409':
+          description: A form with this `id` already exists.
+  /workspaces/{workspaceId}/forms/{formId}:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+      - $ref: '#/components/parameters/FormId'
+    get:
+      operationId: getForm
+      summary: Read a form
+      responses:
+        '200':
+          description: The full form.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultForm'
+        '404':
+          description: Unknown form. The client treats this as "no form", not as an error.
+    put:
+      operationId: updateForm
+      summary: Replace a form
+      description: |
+        Full replace. If the hierarchy has a node with this id, the server updates its `name`,
+        `libraryId` and `fieldCount`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DefaultForm'
+      responses:
+        '204':
+          description: Updated.
+    delete:
+      operationId: removeForm
+      summary: Delete a form
+      description: Also removes the form node from the hierarchy.
+      responses:
+        '204':
+          description: Deleted.
+  /workspaces/{workspaceId}/hierarchy:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+    get:
+      operationId: getHierarchy
+      summary: Read the folder/form tree
+      responses:
+        '200':
+          description: The whole tree.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceHierarchy'
+    put:
+      operationId: saveHierarchy
+      summary: Replace the folder/form tree
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceHierarchy'
+      responses:
+        '204':
+          description: Saved.
+  /workspaces/{workspaceId}/validations:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+    get:
+      operationId: getValidations
+      summary: Read the validation catalog
+      responses:
+        '200':
+          description: The whole catalog.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceValidation'
+    put:
+      operationId: saveValidations
+      summary: Replace the validation catalog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/WorkspaceValidation'
+      responses:
+        '204':
+          description: Saved.
+        '422':
+          description: |
+            A rule is invalid, or two rules share the same `id` or `name`. Uniqueness cannot be
+            expressed in JSON Schema, so the server must check it.
+components:
+  parameters:
+    WorkspaceId:
+      name: workspaceId
+      in: path
+      required: true
+      schema:
+        type: string
+    FormId:
+      name: formId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    BaseEditorForm:
+      type: object
+      required: [id, libraryId, fieldCount, name]
+      properties:
+        id:
+          type: string
+        libraryId:
+          type: string
+        fieldCount:
+          type: integer
+          minimum: 0
+        name:
+          type: string
+        parentId:
+          type: [string, 'null']
+    DefaultForm:
+      type: object
+      required: [libraryId, name, fields, model]
+      properties:
+        id:
+          type: string
+        libraryId:
+          type: string
+        fieldCount:
+          type: integer
+          minimum: 0
+        parentId:
+          type: [string, 'null']
+        name:
+          type: string
+        icon:
+          type: string
+        description:
+          type: string
+        fields:
+          description: Formly field configurations, stored as-is.
+          type: array
+          items:
+            type: object
+        model:
+          type: object
+    NewForm:
+      allOf:
+        - $ref: '#/components/schemas/DefaultForm'
+        - required: [id]
+    WorkspaceHierarchy:
+      type: object
+      required: [workspaceId, rootNodeIds, nodeMap]
+      properties:
+        workspaceId:
+          type: string
+        rootNodeIds:
+          type: array
+          items:
+            type: string
+        nodeMap:
+          type: object
+          description: Nodes by id. Every id in `rootNodeIds` and `childIds` is a key here.
+          additionalProperties:
+            $ref: '#/components/schemas/WorkspaceNode'
+    WorkspaceNode:
+      oneOf:
+        - $ref: '#/components/schemas/WorkspaceFolderNode'
+        - $ref: '#/components/schemas/WorkspaceFormNode'
+      discriminator:
+        propertyName: type
+        mapping:
+          folder: '#/components/schemas/WorkspaceFolderNode'
+          form: '#/components/schemas/WorkspaceFormNode'
+    BaseWorkspaceNode:
+      type: object
+      required: [id, name, type, parentId, idPath]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [folder, form]
+        parentId:
+          type: [string, 'null']
+        idPath:
+          description: Ids from the root to this node, inclusive.
+          type: array
+          items:
+            type: string
+        sortOrder:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    WorkspaceFolderNode:
+      allOf:
+        - $ref: '#/components/schemas/BaseWorkspaceNode'
+        - type: object
+          required: [childIds]
+          properties:
+            type:
+              const: folder
+            childIds:
+              type: array
+              items:
+                type: string
+            isExpanded:
+              type: boolean
+    WorkspaceFormNode:
+      allOf:
+        - $ref: '#/components/schemas/BaseWorkspaceNode'
+        - type: object
+          required: [libraryId]
+          properties:
+            type:
+              const: form
+            libraryId:
+              type: string
+            fieldCount:
+              type: integer
+              minimum: 0
+    WorkspaceValidation:
+      type: object
+      required: [id, name, expression, message]
+      properties:
+        id:
+          type: string
+          minLength: 1
+        name:
+          description: Identifier of the custom validator; must not shadow a built-in one.
+          type: string
+          pattern: '^[A-Za-z][A-Za-z0-9_]*$'
+          not:
+            enum:
+              - validation
+              - required
+              - pattern
+              - min
+              - max
+              - minLength
+              - maxLength
+              - minlength
+              - maxlength
+              - email
+              - step
+              - multipleOf
+        expression:
+          description: Formly expression evaluated against the field.
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1

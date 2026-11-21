@@ -65,3 +65,26 @@ and reports a recovery issue with kind `validations`. `resetValidations$()` invo
 `resetCorruptedStorage$(editorType, 'validations')`: stores supporting this recovery action must
 reset only the affected catalog. Omitting the optional kind retains the existing reset-all-affected-data
 behavior. Catalog load/write failures do not change the active form or its save status.
+
+## Remote HTTP store
+
+`@ngx-formly/builder/http` provides `HttpFormStoreService`, a store for any backend that implements
+the [form store OpenAPI description](form-store.openapi.yaml). Register it with a base URL:
+
+```ts
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HTTP_FORM_STORE_CONFIG, HttpFormStoreService } from '@ngx-formly/builder/http';
+import { provideFormlyBuilder } from '@ngx-formly/builder/ui';
+
+providers: [
+  provideHttpClient(withInterceptors([authInterceptor])),
+  provideFormlyBuilder({ formStore: HttpFormStoreService /* …other options */ }),
+  { provide: HTTP_FORM_STORE_CONFIG, useValue: { baseUrl: 'https://api.example.com' } },
+];
+```
+
+Authentication, headers and retries belong to the host's `HttpClient` interceptors. A `404` from
+`GET /forms/{formId}` means a missing form; every other HTTP error reaches the engine as a store
+failure. The store supports the validation catalog but not local recovery
+(`getRecoveryIssues$`/`resetCorruptedStorage$`): the server owns its data integrity. The ordering
+guarantees above apply to one engine; the API has no concurrency control between clients.

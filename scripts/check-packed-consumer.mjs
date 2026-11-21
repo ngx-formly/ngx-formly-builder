@@ -117,7 +117,7 @@ try {
     [
       "import { existsSync } from 'node:fs';",
       "import { fileURLToPath } from 'node:url';",
-      `for (const name of ${JSON.stringify(headless ? ['@ngx-formly/builder'] : ['@ngx-formly/builder', '@ngx-formly/builder/ui', '@ngx-formly/builder/styles.css'])}) {`,
+      `for (const name of ${JSON.stringify(headless ? ['@ngx-formly/builder', '@ngx-formly/builder/http'] : ['@ngx-formly/builder', '@ngx-formly/builder/http', '@ngx-formly/builder/ui', '@ngx-formly/builder/styles.css'])}) {`,
       '  const entryPoint = fileURLToPath(import.meta.resolve(name));',
       '  if (!existsSync(entryPoint)) throw new Error(`Missing package entry point: ${name}`);',
       '}',
