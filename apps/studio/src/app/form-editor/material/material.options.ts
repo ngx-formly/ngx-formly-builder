@@ -118,18 +118,21 @@ const minLengthProp = createInputProperty({
   key: 'props.minLength',
   dataType: 'number',
   description: 'Minimum number of characters allowed for the field value.',
+  colSpan: 1,
 });
 const maxLengthProp = createInputProperty({
   label: 'Max Length',
   key: 'props.maxLength',
   dataType: 'number',
   description: 'Maximum number of characters allowed for the field value.',
+  colSpan: 1,
 });
 const patternProp = createInputProperty({
   label: 'Pattern',
   key: 'props.pattern',
   dataType: 'text',
   description: 'Regular expression pattern for input validation.',
+  colSpan: 2,
 });
 const customValidationProp = createCustomValidationProperty({
   label: 'Custom Validation',
