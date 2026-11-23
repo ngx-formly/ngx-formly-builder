@@ -33,10 +33,17 @@ import { createCustomValidationProperty } from '../../properties/custom-validati
     }
 
     @if (config().rules.length) {
-      <core-property-panel header="Rules">
+      <core-property-panel
+        header="Rules"
+        [pt]="rulesPanelLayout"
+      >
         @for (rule of config().rules; track rule.name) {
           <div
-            class="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-end gap-2 [&_.field-property-control]:min-w-0!"
+            class="grid min-w-0 items-end gap-2 [&_.field-property-control]:min-w-0!"
+            [class.col-span-2]="rule.property.colSpan !== 1"
+            [class.grid-cols-[minmax(0,1fr)_minmax(0,2fr)]]="
+              rule.property.colSpan !== 1 && rule.property.colSpan !== 2
+            "
           >
             <core-field-property
               class="min-w-0"
@@ -94,9 +101,9 @@ export class ValidationPanelContent {
 
   protected fieldService = inject(CoreFieldService);
 
-  panelPT: PanelLayout = {
+  protected readonly rulesPanelLayout: PanelLayout = {
     content: {
-      class: 'grid! grid-cols-2 gap-2',
+      class: 'grid! grid-cols-2 gap-x-2!',
     },
   };
 
