@@ -358,6 +358,7 @@ components:
         autoSave:
           type: boolean
         autoSaveDelay:
-          description: Milliseconds.
+          description: Milliseconds. The maximum is the longest timer a browser supports.
           type: integer
           minimum: 0
+          maximum: 2147483647

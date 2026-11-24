@@ -9,8 +9,8 @@ import {
   debounce,
   defer,
   EMPTY,
-  first,
   finalize,
+  first,
   forkJoin,
   from,
   map,
@@ -24,6 +24,7 @@ import {
   toArray,
 } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
+import type { BuilderSettings } from '../model/builder-settings';
 import {
   BaseEditorForm,
   DefaultForm,
@@ -33,29 +34,6 @@ import {
   WorkspaceHierarchy,
   WorkspaceValidation,
 } from '../model/types';
-import type { BuilderSettings } from '../model/builder-settings';
-import { isWorkspaceValidationList } from '../model/workspace-validation';
-import {
-  BUILDER_ENGINE_CONFIG,
-  BuilderEngineConfig,
-  EngineFieldPreset,
-  FormLoadError,
-  PersistenceError,
-} from './types';
-import {
-  CORE_FORM_STORE,
-  FormStoreDataKind,
-  FormStoreRecoveryIssue,
-  FormStoreService,
-} from '../persistence/types';
-import { modifyPropertyTarget, PropertyChange } from './property-change';
-import { canDropField, FieldDropPosition, placeField, removeEmptyRows } from './field-layout';
-import {
-  clearFieldModelValue,
-  convertField,
-  generateFieldId,
-  generateFormId,
-} from './field-conversion';
 import {
   addNodeToHierarchy,
   createEmptyWorkspaceHierarchy,
@@ -64,6 +42,28 @@ import {
   renameNodeInHierarchy,
   toggleFolderExpansion,
 } from '../model/workspace-hierarchy.utils';
+import { isWorkspaceValidationList } from '../model/workspace-validation';
+import {
+  CORE_FORM_STORE,
+  FormStoreDataKind,
+  FormStoreRecoveryIssue,
+  FormStoreService,
+} from '../persistence/types';
+import {
+  clearFieldModelValue,
+  convertField,
+  generateFieldId,
+  generateFormId,
+} from './field-conversion';
+import { canDropField, FieldDropPosition, placeField, removeEmptyRows } from './field-layout';
+import { modifyPropertyTarget, PropertyChange } from './property-change';
+import {
+  BUILDER_ENGINE_CONFIG,
+  BuilderEngineConfig,
+  EngineFieldPreset,
+  FormLoadError,
+  PersistenceError,
+} from './types';
 
 @Injectable()
 export class BuilderEngineService {
