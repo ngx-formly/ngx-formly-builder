@@ -10,7 +10,11 @@ import {
   OnInit,
 } from '@angular/core';
 import { FieldWrapper } from '@ngx-formly/core';
-import { DndDraggableDirective, DndDropzoneDirective, DndHandleDirective } from 'ngx-drag-drop';
+import {
+  DndDraggableDirective,
+  DndDragImageRefDirective,
+  DndDropzoneDirective,
+} from 'ngx-drag-drop';
 import { DNDService } from '../editor/dnd.service';
 import { EditorField, FieldInfo } from '../model/types';
 import { DropAction, FieldDropPosition } from '../editor/types';
@@ -23,8 +27,8 @@ import { FormlyFieldOverlay } from './formly-field-overlay';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DndDraggableDirective,
+    DndDragImageRefDirective,
     DndDropzoneDirective,
-    DndHandleDirective,
     FormlyFieldHeader,
     FormlyFieldOverlay,
   ],
@@ -32,7 +36,7 @@ import { FormlyFieldOverlay } from './formly-field-overlay';
     class: 'block',
     '[id]': 'fieldInfo.id',
     '[tabindex]': '0',
-    '[attr.aria-label]': "'Field ' + fieldInfo.id",
+    '[attr.aria-label]': "'Field ' + fieldLabel",
     '[attr.aria-pressed]': 'isActiveField()',
     '(mouseenter)': 'setMouseEntered()',
     '(mouseleave)': 'setMouseLeft()',
@@ -40,27 +44,53 @@ import { FormlyFieldOverlay } from './formly-field-overlay';
     '(keydown.enter)': 'onFieldKeydown($event)',
     '(keydown.space)': 'onFieldKeydown($event)',
   },
+  styles: `
+    .dndDragging core-formly-field-header,
+    .dndDragging core-formly-field-overlay {
+      display: none;
+    }
+
+    [dndDropzone]:has(> .dndDragging),
+    .dndDragging [dndDropzone] {
+      border-color: transparent;
+      transition: none;
+    }
+
+    :host(:focus-visible) > div > div > core-formly-field-header,
+    core-formly-field-header:focus-within {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      :host([aria-pressed='true']:focus-within) > div > div > core-formly-field-header {
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+  `,
   template: `
     <div
       dndDropzone
-      [class]="'relative rounded-sm border-2 transition-[border-color] ' + this.borderColor()"
+      [class]="'relative rounded-sm border-2 transition-[border-color] ' + borderColor()"
       (dndDragover)="onDragover($event)"
       (dndDragleave)="onDragLeave()"
       (dndDrop)="onDrop()"
     >
       <div
-        class="h-full w-full"
         dndDraggable
+        dndDragImageRef
         dndEffectAllowed="move"
+        class="h-full min-h-8 w-full"
+        [class.cursor-grab]="isDraggable"
         [dndDisableIf]="!isDraggable"
         (dndStart)="onDragStart()"
         (dndEnd)="onDragEnd()"
       >
         <core-formly-field-header
-          dndHandle
           [field]="field"
           [fieldInfo]="fieldInfo"
-          [fieldKey]="field.key"
+          [fieldLabel]="fieldLabel"
           [isMouseInside]="isMouseInside()"
         />
 
@@ -94,6 +124,10 @@ export class CoreFieldWrapper extends FieldWrapper<EditorField> implements OnIni
 
   fieldInfo!: FieldInfo;
   isDraggable!: boolean;
+
+  get fieldLabel(): string {
+    return this.field.key?.toString() || this.fieldInfo.name;
+  }
 
   readonly isActiveField = computed(() => {
     return this.formService.activeFieldId() === this.fieldInfo.id;
@@ -138,6 +172,10 @@ export class CoreFieldWrapper extends FieldWrapper<EditorField> implements OnIni
     return (
       this.fieldInfo.isParent &&
       !this.fieldInfo.isRoot &&
+      !(
+        activeDragData.action === DropAction.MOVE &&
+        this.fieldInfo.idPath.includes(activeDragData.fieldId)
+      ) &&
       !(!!this.field.fieldGroup?.length || Object.keys(this.field.fieldArray ?? {}).length)
     );
   });

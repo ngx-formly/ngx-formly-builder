@@ -6,13 +6,45 @@ test.beforeEach(async ({ page }) => {
   await loadMaterialFixture(page);
 });
 
+test('reveals only the hovered field controls without shifting the form', async ({ page }) => {
+  const field = page.getByLabel('Field customerName', { exact: true });
+  const header = field.locator('core-formly-field-header');
+  const visibleHeaders = () =>
+    page
+      .locator('core-formly-field-header')
+      .evaluateAll(
+        (headers) => headers.filter((header) => getComputedStyle(header).opacity === '1').length,
+      );
+  const sibling = page.getByLabel('Field reference', { exact: true });
+  await page.mouse.move(0, 0);
+  await expect.poll(visibleHeaders).toBe(0);
+  const before = await sibling.boundingBox();
+
+  await field.hover();
+  await expect.poll(visibleHeaders).toBe(1);
+  await expect(header).toContainText('customerName');
+  await expect(header.locator('i')).toHaveText(['drag_indicator', 'text_fields', 'more_horiz']);
+  expect(await sibling.boundingBox()).toEqual(before);
+
+  await header.getByRole('button', { name: 'Options' }).click();
+  await page.getByRole('menuitem', { name: 'Replace Field' }).hover();
+  await expect(header).toHaveCSS('opacity', '1');
+  await page.keyboard.press('Escape');
+  await page.mouse.move(0, 0);
+  await sibling.hover();
+  await expect(sibling.locator('core-formly-field-header')).toHaveCSS('opacity', '1');
+});
+
 for (const action of ['Add Field', 'Replace Field']) {
   test(`${action} opens submenus on hover, including after reopening`, async ({ page }) => {
     const header = page.locator('core-formly-field-header').filter({ hasText: 'supportRequest' });
 
     for (let attempt = 0; attempt < 2; attempt++) {
-      await header.hover();
-      await header.getByRole('button', { name: action, exact: true }).click();
+      await page
+        .getByLabel('Field supportRequest', { exact: true })
+        .hover({ position: { x: 3, y: 3 } });
+      await header.getByRole('button', { name: 'Options', exact: true }).click();
+      await page.getByRole('menuitem', { name: action, exact: true }).hover();
       await page.getByRole('menuitem', { name: 'Form Controls', exact: true }).hover();
       await expect(page.getByRole('menuitem', { name: 'Input', exact: true })).toBeVisible();
       await page.getByRole('menuitem', { name: 'Containers', exact: true }).hover();
@@ -45,8 +77,13 @@ test('field submenus remain keyboard accessible', async ({ page }) => {
   const content = page.locator('core-form-builder-content');
   const initialFieldCount = await content.locator('core-formly-field-header').count();
   const header = content.locator('core-formly-field-header').filter({ hasText: 'supportRequest' });
-  await header.getByRole('button', { name: 'Add Field', exact: true }).press('Enter');
-  await page.getByRole('menu').press('Home');
+  await page.getByRole('button', { name: 'Save Form', exact: true }).press('Tab');
+  await expect(page.getByLabel('Field supportRequest', { exact: true })).toBeFocused();
+  await page.keyboard.press('Tab');
+  const options = header.getByRole('button', { name: 'Options' });
+  await expect(options).toBeFocused();
+  await options.press('Enter');
+  await page.getByRole('menuitem', { name: 'Add Field', exact: true }).press('ArrowRight');
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowRight');
   await expect(page.getByRole('menuitem', { name: 'Input', exact: true })).toBeVisible();
@@ -61,14 +98,15 @@ test.describe('touch navigation', () => {
   test('opens field submenus by tapping', async ({ page }) => {
     await page.keyboard.press('Escape');
     const content = page.locator('core-form-builder-content');
-    const initialFieldCount = await content.locator('core-formly-field-header').count();
-    const header = content
-      .locator('core-formly-field-header')
-      .filter({ hasText: 'supportRequest' });
-    await header.getByRole('button', { name: 'Add Field', exact: true }).tap();
+    const field = content.getByLabel('Field customerName', { exact: true });
+    await expect(field.locator('core-formly-field-header')).toHaveCSS('opacity', '0');
+    await field.tap();
+    await expect(field.locator('core-formly-field-header')).toHaveCSS('opacity', '1');
+    await field.getByRole('button', { name: 'Options' }).tap();
+    await page.getByRole('menuitem', { name: 'Replace Field', exact: true }).tap();
     await page.getByRole('menuitem', { name: 'Form Controls', exact: true }).tap();
-    await page.getByRole('menuitem', { name: 'Input', exact: true }).tap();
-
-    await expect(content.locator('core-formly-field-header')).toHaveCount(initialFieldCount + 1);
+    await expect(page.getByRole('menuitem', { name: 'Textarea', exact: true })).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Textarea', exact: true }).tap();
+    await expect(content.locator('textarea')).toHaveCount(2);
   });
 });

@@ -29,7 +29,7 @@ const field: EditorField = {
   imports: [FormlyFieldHeader],
   template: `
     <core-formly-field-header
-      fieldKey="name"
+      fieldLabel="name"
       [field]="field"
       [fieldInfo]="fieldInfo"
       [isMouseInside]="isMouseInside()"
@@ -58,7 +58,6 @@ Object.defineProperty(window, 'matchMedia', {
 
 describe('FormlyFieldHeader', () => {
   let fixture: ComponentFixture<TestHostComponent>;
-  let header: FormlyFieldHeader;
   let tieredMenu: Menu;
   let addField: (fieldType: string, fieldId: string) => void;
   let addOptions: CoreAddFieldOption[];
@@ -106,42 +105,21 @@ describe('FormlyFieldHeader', () => {
 
     fixture = TestBed.createComponent(TestHostComponent);
     fixture.detectChanges();
-    header = fixture.debugElement.query(By.directive(FormlyFieldHeader)).componentInstance;
     tieredMenu = fixture.debugElement.query(By.directive(Menu)).componentInstance;
   });
 
   it('renders add options through a tiered menu', () => {
-    expect(tieredMenu.model()).toEqual(addOptions);
-    expect(header.addOptions()).toEqual(addOptions);
-    expect(addOptions[0].items?.[0].items?.[0].label).toBe('Input');
-  });
-
-  it('opens the tiered add menu and prevents the button default action', () => {
-    const event = new MouseEvent('click');
-    const show = vi.spyOn(tieredMenu, 'show').mockImplementation(() => undefined);
-    const preventDefault = vi.spyOn(event, 'preventDefault');
-
-    header.openAddMenu(event);
-
-    expect(show).toHaveBeenCalledWith(event);
-    expect(preventDefault).toHaveBeenCalled();
-  });
-
-  it('keeps leaf add commands intact', () => {
-    const command = addOptions[0].items?.[0].items?.[0].command;
-
-    command?.({});
-
+    expect(tieredMenu.model()).toEqual([{ label: 'Add Field', icon: 'add', items: addOptions }]);
+    tieredMenu.model()[0].items?.[0].items?.[0].items?.[0].command?.({});
     expect(addField).toHaveBeenCalledWith('input', fieldInfo.id);
   });
 
-  it('keeps the header actions visible while the add menu is open', () => {
+  it('keeps the header visible while the options menu is open', () => {
+    const element = fixture.debugElement.query(By.directive(FormlyFieldHeader)).nativeElement;
+    expect(element.classList.contains('opacity-0')).toBe(true);
     tieredMenu.visible = true;
-    fixture.componentInstance.isMouseInside.set(true);
     fixture.detectChanges();
-    fixture.componentInstance.isMouseInside.set(false);
-
-    expect(header.areOptionsVisible()).toBe(true);
+    expect(element.classList.contains('opacity-0')).toBe(false);
   });
 
   it('offers horizontal movement and keyboard-accessible exits for a row child', () => {
@@ -156,13 +134,14 @@ describe('FormlyFieldHeader', () => {
     TestBed.inject(CoreFieldService).getChildIds = (info) => info.childIds;
     const rowChild = TestBed.createComponent(FormlyFieldHeader);
     rowChild.componentRef.setInput('field', field);
+    rowChild.componentRef.setInput('fieldLabel', 'name');
     rowChild.componentRef.setInput('fieldInfo', {
       ...fieldInfo,
       isRoot: false,
       idPath: ['row', 'field-1'],
     });
     rowChild.componentRef.setInput('isMouseInside', false);
-    const options = rowChild.componentInstance.otherOptions();
+    const options = rowChild.componentInstance.menuOptions();
     expect(options.map((option) => option.label)).toContain('Move right');
     expect(options.map((option) => option.label)).not.toContain('Move down');
     options.find((option) => option.label === 'Move above row')?.command?.({});

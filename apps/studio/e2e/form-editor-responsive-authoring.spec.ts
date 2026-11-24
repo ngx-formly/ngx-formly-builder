@@ -59,15 +59,8 @@ test.describe('Form Editor responsive authoring', () => {
     await toolbar.getByRole('button', { name: 'Confirm width' }).click();
     await expect(builder).toHaveCSS('width', '480px');
     await expect(toolbar).toContainText('480px · 100%');
-    const field = builder
-      .locator('core-field-wrapper')
-      .filter({
-        has: page
-          .locator('core-formly-field-header > div > span')
-          .getByText('reference', { exact: true }),
-      })
-      .last();
-    await field.locator('core-formly-field-header').click();
+    const field = builder.getByLabel('Field reference', { exact: true });
+    await field.click();
     await expect(field).toHaveAttribute('aria-pressed', 'true');
     await page.screenshot({ path: testInfo.outputPath('builder-custom-desktop.png') });
 
@@ -220,9 +213,8 @@ test.describe('Form Editor responsive authoring', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('complementary')).toBeHidden();
     await formContent
-      .locator('core-formly-field-header')
-      .filter({ hasText: 'supportRequest' })
-      .click();
+      .getByLabel('Field supportRequest', { exact: true })
+      .click({ position: { x: 3, y: 3 } });
     await openWorkspaceTab(page, 'Add Field');
     await inputSource.getByRole('button', { name: 'Add Field' }).click();
     await page.getByRole('menuitem', { name: 'Add after supportRequest' }).click();
@@ -232,9 +224,8 @@ test.describe('Form Editor responsive authoring', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('complementary')).toBeHidden();
     await formContent
-      .locator('core-formly-field-header')
-      .filter({ hasText: 'supportRequest' })
-      .click();
+      .getByLabel('Field supportRequest', { exact: true })
+      .click({ position: { x: 3, y: 3 } });
     await openWorkspaceTab(page, 'Add Field');
     const refreshedInputSource = page
       .locator('core-type-container')
@@ -293,11 +284,13 @@ test.describe('Form Editor responsive authoring', () => {
     await page.keyboard.press('Escape');
 
     const headers = page.locator('core-formly-field-header');
+    await page.locator('core-field-wrapper').nth(1).hover();
     await headers.nth(1).getByRole('button', { name: 'Options' }).click();
     const secondFieldMenu = page.locator('[role="menu"]:visible').last();
     await expect(secondFieldMenu.getByRole('menuitem', { name: 'Move up' })).toBeVisible();
     await secondFieldMenu.getByRole('menuitem', { name: 'Move up' }).click();
 
+    await page.locator('core-field-wrapper[aria-pressed="true"]').hover();
     await page
       .locator('core-form-builder-content [aria-pressed="true"] core-formly-field-header')
       .getByRole('button', { name: 'Options' })
