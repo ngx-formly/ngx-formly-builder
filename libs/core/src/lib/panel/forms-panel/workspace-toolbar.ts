@@ -55,6 +55,7 @@ import { Tooltip } from '../../shared/tooltip';
         <core-filter
           class="absolute inset-x-0"
           clearLabel="Close search"
+          [showClearWhenEmpty]="true"
           [(value)]="filterValue"
           (clear)="setSearchOpen(false)"
         />

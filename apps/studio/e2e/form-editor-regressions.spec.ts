@@ -21,6 +21,42 @@ test('reopens a saved form using only the keyboard', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
 });
 
+for (const width of [375, 1536]) {
+  test(`clears the Fields filter from inside the input at ${width}px`, async ({ page }) => {
+    await page.goto('/form-editor');
+    await createMaterialForm(page);
+    await page.setViewportSize({ width, height: 900 });
+    await openWorkspaceTab(page, 'Fields');
+
+    const panel = page.locator('core-fields-panel');
+    const input = panel.getByPlaceholder('Filter items...');
+    const clear = panel.getByRole('button', { name: 'Clear filter' });
+    const empty = panel.getByText('No fields found');
+
+    await expect(clear).toHaveCount(0);
+    await input.fill('no-matching-field');
+    await expect(empty).toBeVisible();
+    await expect(clear).toBeVisible();
+
+    const inputBounds = (await input.boundingBox())!;
+    const clearBounds = (await clear.boundingBox())!;
+    expect(clearBounds.x).toBeGreaterThan(inputBounds.x);
+    expect(clearBounds.x + clearBounds.width).toBeLessThan(inputBounds.x + inputBounds.width);
+    expect(clearBounds.y).toBeGreaterThanOrEqual(inputBounds.y);
+    expect(clearBounds.y + clearBounds.height).toBeLessThanOrEqual(
+      inputBounds.y + inputBounds.height,
+    );
+
+    await input.press('Tab');
+    await expect(clear).toBeFocused();
+    await clear.press('Enter');
+    await expect(input).toBeEmpty();
+    await expect(input).toBeFocused();
+    await expect(clear).toHaveCount(0);
+    await expect(empty).toBeHidden();
+  });
+}
+
 for (const mode of ['inline', 'dialog'] as const) {
   test(`keeps Material preview popups inside the ${mode} frame`, async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
