@@ -54,6 +54,7 @@ export interface DialogLayout {
             }
           </div>
           <button
+            class="core-dialog-close"
             coreButton
             text
             rounded
