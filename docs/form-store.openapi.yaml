@@ -361,4 +361,3 @@ components:
           description: Milliseconds.
           type: integer
           minimum: 0
-          maximum: 60000
