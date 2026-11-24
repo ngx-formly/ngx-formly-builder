@@ -42,9 +42,7 @@ test('Form Editor JSON smoke: shows field configuration and returns to component
 
   await page.getByRole('button', { name: 'Builder', exact: true }).click();
   await expect(jsonEditor).toBeHidden();
-  await expect(
-    page.locator('core-form-builder-content').getByText('supportRequest', { exact: true }),
-  ).toBeVisible();
+  await expect(page.getByLabel('Field supportRequest', { exact: true })).toBeVisible();
 });
 
 test('Form Editor JSON validation: rejects invalid import JSON', async ({ page }) => {
@@ -83,8 +81,7 @@ test('Form Editor deletion recovery: clears the active field after removal', asy
     .locator('core-formly-field-header')
     .filter({ hasText: 'customerName' })
     .last();
-  await nestedField.hover();
-  await nestedField.click();
+  await page.getByLabel('Field customerName', { exact: true }).click();
 
   await nestedField.getByRole('button', { name: 'Options' }).click();
   await page.getByRole('menuitem', { name: 'Remove' }).click();
@@ -103,17 +100,17 @@ test('Form Editor authoring: adds a group and a nested field', async ({ page }) 
   const groupSource = page
     .locator('core-type-container')
     .filter({ has: page.getByText('Group', { exact: true }) });
-  await groupSource.dragTo(formContent);
+  const firstField = formContent.getByLabel('Field customerName', { exact: true });
+  const bounds = (await firstField.boundingBox())!;
+  await groupSource.dragTo(firstField, { targetPosition: { x: bounds.width / 2, y: 4 } });
 
   await expect(formContent).toContainText('Group');
   await expect(formContent.locator('core-formly-field-header')).toHaveCount(initialFieldCount + 1);
 
-  await formContent
-    .locator('core-formly-field-header')
-    .filter({ hasText: /^.*Group.*$/ })
-    .last()
-    .getByRole('button', { name: 'Add Field' })
-    .click();
+  const group = formContent.getByLabel('Field Group', { exact: true });
+  await group.hover();
+  await group.getByRole('button', { name: 'Options' }).click();
+  await page.getByRole('menuitem', { name: 'Add Field', exact: true }).hover();
   await page.getByRole('menuitem', { name: 'Form Controls' }).hover();
   await page.getByRole('menuitem', { name: 'Input' }).click();
 

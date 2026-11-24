@@ -50,7 +50,10 @@ for (const width of [1440, 390]) {
       await expect(dimmedFields).toHaveCount(2);
       await expect(dimmedFields.first()).toHaveCSS('opacity', '0.5');
       await expect(builder.getByText('Read only')).toHaveCount(0);
-      await expect(builder.locator('core-formly-field-header').first()).toHaveCSS('opacity', '1');
+      const field = builder.getByLabel('Field reference', { exact: true });
+      await field.hover();
+      await expect(field.locator('core-formly-field-header')).toBeVisible();
+      await expect(field.locator('core-formly-field-header')).toHaveCSS('opacity', '1');
       const reference = builder.getByRole('textbox', { name: 'Reference', exact: true });
       await expect(reference).not.toBeEditable();
       await expect(reference).toBeEnabled();

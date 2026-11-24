@@ -26,11 +26,7 @@ test('Form Editor interaction performance smoke', async ({ page }) => {
   measurements.fieldEditMs = (
     await measure(page, async () => {
       await page.getByRole('button', { name: 'Builder', exact: true }).click();
-      await page
-        .locator('core-formly-field-header')
-        .filter({ hasText: 'customerName' })
-        .first()
-        .click();
+      await page.getByLabel('Field customerName', { exact: true }).click();
       await page.getByRole('button', { name: 'Open Field Edit panel' }).click();
 
       const labelInput = page.getByLabel('Label', { exact: true });
