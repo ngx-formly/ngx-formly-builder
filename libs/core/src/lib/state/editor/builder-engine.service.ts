@@ -6,7 +6,7 @@ import { create } from 'mutative';
 import {
   catchError,
   concatMap,
-  debounceTime,
+  debounce,
   defer,
   EMPTY,
   first,
@@ -20,6 +20,7 @@ import {
   switchMap,
   takeUntil,
   tap,
+  timer,
   toArray,
 } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,6 +33,7 @@ import {
   WorkspaceHierarchy,
   WorkspaceValidation,
 } from '../model/types';
+import type { BuilderSettings } from '../model/builder-settings';
 import { isWorkspaceValidationList } from '../model/workspace-validation';
 import {
   BUILDER_ENGINE_CONFIG,
@@ -81,8 +83,10 @@ export class BuilderEngineService {
   readonly formLoadError = this.formLoadErrorSrc.asReadonly();
   readonly persistenceError = this.persistenceErrorSrc.asReadonly();
   private readonly autosaveTrigger$ = new Subject<string | null>();
-  private readonly autosaveEnabled: boolean;
-  private readonly autosaveDelay: number;
+
+  readonly hostSettings: BuilderSettings;
+  private readonly settingsSrc = signal<BuilderSettings>({ autoSave: true, autoSaveDelay: 3000 });
+  readonly settings = this.settingsSrc.asReadonly();
 
   readonly saveActiveFormTrigger$ = new Subject<void>();
   readonly saveStatusSrc = signal<'saved' | 'dirty' | 'saving' | 'error'>('saved');
@@ -203,8 +207,14 @@ export class BuilderEngineService {
     this.editorConfig = config;
     this.formStoreService = store;
     this.validationStorageAvailable = !!(store.getValidations$ && store.saveValidations$);
-    this.autosaveEnabled = config.autoSave ?? true;
-    this.autosaveDelay = config.autoSaveDelay ?? 3000;
+
+    const defaults = this.settings();
+    this.hostSettings = {
+      autoSave: config.autoSave ?? defaults.autoSave,
+      autoSaveDelay: config.autoSaveDelay ?? defaults.autoSaveDelay,
+    };
+    this.settingsSrc.set(this.hostSettings);
+
     this.hierarchySrc.set(createEmptyWorkspaceHierarchy(config.editorType));
     this.operations$
       .pipe(
@@ -225,15 +235,23 @@ export class BuilderEngineService {
 
     this.loadValidations();
 
-    if (this.autosaveEnabled) {
-      this.autosaveTrigger$
-        .pipe(debounceTime(this.autosaveDelay), takeUntilDestroyed(this.destroyRef))
-        .subscribe((formId) => {
-          if (formId && formId === this.activeFormId() && this.saveStatus() === 'dirty') {
-            this.saveActiveForm();
-          }
-        });
-    }
+    this.autosaveTrigger$
+      .pipe(
+        debounce(() => timer(this.settings().autoSaveDelay)),
+        tap(console.info),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((formId: string | null) => {
+        // Autosave may have been disabled while the timer was running.
+        if (
+          this.settings().autoSave &&
+          formId &&
+          formId === this.activeFormId() &&
+          this.saveStatus() === 'dirty'
+        ) {
+          this.saveActiveForm();
+        }
+      });
     this.saveActiveFormTrigger$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.requestSave());
@@ -436,7 +454,21 @@ export class BuilderEngineService {
     // A failed save needs an explicit retry, even if editing continues.
     if (this.saveStatus() !== 'error') {
       this.saveStatusSrc.set(this.queuedSaves.has(this.activeVersion) ? 'saving' : 'dirty');
-      if (this.autosaveEnabled) this.autosaveTrigger$.next(this.activeFormId() ?? null);
+      if (this.settings().autoSave) this.autosaveTrigger$.next(this.activeFormId() ?? null);
+    }
+  }
+
+  protected applySettings(settings: BuilderSettings): void {
+    const wasAutoSaving = this.settings().autoSave;
+    this.settingsSrc.set(settings);
+    if (this.saveStatus() !== 'dirty') {
+      return;
+    }
+
+    if (settings.autoSave) {
+      this.autosaveTrigger$.next(this.activeFormId() ?? null); // Restart the timer so the pending edit follows the new delay.
+    } else if (wasAutoSaving) {
+      this.saveActiveForm(); // The user expects the pending edit to be saved; its timer no longer will.
     }
   }
 
