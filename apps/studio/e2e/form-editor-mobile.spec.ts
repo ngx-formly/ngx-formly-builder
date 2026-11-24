@@ -48,10 +48,14 @@ test.describe('Form Editor mobile composition', () => {
     await expect(page.locator('core-form-panel')).toBeVisible();
     await expect(page.locator('core-tablet-sidebar')).toBeVisible();
 
-    await page
+    const closeButton = page
       .getByRole('complementary')
-      .getByRole('button', { name: 'Close', exact: true })
-      .click();
+      .getByRole('button', { name: 'Close', exact: true });
+    await expect(closeButton).toHaveCSS('border-radius', '50%');
+    const closeButtonBox = (await closeButton.boundingBox())!;
+    expect(closeButtonBox.width).toBe(closeButtonBox.height);
+    expect(closeButtonBox.width).toBeGreaterThanOrEqual(44);
+    await closeButton.click();
     await expect(page.getByRole('complementary')).toBeHidden();
     await page.getByRole('main').getByRole('button', { name: 'Open Model panel' }).click();
     await expect(page.locator('core-model-edit-panel')).toBeVisible();
