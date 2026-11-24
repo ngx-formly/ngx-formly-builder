@@ -108,10 +108,10 @@ test.describe('Form Editor mobile composition', () => {
   test('reaches drawer panels from the keyboard', async ({ page }) => {
     await createContactForm(page);
     await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator('core-splitter')).toHaveCount(0);
 
     const launcher = page.getByRole('main').getByRole('button', { name: 'Open Workspace panel' });
-    await launcher.focus();
-    await page.keyboard.press('Enter');
+    await launcher.press('Enter');
 
     const drawer = page.getByRole('complementary');
     await expect(drawer).toBeVisible();

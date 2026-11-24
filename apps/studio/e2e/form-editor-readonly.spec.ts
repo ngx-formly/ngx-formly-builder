@@ -1,3 +1,4 @@
+import { clickFormAction } from './helpers/form-toolbar';
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
@@ -58,12 +59,11 @@ for (const width of [1440, 390]) {
       await page.screenshot({ path: testInfo.outputPath('builder.png'), animations: 'disabled' });
 
       for (const mode of ['inline', 'dialog']) {
-        await page
-          .getByRole('button', {
-            name: mode === 'inline' ? 'Preview' : 'Open preview',
-            exact: true,
-          })
-          .click();
+        if (mode === 'inline') {
+          await page.getByRole('button', { name: 'Preview', exact: true }).click();
+        } else {
+          await clickFormAction(page, 'Open preview');
+        }
         const preview =
           mode === 'dialog'
             ? page.getByRole('dialog', { name: 'Form Preview' })

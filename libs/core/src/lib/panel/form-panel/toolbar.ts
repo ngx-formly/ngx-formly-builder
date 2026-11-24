@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
 
 import { CoreFormService } from '../../editor/core-form.service';
 import { CoreLibraryService } from '../../config/core-library.service';
@@ -12,14 +12,12 @@ import { FormTitle } from './form-title';
 @Component({
   selector: 'core-form-toolbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, Tooltip, FormTitle],
+  imports: [CdkMenu, CdkMenuItem, CdkMenuTrigger, Tooltip, FormTitle],
   host: {
-    class: 'flex min-h-(--panel-header-height) items-start px-4 py-2 md:items-center',
+    class: '@container/form-toolbar flex min-h-(--panel-header-height) items-center px-4 py-2',
   },
   template: `
-    <div
-      class="flex min-w-0 grow flex-col gap-x-4 gap-y-2 md:flex-row md:flex-wrap md:items-center md:justify-between"
-    >
+    <div class="flex min-w-0 grow flex-wrap items-center gap-x-3 gap-y-2">
       <div class="min-w-0">
         @if (!hideFormTitle()) {
           <core-form-title />
@@ -31,10 +29,11 @@ import { FormTitle } from './form-title';
         </span>
       </div>
       <ng-content />
-      <div class="flex min-w-0 flex-wrap items-center gap-2 md:ml-auto md:justify-end md:gap-4">
+      <div class="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
         <div
           class="core-segmented"
           role="group"
+          aria-label="Form view"
         >
           @for (option of displayModeOptions; track option.value) {
             <button
@@ -48,73 +47,75 @@ import { FormTitle } from './form-title';
             </button>
           }
         </div>
-        <div class="flex items-center gap-2 lg:gap-4">
-          <div>
-            <div role="group">
-              <button
-                coreButton
-                severity="secondary"
-                aria-label="Open preview"
-                coreTooltip="Open preview"
-                tooltipPosition="above"
-                (click)="openPreviewDialog()"
+        <div class="hidden items-center gap-1 @min-[49rem]/form-toolbar:flex">
+          @for (action of actions; track action.icon) {
+            <button
+              coreButton
+              type="button"
+              tooltipPosition="above"
+              [attr.aria-label]="action.label"
+              [coreTooltip]="action.label"
+              [disabled]="action.hasSaveStatus && saveStatus() === 'saving'"
+              [attr.severity]="
+                action.hasSaveStatus && saveStatus() !== 'saved' ? 'primary' : 'secondary'
+              "
+              (click)="action.run()"
+            >
+              <i
+                coreButtonIcon
+                class="material-symbols-outlined"
+                aria-hidden="true"
+                >{{ action.icon }}</i
               >
-                <i
-                  coreButtonIcon
-                  class="material-symbols-outlined"
-                >
-                  fullscreen
-                </i>
-              </button>
-              <button
-                coreButton
-                severity="secondary"
-                aria-label="Clear Model"
-                coreTooltip="Clear Model"
-                tooltipPosition="above"
-                (click)="clearModel()"
-              >
-                <i
-                  coreButtonIcon
-                  class="material-symbols-outlined"
-                >
-                  restart_alt
-                </i>
-              </button>
-            </div>
-          </div>
-          <div>
-            <div role="group">
-              <button
-                coreButton
-                severity="secondary"
-                aria-label="Export Form"
-                coreTooltip="Export Form"
-                tooltipPosition="above"
-                (click)="openExportDialog()"
-              >
-                <i
-                  coreButtonIcon
-                  class="material-symbols-outlined"
-                >
-                  download
-                </i>
-              </button>
-              <button
-                coreButton
-                aria-label="Save Form"
-                coreTooltip="Save Form"
-                tooltipPosition="above"
-                [disabled]="saveStatus() === 'saving'"
-                [attr.severity]="saveStatus() !== 'saved' ? 'primary' : 'secondary'"
-                (click)="saveActiveForm()"
-              >
-                <i class="material-symbols-outlined"> save </i>
+              @if (action.hasSaveStatus) {
                 <span coreButtonLabel>{{ saveButtonLabel() }}</span>
-              </button>
-            </div>
-          </div>
+              }
+            </button>
+          }
         </div>
+        <button
+          coreButton
+          type="button"
+          class="@min-[49rem]/form-toolbar:hidden"
+          severity="secondary"
+          aria-label="More form actions"
+          [cdkMenuTriggerFor]="formActions"
+        >
+          <i
+            coreButtonIcon
+            class="material-symbols-outlined"
+            aria-hidden="true"
+            >more_vert</i
+          >
+        </button>
+        <ng-template #formActions>
+          <div
+            cdkMenu
+            class="core-root core-menu"
+            aria-label="Form actions"
+          >
+            @for (action of actions; track action.icon) {
+              <button
+                cdkMenuItem
+                type="button"
+                [attr.aria-label]="action.label"
+                [cdkMenuItemDisabled]="!!action.hasSaveStatus && saveStatus() === 'saving'"
+                (cdkMenuItemTriggered)="action.run()"
+              >
+                <i
+                  class="material-symbols-outlined"
+                  aria-hidden="true"
+                  >{{ action.icon }}</i
+                >
+                {{
+                  action.hasSaveStatus && saveStatus() !== 'saved'
+                    ? saveButtonLabel()
+                    : action.label
+                }}
+              </button>
+            }
+          </div>
+        </ng-template>
       </div>
     </div>
   `,
@@ -135,6 +136,13 @@ export class FormToolbarComponent {
     { label: 'Builder', value: 'form' },
     { label: 'Preview', value: 'preview' },
     { label: 'JSON', value: 'json' },
+  ];
+
+  protected readonly actions = [
+    { label: 'Open preview', icon: 'fullscreen', run: () => this.openPreviewDialog() },
+    { label: 'Clear Model', icon: 'restart_alt', run: () => this.clearModel() },
+    { label: 'Export Form', icon: 'download', run: () => this.openExportDialog() },
+    { label: 'Save Form', icon: 'save', run: () => this.saveActiveForm(), hasSaveStatus: true },
   ];
 
   protected cachedDisplayMode: FormDisplayMode = this.formService.activeFormDisplayMode();

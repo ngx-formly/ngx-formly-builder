@@ -1,3 +1,4 @@
+import { clickFormAction } from './helpers/form-toolbar';
 import { expect, Locator, Page, test } from '@playwright/test';
 import { loadMaterialFixture } from './helpers/material-fixture';
 
@@ -84,7 +85,7 @@ test('groups, reorders and extracts fields while preserving values and responsiv
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(row).toHaveCSS('flex-direction', 'column');
   await page.screenshot({ path: testInfo.outputPath('stacked-row.png') });
-  await page.getByRole('button', { name: 'Open preview', exact: true }).click();
+  await clickFormAction(page, 'Open preview');
   const preview = page
     .getByRole('dialog', { name: 'Form Preview' })
     .frameLocator('iframe[title="Responsive form preview"]');

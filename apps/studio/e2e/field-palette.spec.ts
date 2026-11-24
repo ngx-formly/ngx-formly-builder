@@ -31,6 +31,7 @@ for (const width of [1536, 375]) {
     await expect(
       divider.getByText('Horizontal or vertical divider', { exact: true }),
     ).toBeVisible();
+    await page.mouse.move(0, 0);
     await expect(divider.locator('i')).toHaveText(['horizontal_rule', 'add']);
     expect(await panel.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
       true,
