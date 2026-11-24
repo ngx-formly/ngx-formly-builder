@@ -34,6 +34,8 @@ export interface BuilderEngineConfig {
   /** Defaults to true. */
   autoSave?: boolean;
   autoSaveDelay?: number;
+  /** Load and save user settings through the form store. Defaults to false. */
+  editableSettings?: boolean;
   formStore?: Type<FormStoreService>;
 }
 

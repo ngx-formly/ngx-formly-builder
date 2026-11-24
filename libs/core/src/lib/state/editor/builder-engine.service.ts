@@ -24,7 +24,7 @@ import {
   toArray,
 } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
-import type { BuilderSettings } from '../model/builder-settings';
+import { BuilderSettings, isBuilderSettings } from '../model/builder-settings';
 import {
   BaseEditorForm,
   DefaultForm,
@@ -87,6 +87,10 @@ export class BuilderEngineService {
   readonly hostSettings: BuilderSettings;
   private readonly settingsSrc = signal<BuilderSettings>({ autoSave: true, autoSaveDelay: 3000 });
   readonly settings = this.settingsSrc.asReadonly();
+
+  readonly settingsStorageAvailable: boolean;
+  private readonly settingsLoadErrorSrc = signal<string | null>(null);
+  readonly settingsLoadError = this.settingsLoadErrorSrc.asReadonly();
 
   readonly saveActiveFormTrigger$ = new Subject<void>();
   readonly saveStatusSrc = signal<'saved' | 'dirty' | 'saving' | 'error'>('saved');
@@ -208,6 +212,12 @@ export class BuilderEngineService {
     this.formStoreService = store;
     this.validationStorageAvailable = !!(store.getValidations$ && store.saveValidations$);
 
+    this.settingsStorageAvailable = !!(
+      config.editableSettings &&
+      store.getSettings$ &&
+      store.saveSettings$
+    );
+
     const defaults = this.settings();
     this.hostSettings = {
       autoSave: config.autoSave ?? defaults.autoSave,
@@ -234,11 +244,11 @@ export class BuilderEngineService {
       });
 
     this.loadValidations();
+    this.loadSettings();
 
     this.autosaveTrigger$
       .pipe(
         debounce(() => timer(this.settings().autoSaveDelay)),
-        tap(console.info),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((formId: string | null) => {
@@ -313,6 +323,53 @@ export class BuilderEngineService {
             'Saved validations could not be loaded. Try again or recover the affected data.',
           ),
       });
+  }
+
+  loadSettings(): void {
+    if (!this.settingsStorageAvailable) {
+      return;
+    }
+
+    this.settingsLoadErrorSrc.set(null);
+    this.enqueue$(() =>
+      this.snapshot$(() => this.formStoreService.getSettings$!(this.editorConfig.editorType)).pipe(
+        tap((saved: BuilderSettings | undefined) => {
+          if (saved !== undefined && !isBuilderSettings(saved)) {
+            throw new Error('Invalid builder settings.');
+          }
+
+          this.applySettings(saved ?? this.hostSettings);
+        }),
+      ),
+    ).subscribe({
+      error: () => this.settingsLoadErrorSrc.set('Saved settings could not be loaded.'),
+    });
+  }
+
+  updateSettings$(settings: BuilderSettings): Observable<void> {
+    return this.enqueue$(() => {
+      if (!isBuilderSettings(settings)) {
+        throw new Error('Invalid builder settings.');
+      }
+
+      const save$ = this.settingsStorageAvailable
+        ? this.snapshot$(() =>
+            this.formStoreService.saveSettings$!(this.editorConfig.editorType, settings),
+          )
+        : of(undefined);
+
+      return save$.pipe(
+        tap(() => {
+          this.applySettings(settings);
+          this.settingsLoadErrorSrc.set(null);
+        }),
+      );
+    });
+  }
+
+  /** Saves the current host values: later changes to the host defaults need another reset. */
+  resetSettings$(): Observable<void> {
+    return this.updateSettings$(this.hostSettings);
   }
 
   private readValidations$(): Observable<WorkspaceValidation[]> {
@@ -458,7 +515,8 @@ export class BuilderEngineService {
     }
   }
 
-  protected applySettings(settings: BuilderSettings): void {
+  protected applySettings({ autoSave, autoSaveDelay }: BuilderSettings): void {
+    const settings = { autoSave, autoSaveDelay };
     const wasAutoSaving = this.settings().autoSave;
     this.settingsSrc.set(settings);
     if (this.saveStatus() !== 'dirty') {
