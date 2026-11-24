@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import type {
   BaseEditorForm,
+  BuilderSettings,
   DefaultForm,
   FormStoreService,
   WorkspaceHierarchy,
@@ -12,6 +13,14 @@ import { HTTP_FORM_STORE_CONFIG } from './http-form-store.config';
 
 /** HttpClient emits the response body (`null` for 204); the store contract emits `undefined`. */
 const toUndefined = (): OperatorFunction<unknown, undefined> => map(() => undefined);
+
+/** A missing resource is an absent value in the store contract, not an error. */
+const notFoundToUndefined = <T>(): OperatorFunction<T, T | undefined> =>
+  catchError((error: unknown) =>
+    error instanceof HttpErrorResponse && error.status === 404
+      ? of(undefined)
+      : throwError(() => error),
+  );
 
 // use @Service({ autoProvided: false }) in a future PR
 @Injectable()
@@ -35,13 +44,7 @@ export class HttpFormStoreService implements FormStoreService {
   getForm$(workspaceId: string, formId: string): Observable<DefaultForm | undefined> {
     return this.http
       .get<DefaultForm>(this.url(workspaceId, 'forms', formId))
-      .pipe(
-        catchError((error: unknown) =>
-          error instanceof HttpErrorResponse && error.status === 404
-            ? of(undefined)
-            : throwError(() => error),
-        ),
-      );
+      .pipe(notFoundToUndefined());
   }
 
   getFormList$(workspaceId: string): Observable<BaseEditorForm[]> {
@@ -62,6 +65,21 @@ export class HttpFormStoreService implements FormStoreService {
 
   saveValidations$(workspaceId: string, validations: WorkspaceValidation[]): Observable<void> {
     return this.http.put(this.url(workspaceId, 'validations'), validations).pipe(toUndefined());
+  }
+
+  getSettings$(workspaceId: string): Observable<BuilderSettings | undefined> {
+    return this.http
+      .get<BuilderSettings>(this.url(workspaceId, 'settings'))
+      .pipe(notFoundToUndefined());
+  }
+
+  saveSettings$(
+    workspaceId: string,
+    { autoSave, autoSaveDelay }: BuilderSettings,
+  ): Observable<void> {
+    return this.http
+      .put(this.url(workspaceId, 'settings'), { autoSave, autoSaveDelay })
+      .pipe(toUndefined());
   }
 
   private url(workspaceId: string, ...segments: string[]): string {
