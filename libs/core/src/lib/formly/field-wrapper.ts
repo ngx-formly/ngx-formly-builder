@@ -8,6 +8,7 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  signal,
 } from '@angular/core';
 import { FieldWrapper } from '@ngx-formly/core';
 import {
@@ -132,8 +133,10 @@ export class CoreFieldWrapper extends FieldWrapper<EditorField> implements OnIni
   readonly isActiveField = computed(() => {
     return this.formService.activeFieldId() === this.fieldInfo.id;
   });
+  // Repeater rows share a schema field ID, but each has its own wrapper.
+  private readonly mouseInsideWrapper = signal(false);
   readonly isMouseInside = computed(() => {
-    return this.formService.activeMouseInside() === this.fieldInfo.id;
+    return this.mouseInsideWrapper() && this.formService.activeMouseInside() === this.fieldInfo.id;
   });
 
   readonly borderColor = computed(() => {
@@ -298,10 +301,13 @@ export class CoreFieldWrapper extends FieldWrapper<EditorField> implements OnIni
   }
 
   setMouseEntered() {
+    this.mouseInsideWrapper.set(true);
     this.formService.setMouseEnteredField(this.fieldInfo.id);
   }
 
   setMouseLeft() {
+    if (!this.mouseInsideWrapper()) return;
+    this.mouseInsideWrapper.set(false);
     this.formService.setMouseLeftField(this.fieldInfo.id);
   }
 }
