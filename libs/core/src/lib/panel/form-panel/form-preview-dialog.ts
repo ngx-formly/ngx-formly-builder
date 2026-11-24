@@ -48,7 +48,8 @@ export class FormPreviewDialog {
 
   pt: DialogLayout = {
     header: {
-      class: 'grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 lg:grid-cols-[1fr_auto_1fr]',
+      class:
+        '@container/form-toolbar grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 lg:grid-cols-[1fr_auto_1fr]',
     },
   };
 

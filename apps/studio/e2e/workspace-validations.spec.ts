@@ -1,3 +1,4 @@
+import { clickFormAction } from './helpers/form-toolbar';
 import { expect, test } from '@playwright/test';
 
 for (const width of [1536, 1024, 390]) {
@@ -98,7 +99,7 @@ for (const width of [1536, 1024, 390]) {
         .click();
       await expect(page.getByRole('complementary')).toBeHidden();
     }
-    await page.getByRole('button', { name: 'Save Form', exact: true }).click();
+    await clickFormAction(page, 'Save Form');
     await page
       .getByRole('main')
       .getByRole('button', { name: 'Open Workspace panel', exact: true })

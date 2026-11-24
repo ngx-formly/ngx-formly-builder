@@ -1,3 +1,4 @@
+import { clickFormAction } from './helpers/form-toolbar';
 import { expect, test } from '@playwright/test';
 
 for (const viewport of [
@@ -50,7 +51,7 @@ for (const viewport of [
       expect(title.x + title.width / 2).toBeCloseTo(viewport.width / 2, 0);
     }
 
-    await page.getByRole('button', { name: 'Open preview', exact: true }).click();
+    await clickFormAction(page, 'Open preview');
     const preview = page.getByRole('dialog', { name: 'Form Preview' });
     await expect(preview).toBeVisible();
     await expect(
