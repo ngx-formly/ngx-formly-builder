@@ -166,11 +166,10 @@ export class LocalFormStoreService implements FormStoreService {
   }
 
   getSettings$(editorType: string): Observable<BuilderSettings | undefined> {
+    const raw = localStorage.getItem(`${this.settingsStorageKey}-${editorType}`);
     let value: unknown;
     try {
-      value = JSON.parse(
-        localStorage.getItem(`${this.settingsStorageKey}-${editorType}`) ?? 'null',
-      );
+      value = JSON.parse(raw ?? 'null');
     } catch {
       // Corrupt JSON: host defaults apply.
     }

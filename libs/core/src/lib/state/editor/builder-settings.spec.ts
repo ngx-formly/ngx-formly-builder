@@ -150,6 +150,18 @@ describe('builder settings', () => {
       expect(engine.settingsLoadError()).toBeNull();
     });
 
+    it('reports a local settings storage read failure', () => {
+      const engine = setupEditable();
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementationOnce(() => {
+        throw new DOMException('Storage access denied.', 'SecurityError');
+      });
+
+      engine.loadSettings();
+
+      expect(engine.settings()).toEqual(host);
+      expect(engine.settingsLoadError()).toBe('Saved settings could not be loaded.');
+    });
+
     it.each([
       ['invalid', of({ autoSaveDelay: 'abc' } as unknown as BuilderSettings)],
       ['failing', throwError(() => new Error('offline'))],
