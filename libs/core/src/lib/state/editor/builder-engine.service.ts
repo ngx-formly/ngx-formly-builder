@@ -347,20 +347,21 @@ export class BuilderEngineService {
   }
 
   updateSettings$(settings: BuilderSettings): Observable<void> {
+    const snapshot = { autoSave: settings?.autoSave, autoSaveDelay: settings?.autoSaveDelay };
     return this.enqueue$(() => {
-      if (!isBuilderSettings(settings)) {
+      if (!isBuilderSettings(snapshot)) {
         throw new Error('Invalid builder settings.');
       }
 
       const save$ = this.settingsStorageAvailable
         ? this.snapshot$(() =>
-            this.formStoreService.saveSettings$!(this.editorConfig.editorType, settings),
+            this.formStoreService.saveSettings$!(this.editorConfig.editorType, snapshot),
           )
         : of(undefined);
 
       return save$.pipe(
         tap(() => {
-          this.applySettings(settings);
+          this.applySettings(snapshot);
           this.settingsLoadErrorSrc.set(null);
         }),
       );

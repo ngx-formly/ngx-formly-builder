@@ -179,6 +179,20 @@ describe('builder settings', () => {
       expect(result.emitted).toBe(true);
     });
 
+    it('applies the saved values when the input changes during the write', () => {
+      const response = new Subject<void>();
+      const save = saveSettings().mockReturnValue(response);
+      const engine = setupEditable();
+      const input = { ...saved };
+      subscribe(engine.updateSettings$(input));
+      expect(save).toHaveBeenCalledExactlyOnceWith('settings-test', saved);
+
+      input.autoSaveDelay = -1;
+      response.next();
+
+      expect(engine.settings()).toEqual(saved);
+    });
+
     it('keeps the previous settings when saving fails', () => {
       saveSettings().mockReturnValue(throwError(() => new Error('offline')));
       const engine = setupEditable();
