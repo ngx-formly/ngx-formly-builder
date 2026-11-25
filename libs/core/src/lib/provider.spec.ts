@@ -106,7 +106,9 @@ describe('provideFormlyBuilder', () => {
       editorType: 'form-editor',
       autoSave: true,
       showSettings: true,
+      editableSettings: false,
     });
+    expect(TestBed.inject(BuilderEngineService).settingsStorageAvailable).toBe(false);
     expect(TestBed.inject(CORE_FORM_STORE)).toBeInstanceOf(LocalFormStoreService);
     expect(TestBed.inject(CORE_STYLES_CONFIG)).toBe(tailwindConfig);
   });
@@ -135,6 +137,16 @@ describe('provideFormlyBuilder', () => {
       expect(forms.convertToRawForm(forms.activeForm()!).fields[0].type).toBe('input');
     },
   );
+
+  it('enables settings storage in the engine when the host makes settings editable', () => {
+    localStorage.clear();
+    TestBed.configureTestingModule({
+      providers: [provideFormlyBuilder({ editableSettings: true })],
+    });
+
+    expect(TestBed.inject(CORE_EDITOR_CONFIG).editableSettings).toBe(true);
+    expect(TestBed.inject(BuilderEngineService).settingsStorageAvailable).toBe(true);
+  });
 
   it('accepts editor identity, autosave, and storage overrides', () => {
     TestBed.configureTestingModule({

@@ -69,7 +69,9 @@ export function provideCoreTheme(): EnvironmentProviders {
 export function provideCoreConfig(
   libraryConfig: LibraryConfig[] = [],
   autoSave = true,
-  overrides: Partial<Pick<CoreEditorConfig, 'editorType' | 'autoSaveDelay' | 'showSettings'>> = {},
+  overrides: Partial<
+    Pick<CoreEditorConfig, 'editorType' | 'autoSaveDelay' | 'showSettings' | 'editableSettings'>
+  > = {},
 ): EnvironmentProviders {
   const editorConfig: CoreEditorConfig = {
     editorType: overrides.editorType ?? 'form-editor',
@@ -77,6 +79,7 @@ export function provideCoreConfig(
     autoSave,
     autoSaveDelay: overrides.autoSaveDelay,
     showSettings: overrides.showSettings ?? true,
+    editableSettings: overrides.editableSettings ?? false,
   };
   const formlyConfig: ConfigOption = {
     wrappers: [{ name: 'core-field', component: CoreFieldWrapper }],
@@ -126,6 +129,7 @@ export function provideFormlyBuilder(config: FormlyBuilderConfig = {}): Environm
       editorType: config.editorType,
       autoSaveDelay: config.autoSaveDelay,
       showSettings: config.showSettings,
+      editableSettings: config.editableSettings,
     }),
     { provide: CORE_FORM_TEMPLATES, useValue: config.formTemplates ?? null },
     {

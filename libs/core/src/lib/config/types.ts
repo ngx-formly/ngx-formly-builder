@@ -107,6 +107,8 @@ export interface CoreEditorConfig {
   autoSaveDelay?: number;
   /** Show the read-only builder settings panel. Defaults to true. */
   showSettings?: boolean;
+  /** Let users edit, save and share autosave settings. Defaults to false. */
+  editableSettings?: boolean;
 }
 
 /** Public configuration for an embedded Formly Builder instance. */
@@ -115,6 +117,8 @@ export interface FormlyBuilderConfig {
   styles?: StylesConfig;
   /** Show the read-only builder settings panel. Defaults to true. */
   showSettings?: boolean;
+  /** Let users edit, save and share autosave settings. Defaults to false. */
+  editableSettings?: boolean;
   /** Optional UI profiles. Native HTML controls are available without a UI library. */
   libraries?: LibraryConfig[];
   /** Shared templates rendered with the selected library, replacing profile-specific templates. */
