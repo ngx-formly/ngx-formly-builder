@@ -104,7 +104,7 @@ describe('provideFormlyBuilder', () => {
     ]);
     expect(TestBed.inject(CORE_EDITOR_CONFIG)).toMatchObject({
       editorType: 'form-editor',
-      autoSave: true,
+      autoSave: false,
       showSettings: true,
       editableSettings: false,
     });

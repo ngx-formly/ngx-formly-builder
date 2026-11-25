@@ -31,7 +31,7 @@ export interface EngineLibrary {
 export interface BuilderEngineConfig {
   editorType: string;
   libraries: EngineLibrary[];
-  /** Defaults to true. */
+  /** Defaults to false. */
   autoSave?: boolean;
   autoSaveDelay?: number;
   /** Load and save user settings through the form store. Defaults to false. */

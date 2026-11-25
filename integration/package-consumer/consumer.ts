@@ -55,6 +55,7 @@ export const consumerProviders = [
     editorType: 'consumer-form-editor',
     styles: consumerStyles,
     showSettings: !new URLSearchParams(location.search).has('hide-settings'),
+    autoSave: true,
     autoSaveDelay: 500,
   }),
 ];

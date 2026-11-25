@@ -125,7 +125,7 @@ export interface FormlyBuilderConfig {
   formTemplates?: FormTemplate[];
   /** Storage namespace used to isolate this editor's documents. */
   editorType?: string;
-  /** Enable debounced persistence for active form mutations. Defaults to true. */
+  /** Enable debounced persistence for active form mutations. Defaults to false. */
   autoSave?: boolean;
   /** Delay in milliseconds before an active form mutation is persisted. */
   autoSaveDelay?: number;

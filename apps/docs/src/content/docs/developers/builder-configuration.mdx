@@ -15,7 +15,7 @@ scope to apply a new configuration. The **Builder settings** panel is read-only 
 | `libraries`        | `[]`                             | Additional UI profiles. Native Vanilla fields are always registered.            |
 | `formTemplates`    | Templates from visible libraries | Shared templates that replace library-specific templates; `[]` offers none.     |
 | `editorType`       | `'form-editor'`                  | Namespace for persisted documents. Use distinct values for independent editors. |
-| `autoSave`         | `true`                           | Persist form changes automatically.                                             |
+| `autoSave`         | `false`                          | Persist form changes automatically.                                             |
 | `autoSaveDelay`    | `3000`                           | Debounce delay in milliseconds; inactive when autosave is disabled.             |
 | `formStore`        | Browser local storage            | A class implementing `FormStoreService`.                                        |
 | `styles`           | `tailwindConfig`                 | The complete styling catalogue: breakpoints and Self/Children controls.         |
@@ -30,6 +30,7 @@ import { provideFormlyBuilder } from '@ngx-formly/builder/ui';
 
 provideFormlyBuilder({
   editorType: 'survey-designer',
+  autoSave: true,
   autoSaveDelay: 750,
   showSettings: false,
 });

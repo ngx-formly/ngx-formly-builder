@@ -1,4 +1,13 @@
-import { computed, DestroyRef, Inject, inject, Injectable, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Inject,
+  inject,
+  Injectable,
+  Signal,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { get, isEmpty, unset } from 'lodash-es';
@@ -84,11 +93,13 @@ export class BuilderEngineService {
   readonly persistenceError = this.persistenceErrorSrc.asReadonly();
   private readonly autosaveTrigger$ = new Subject<string | null>();
 
-  readonly hostSettings: BuilderSettings;
-  private readonly settingsSrc = signal<BuilderSettings>({ autoSave: true, autoSaveDelay: 3000 });
-  readonly settings = this.settingsSrc.asReadonly();
+  readonly hostSettings: Readonly<BuilderSettings>;
+  private readonly settingsSrc: WritableSignal<Readonly<BuilderSettings>>;
+  readonly settings: Signal<Readonly<BuilderSettings>>;
 
   readonly settingsStorageAvailable: boolean;
+  private readonly pendingSettingsLoads = signal(0);
+  readonly settingsLoading = computed(() => this.pendingSettingsLoads() > 0);
   private readonly settingsLoadErrorSrc = signal<string | null>(null);
   readonly settingsLoadError = this.settingsLoadErrorSrc.asReadonly();
 
@@ -218,12 +229,12 @@ export class BuilderEngineService {
       store.saveSettings$
     );
 
-    const defaults = this.settings();
-    this.hostSettings = {
-      autoSave: config.autoSave ?? defaults.autoSave,
-      autoSaveDelay: config.autoSaveDelay ?? defaults.autoSaveDelay,
-    };
-    this.settingsSrc.set(this.hostSettings);
+    this.hostSettings = Object.freeze({
+      autoSave: config.autoSave ?? false,
+      autoSaveDelay: config.autoSaveDelay ?? 3000,
+    });
+    this.settingsSrc = signal(this.hostSettings);
+    this.settings = this.settingsSrc.asReadonly();
 
     this.hierarchySrc.set(createEmptyWorkspaceHierarchy(config.editorType));
     this.operations$
@@ -331,6 +342,7 @@ export class BuilderEngineService {
     }
 
     this.settingsLoadErrorSrc.set(null);
+    this.pendingSettingsLoads.update((count) => count + 1);
     this.enqueue$(() =>
       this.snapshot$(() => this.formStoreService.getSettings$!(this.editorConfig.editorType)).pipe(
         tap((saved: BuilderSettings | undefined) => {
@@ -339,11 +351,14 @@ export class BuilderEngineService {
           }
 
           this.applySettings(saved ?? this.hostSettings);
+          this.settingsLoadErrorSrc.set(null);
         }),
       ),
-    ).subscribe({
-      error: () => this.settingsLoadErrorSrc.set('Saved settings could not be loaded.'),
-    });
+    )
+      .pipe(finalize(() => this.pendingSettingsLoads.update((count) => count - 1)))
+      .subscribe({
+        error: () => this.settingsLoadErrorSrc.set('Saved settings could not be loaded.'),
+      });
   }
 
   updateSettings$(settings: BuilderSettings): Observable<void> {
@@ -516,15 +531,14 @@ export class BuilderEngineService {
     }
   }
 
-  protected applySettings({ autoSave, autoSaveDelay }: BuilderSettings): void {
-    const settings = { autoSave, autoSaveDelay };
+  private applySettings({ autoSave, autoSaveDelay }: Readonly<BuilderSettings>): void {
     const wasAutoSaving = this.settings().autoSave;
-    this.settingsSrc.set(settings);
+    this.settingsSrc.set(Object.freeze({ autoSave, autoSaveDelay }));
     if (this.saveStatus() !== 'dirty') {
       return;
     }
 
-    if (settings.autoSave) {
+    if (autoSave) {
       this.autosaveTrigger$.next(this.activeFormId() ?? null); // Restart the timer so the pending edit follows the new delay.
     } else if (wasAutoSaving) {
       this.saveActiveForm(); // The user expects the pending edit to be saved; its timer no longer will.

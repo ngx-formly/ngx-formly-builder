@@ -244,7 +244,7 @@ inputs mounted across document edits. The shared `activePreviewFormFields` signa
 for a single renderer; do not bind the same mutable fields to multiple Formly forms. Use
 `activeFormFieldsJSON()` for clean exports, independently of rendered previews.
 
-Autosave defaults to `true`, with a 3000 ms delay; set `autoSave: false` for explicit saves.
+Autosave is off by default. Set `autoSave: true` to save automatically after 3000 ms without edits.
 The provider accepts an optional `formStore` class and `autoSaveDelay`. Creating a form writes to
 the store even with autosave disabled; use an in-memory store for transient demos. It does not register Formly
 runtime components. Headless hosts render their own controls and register their chosen Formly

@@ -41,13 +41,25 @@ describe('builder settings', () => {
     expect(engine.settings()).toEqual(engine.hostSettings);
   });
 
-  it('defaults to autosaving after 3000 ms', () => {
-    expect(setup().engine.settings()).toEqual({ autoSave: true, autoSaveDelay: 3000 });
+  it('defaults to disabled autosave with a 3000 ms delay', () => {
+    expect(setup().engine.settings()).toEqual({ autoSave: false, autoSaveDelay: 3000 });
+  });
+
+  it('exposes immutable defaults and current settings', () => {
+    const { engine } = setup();
+    expect(Object.isFrozen(engine.hostSettings)).toBe(true);
+    expect(Object.isFrozen(engine.settings())).toBe(true);
+
+    engine.updateSettings$({ autoSave: false, autoSaveDelay: 500 }).subscribe();
+    expect(Object.isFrozen(engine.settings())).toBe(true);
+
+    engine.resetSettings$().subscribe();
+    expect(engine.settings()).toEqual({ autoSave: false, autoSaveDelay: 3000 });
   });
 
   it('uses a changed delay for the next edit', () => {
     const { engine, save, edit } = setup();
-    engine['applySettings']({ autoSave: true, autoSaveDelay: 500 });
+    engine.updateSettings$({ autoSave: true, autoSaveDelay: 500 }).subscribe();
     edit(1);
     vi.advanceTimersByTime(499);
     expect(save).not.toHaveBeenCalled();
@@ -56,9 +68,9 @@ describe('builder settings', () => {
   });
 
   it('applies a changed delay to an edit already waiting to be saved', () => {
-    const { engine, save, edit } = setup({ autoSaveDelay: 60000 });
+    const { engine, save, edit } = setup({ autoSave: true, autoSaveDelay: 60000 });
     edit(1);
-    engine['applySettings']({ autoSave: true, autoSaveDelay: 500 });
+    engine.updateSettings$({ autoSave: true, autoSaveDelay: 500 }).subscribe();
     vi.advanceTimersByTime(500);
     expect(save).toHaveBeenCalledOnce();
     expect(engine.saveStatus()).toBe('saved');
@@ -71,7 +83,7 @@ describe('builder settings', () => {
     expect(save).not.toHaveBeenCalled();
     expect(engine.saveStatus()).toBe('dirty');
 
-    engine['applySettings']({ autoSave: true, autoSaveDelay: 500 });
+    engine.updateSettings$({ autoSave: true, autoSaveDelay: 500 }).subscribe();
     vi.advanceTimersByTime(500);
     expect(save).toHaveBeenCalledOnce();
 
@@ -81,18 +93,18 @@ describe('builder settings', () => {
   });
 
   it('saves a pending edit immediately and only once when disabled', () => {
-    const { engine, save, edit } = setup();
+    const { engine, save, edit } = setup({ autoSave: true });
     edit(1);
-    engine['applySettings']({ autoSave: false, autoSaveDelay: 3000 });
+    engine.updateSettings$({ autoSave: false, autoSaveDelay: 3000 }).subscribe();
     expect(save).toHaveBeenCalledOnce();
     vi.advanceTimersByTime(10000);
     expect(save).toHaveBeenCalledOnce();
   });
 
   it('does not save edits made after disabling when an earlier timer fires', () => {
-    const { engine, save, edit } = setup();
+    const { engine, save, edit } = setup({ autoSave: true });
     edit(1);
-    engine['applySettings']({ autoSave: false, autoSaveDelay: 3000 });
+    engine.updateSettings$({ autoSave: false, autoSaveDelay: 3000 }).subscribe();
     edit(2);
     vi.advanceTimersByTime(10000);
     expect(save).toHaveBeenCalledOnce();
@@ -102,15 +114,15 @@ describe('builder settings', () => {
   it('keeps manual edits unsaved when autosave was already off', () => {
     const { engine, save, edit } = setup({ autoSave: false });
     edit(1);
-    engine['applySettings']({ autoSave: false, autoSaveDelay: 500 });
+    engine.updateSettings$({ autoSave: false, autoSaveDelay: 500 }).subscribe();
     vi.advanceTimersByTime(10000);
     expect(save).not.toHaveBeenCalled();
     expect(engine.saveStatus()).toBe('dirty');
   });
 
   describe('storage', () => {
-    const saved = { autoSave: false, autoSaveDelay: 1000 };
-    const host = { autoSave: true, autoSaveDelay: 3000 };
+    const saved = { autoSave: true, autoSaveDelay: 1000 };
+    const host = { autoSave: false, autoSaveDelay: 3000 };
     const getSettings = () => vi.spyOn(LocalFormStoreService.prototype, 'getSettings$');
     const saveSettings = () => vi.spyOn(LocalFormStoreService.prototype, 'saveSettings$');
 
@@ -176,6 +188,25 @@ describe('builder settings', () => {
       engine.loadSettings();
       expect(engine.settings()).toEqual(saved);
       expect(engine.settingsLoadError()).toBeNull();
+    });
+
+    it('stays loading until a queued retry succeeds and clears the earlier error', () => {
+      const initial = new Subject<BuilderSettings>();
+      const retry = new Subject<BuilderSettings>();
+      getSettings().mockReturnValueOnce(initial).mockReturnValueOnce(retry);
+      const engine = setupEditable();
+
+      engine.loadSettings();
+      expect(engine.settingsLoading()).toBe(true);
+
+      initial.error(new Error('offline'));
+      expect(engine.settingsLoading()).toBe(true);
+      expect(engine.settingsLoadError()).not.toBeNull();
+
+      retry.next(saved);
+      expect(engine.settingsLoading()).toBe(false);
+      expect(engine.settingsLoadError()).toBeNull();
+      expect(engine.settings()).toEqual(saved);
     });
 
     it('applies an update only after it was saved', () => {

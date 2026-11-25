@@ -26,8 +26,8 @@ describe('SettingsPanel', () => {
   it('shows effective defaults and readable styling choices without a form', async () => {
     const element = await render();
     expect(element.textContent).toContain('form-editor');
-    expect(element.textContent).toContain('Enabled');
-    expect(element.textContent).toContain('3000 ms');
+    expect(element.textContent).toContain('Disabled');
+    expect(element.textContent).toContain('3000 ms (inactive)');
     expect(element.textContent).toContain('Browser local storage');
     expect(element.textContent).toContain('Vanilla');
     expect(element.textContent).toContain('Provided by UI libraries');
@@ -35,6 +35,16 @@ describe('SettingsPanel', () => {
     expect(element.textContent).toContain('48 · 12rem');
     expect(element.querySelector('a[href$="/embed-in-angular/"]')).not.toBeNull();
     expect(element.querySelector('input, select, textarea')).toBeNull();
+  });
+
+  it('shows settings applied through the engine in the read-only panel', async () => {
+    const element = await render();
+    const forms = TestBed.inject(CoreFormService);
+    forms.updateSettings$({ autoSave: false, autoSaveDelay: 750 }).subscribe();
+    TestBed.tick();
+
+    expect(element.textContent).toContain('Disabled');
+    expect(element.textContent).toContain('750 ms (inactive)');
   });
 
   it('shows overrides and empty catalogues without exposing store internals', async () => {
@@ -169,27 +179,36 @@ describe('SettingsPanel', () => {
       );
       expect(element.textContent).toContain('form-editor');
       expect(element.textContent).toContain('Browser local storage');
-      expect(autosave().checked).toBe(true);
+      expect(autosave().checked).toBe(false);
       expect(delay().value).toBe('750');
-      expect(delay().disabled).toBe(false);
+      expect(delay().disabled).toBe(true);
     });
 
-    it('shows saved settings that arrive after the panel', async () => {
+    it('blocks editing and export until saved settings arrive', async () => {
       const saved = new Subject<{ autoSave: boolean; autoSaveDelay: number }>();
-      const { autosave, delay, settle } = await renderEditable({}, (store) =>
+      const { autosave, delay, button, settle, text } = await renderEditable({}, (store) =>
         vi.spyOn(store, 'getSettings$').mockReturnValue(saved),
       );
-      expect(delay().value).toBe('3000');
+      expect(text('status')).toEqual(['Loading saved settings…']);
+      expect(autosave().disabled).toBe(true);
+      expect(delay().disabled).toBe(true);
+      expect(button('Save settings').disabled).toBe(true);
+      expect(button('Reset to host defaults').disabled).toBe(true);
+      expect(button('Import settings').disabled).toBe(true);
+      expect(button('Export settings').disabled).toBe(true);
 
-      saved.next({ autoSave: false, autoSaveDelay: 500 });
+      saved.next({ autoSave: true, autoSaveDelay: 500 });
       await settle();
 
-      expect(autosave().checked).toBe(false);
+      expect(text('status')).toEqual(['']);
       expect(delay().value).toBe('500');
+      expect(delay().disabled).toBe(false);
+      expect(button('Export settings').disabled).toBe(false);
     });
 
     it('saves and applies the edited settings', async () => {
-      const { forms, typeDelay, click, button, text } = await renderEditable();
+      const { forms, autosave, typeDelay, click, button, text } = await renderEditable();
+      await click(autosave());
       await typeDelay('750');
       await click(button('Save settings'));
 
@@ -202,7 +221,9 @@ describe('SettingsPanel', () => {
     });
 
     it('disables the delay without autosave and keeps its saved value', async () => {
-      const { forms, autosave, delay, typeDelay, click, button } = await renderEditable();
+      const { forms, autosave, delay, typeDelay, click, button } = await renderEditable({
+        autoSave: true,
+      });
       await typeDelay('-1');
       await click(autosave());
       expect(delay().disabled).toBe(true);
@@ -213,7 +234,9 @@ describe('SettingsPanel', () => {
     });
 
     it.each(['', '-1', '1.5', '2147483648'])('does not save the delay "%s"', async (value) => {
-      const { forms, delay, typeDelay, click, button, text } = await renderEditable();
+      const { forms, delay, typeDelay, click, button, text } = await renderEditable({
+        autoSave: true,
+      });
       await typeDelay(value);
       expect(delay().validity.valid).toBe(false);
       await click(button('Save settings'));
@@ -226,6 +249,7 @@ describe('SettingsPanel', () => {
     it('resets to the host settings and discards unsaved edits', async () => {
       localStorage.setItem(storageKey, JSON.stringify({ autoSave: false, autoSaveDelay: 500 }));
       const { forms, autosave, delay, typeDelay, click, button } = await renderEditable({
+        autoSave: true,
         autoSaveDelay: 750,
       });
       expect(autosave().checked).toBe(false);
@@ -242,7 +266,9 @@ describe('SettingsPanel', () => {
     });
 
     it('reports a failed save and keeps the current settings and the edit', async () => {
-      const { forms, store, delay, typeDelay, click, button, text } = await renderEditable();
+      const { forms, store, delay, typeDelay, click, button, text } = await renderEditable({
+        autoSave: true,
+      });
       vi.spyOn(store, 'saveSettings$').mockReturnValue(throwError(() => new Error('500')));
       await typeDelay('750');
       await click(button('Save settings'));
@@ -254,7 +280,9 @@ describe('SettingsPanel', () => {
     });
 
     it('blocks the form while a save is running', async () => {
-      const { store, forms, typeDelay, click, button, settle } = await renderEditable();
+      const { store, forms, typeDelay, click, button, settle } = await renderEditable({
+        autoSave: true,
+      });
       const saved = new Subject<void>();
       vi.spyOn(store, 'saveSettings$').mockReturnValue(saved);
       await typeDelay('750');
@@ -269,7 +297,9 @@ describe('SettingsPanel', () => {
     });
 
     it('finishes a waiting save after the panel closes', async () => {
-      const { fixture, store, forms, typeDelay, click, button } = await renderEditable();
+      const { fixture, store, forms, typeDelay, click, button } = await renderEditable({
+        autoSave: true,
+      });
       const earlier = new Subject<void>();
       vi.spyOn(store, 'saveSettings$').mockReturnValueOnce(earlier);
       forms.updateSettings$({ autoSave: true, autoSaveDelay: 100 }).subscribe();
@@ -284,8 +314,9 @@ describe('SettingsPanel', () => {
     it('explains when the storage does not save settings', async () => {
       const note =
         'Changes apply to this session only; the configured storage does not save settings.';
-      const { element, forms, typeDelay, click, button } = await renderEditable({}, (store) =>
-        Object.assign(store, { getSettings$: undefined, saveSettings$: undefined }),
+      const { element, forms, typeDelay, click, button } = await renderEditable(
+        { autoSave: true },
+        (store) => Object.assign(store, { getSettings$: undefined, saveSettings$: undefined }),
       );
       expect(element.textContent).toContain(note);
       await typeDelay('750');
@@ -311,6 +342,7 @@ describe('SettingsPanel', () => {
     it('exports the settings in effect', async () => {
       const { forms, typeDelay, button } = await renderEditable({
         editorType: 'customer-surveys',
+        autoSave: true,
         autoSaveDelay: 750,
       });
       vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:settings');
@@ -363,7 +395,7 @@ describe('SettingsPanel', () => {
 
         expect(text('alert')).toEqual(['The file is not valid builder settings.']);
         expect(text('status')).toEqual(['']);
-        expect(forms.settings()).toEqual({ autoSave: true, autoSaveDelay: 3000 });
+        expect(forms.settings()).toEqual({ autoSave: false, autoSaveDelay: 3000 });
         expect(save).not.toHaveBeenCalled();
 
         await chooseFile('{"autoSave":true,"autoSaveDelay":500}');

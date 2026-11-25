@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
 for (const width of [1536, 1024, 390]) {
-  test(`inspects settings without a form and restores navigation at ${width}px`, async ({
+  test(`edits settings without a form and restores navigation at ${width}px`, async ({
     page,
   }, testInfo) => {
     await page.setViewportSize({ width, height: 900 });
@@ -17,28 +17,38 @@ for (const width of [1536, 1024, 390]) {
       panel.getByRole('heading', { name: 'Builder settings', exact: true }),
     ).toBeVisible();
     await expect(panel).toContainText('form-editor');
-    await expect(panel.getByLabel('Autosave delay (ms)', { exact: true })).toHaveValue('3000');
+    const autosave = panel.getByRole('checkbox', { name: 'Autosave', exact: true });
+    await expect(autosave).not.toBeChecked();
+    const delay = panel.getByRole('spinbutton', { name: 'Autosave delay (ms)' });
+    await expect(delay).toHaveValue('3000');
     await panel.getByRole('button', { name: 'Size', exact: true }).click();
     await expect(panel.getByText('48 · 12rem', { exact: false }).first()).toBeVisible();
     await expect(page.locator('body')).toHaveJSProperty('scrollWidth', width);
     await page.screenshot({ path: testInfo.outputPath('settings.png'), fullPage: true });
+    await autosave.check();
+    await delay.fill('500');
+    await panel.getByRole('button', { name: 'Save settings', exact: true }).click();
+    await expect(panel.getByRole('status')).toHaveText('Settings updated.');
     await page.goBack();
     await expect(page).toHaveURL('/workspaces/forms');
     await page.goForward();
     await expect(panel).toBeVisible();
     await page.reload();
     await expect(page).toHaveURL('/workspaces/settings');
-    await expect(panel).toBeVisible();
+    await expect(autosave).toBeChecked();
+    await expect(delay).toHaveValue('500');
   });
 }
 
 test('saves, exports, resets and imports the autosave settings', async ({ page }) => {
   await page.goto('/workspaces/settings');
   const panel = page.locator('core-settings-panel');
-  const delay = panel.getByLabel('Autosave delay (ms)', { exact: true });
+  const autosave = panel.getByRole('checkbox', { name: 'Autosave', exact: true });
+  const delay = panel.getByRole('spinbutton', { name: 'Autosave delay (ms)' });
   const status = panel.getByRole('status');
   await expect(delay).toHaveValue('3000');
 
+  await autosave.check();
   await delay.fill('500');
   await panel.getByRole('button', { name: 'Save settings', exact: true }).click();
   await expect(status).toHaveText('Settings updated.');
@@ -53,8 +63,10 @@ test('saves, exports, resets and imports the autosave settings', async ({ page }
   expect(JSON.parse(exported.toString())).toEqual({ autoSave: true, autoSaveDelay: 500 });
 
   await panel.getByRole('button', { name: 'Reset to host defaults', exact: true }).click();
+  await expect(autosave).not.toBeChecked();
   await expect(delay).toHaveValue('3000');
   await page.reload();
+  await expect(autosave).not.toBeChecked();
   await expect(delay).toHaveValue('3000');
 
   const chooserPromise = page.waitForEvent('filechooser');
@@ -65,7 +77,9 @@ test('saves, exports, resets and imports the autosave settings', async ({ page }
     mimeType: 'application/json',
     buffer: exported,
   });
+  await expect(autosave).toBeChecked();
   await expect(delay).toHaveValue('500');
   await page.reload();
+  await expect(autosave).toBeChecked();
   await expect(delay).toHaveValue('500');
 });

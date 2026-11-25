@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Panel } from '../../ui/panel';
 import { CORE_EDITOR_CONFIG, CORE_FORM_TEMPLATES, CORE_LIBRARY_CONFIGS } from '../../config/types';
+import { CoreFormService } from '../../editor/core-form.service';
 import { CORE_FORM_STORE } from '../../persistence/types';
 import { PanelHeader } from '../../shared/panel-header';
 import { CORE_STYLES_CONFIG } from '../styling-panel/types';
@@ -28,17 +29,14 @@ import { AutosaveSettings } from './autosave-settings';
             <dd>{{ editor.editorType }}</dd>
           </div>
           @if (!editor.editableSettings) {
+            @let autosave = settings();
             <div>
               <dt class="text-muted-color">Autosave</dt>
-              <dd>{{ editor.autoSave === false ? 'Disabled' : 'Enabled' }}</dd>
+              <dd>{{ autosave.autoSave ? 'Enabled' : 'Disabled' }}</dd>
             </div>
             <div>
               <dt class="text-muted-color">Autosave delay</dt>
-              <dd>
-                {{ editor.autoSaveDelay ?? 3000 }} ms{{
-                  editor.autoSave === false ? ' (inactive)' : ''
-                }}
-              </dd>
+              <dd>{{ autosave.autoSaveDelay }} ms{{ autosave.autoSave ? '' : ' (inactive)' }}</dd>
             </div>
           }
           <div>
@@ -176,6 +174,7 @@ import { AutosaveSettings } from './autosave-settings';
 })
 export class SettingsPanel {
   protected readonly editor = inject(CORE_EDITOR_CONFIG);
+  protected readonly settings = inject(CoreFormService).settings;
   protected readonly libraries = inject(CORE_LIBRARY_CONFIGS);
   protected readonly styles = inject(CORE_STYLES_CONFIG);
   protected readonly sharedTemplates = inject(CORE_FORM_TEMPLATES, { optional: true });

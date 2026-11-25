@@ -1,8 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BuilderSettings, isBuilderSettings } from '@ngx-formly/builder';
 import saveAs from 'file-saver';
-import { from, Observable, switchMap } from 'rxjs';
+import { defer, Observable, switchMap } from 'rxjs';
 import { CORE_EDITOR_CONFIG } from '../../config/types';
 import { CoreFormService } from '../../editor/core-form.service';
 
@@ -38,6 +45,7 @@ async function readSettings(file: File): Promise<BuilderSettings> {
           coreButton
           text
           type="button"
+          [disabled]="busy()"
           (click)="forms.loadSettings()"
         >
           Try again
@@ -61,7 +69,7 @@ async function readSettings(file: File): Promise<BuilderSettings> {
           type="checkbox"
           name="autoSave"
           class="size-4 accent-primary"
-          [disabled]="state() === 'saving'"
+          [disabled]="busy()"
           [(ngModel)]="autoSave"
         />
         Autosave
@@ -75,7 +83,7 @@ async function readSettings(file: File): Promise<BuilderSettings> {
           required
           min="0"
           max="2147483647"
-          [disabled]="state() === 'saving' || !autoSave()"
+          [disabled]="busy() || !autoSave()"
           [(ngModel)]="autoSaveDelay"
         />
       </label>
@@ -95,7 +103,7 @@ async function readSettings(file: File): Promise<BuilderSettings> {
         <button
           coreButton
           type="submit"
-          [disabled]="state() === 'saving'"
+          [disabled]="busy()"
         >
           Save settings
         </button>
@@ -103,7 +111,7 @@ async function readSettings(file: File): Promise<BuilderSettings> {
           coreButton
           severity="secondary"
           type="button"
-          [disabled]="state() === 'saving'"
+          [disabled]="busy()"
           (click)="reset()"
         >
           Reset to host defaults
@@ -112,6 +120,7 @@ async function readSettings(file: File): Promise<BuilderSettings> {
           coreButton
           severity="secondary"
           type="button"
+          [disabled]="forms.settingsLoading()"
           (click)="exportSettings()"
         >
           Export settings
@@ -120,7 +129,7 @@ async function readSettings(file: File): Promise<BuilderSettings> {
           coreButton
           severity="secondary"
           type="button"
-          [disabled]="state() === 'saving'"
+          [disabled]="busy()"
           (click)="fileSelect.click()"
         >
           Import settings
@@ -133,7 +142,13 @@ async function readSettings(file: File): Promise<BuilderSettings> {
           (change)="importSettings(fileSelect)"
         />
       </div>
-      <p role="status">{{ state() === 'saved' ? 'Settings updated.' : '' }}</p>
+      <p role="status">
+        @if (forms.settingsLoading()) {
+          Loading saved settings…
+        } @else if (state() === 'saved') {
+          Settings updated.
+        }
+      </p>
     </form>
   `,
 })
@@ -146,6 +161,9 @@ export class AutosaveSettings {
   );
   protected readonly state = signal<'idle' | 'saving' | 'saved' | 'failed' | 'invalid-file'>(
     'idle',
+  );
+  protected readonly busy = computed(
+    () => this.forms.settingsLoading() || this.state() === 'saving',
   );
 
   protected save(): void {
@@ -166,6 +184,10 @@ export class AutosaveSettings {
   }
 
   protected exportSettings(): void {
+    if (this.forms.settingsLoading()) {
+      return;
+    }
+
     const settings = JSON.stringify(this.forms.settings(), null, 2);
 
     saveAs(
@@ -183,7 +205,9 @@ export class AutosaveSettings {
     }
 
     this.run(
-      from(readSettings(file)).pipe(switchMap((settings) => this.forms.updateSettings$(settings))),
+      defer(() => readSettings(file)).pipe(
+        switchMap((settings) => this.forms.updateSettings$(settings)),
+      ),
     );
   }
 
@@ -196,7 +220,7 @@ export class AutosaveSettings {
 
   // Not tied to the panel's lifetime: closing it must not cancel a queued save.
   private run($operation: Observable<void>): void {
-    if (this.state() === 'saving') {
+    if (this.busy()) {
       return;
     }
 

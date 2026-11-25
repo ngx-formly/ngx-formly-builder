@@ -194,15 +194,18 @@ describe('asynchronous builder stores', () => {
     },
   );
 
-  it.each([undefined, false])('defaults autosave on while respecting explicit %s', (autoSave) => {
-    TestBed.resetTestingModule();
-    vi.useFakeTimers();
-    configure(autoSave);
-    const a = add('A');
-    engine.setActiveModel({ edited: true });
-    vi.advanceTimersByTime(10);
-    expect(stored(a)?.model).toEqual(autoSave === false ? {} : { edited: true });
-  });
+  it.each([undefined, false, true])(
+    'defaults autosave off while respecting explicit %s',
+    (autoSave) => {
+      TestBed.resetTestingModule();
+      vi.useFakeTimers();
+      configure(autoSave);
+      const a = add('A');
+      engine.setActiveModel({ edited: true });
+      vi.advanceTimersByTime(10);
+      expect(stored(a)?.model).toEqual(autoSave ? { edited: true } : {});
+    },
+  );
 
   it('serializes saves and coalesces newer edits before switching', () => {
     const a = add('A');
@@ -227,7 +230,7 @@ describe('asynchronous builder stores', () => {
   it('requires explicit retry after a failed save, even when editing continues', () => {
     TestBed.resetTestingModule();
     vi.useFakeTimers();
-    configure();
+    configure(true);
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const a = add('A');
     const b = add('B', false);
@@ -409,7 +412,7 @@ describe('asynchronous builder stores', () => {
   it('does not flush a debounced autosave on destruction', () => {
     TestBed.resetTestingModule();
     vi.useFakeTimers();
-    configure();
+    configure(true);
     const a = add('A');
     engine.setActiveModel({ edited: true });
     TestBed.resetTestingModule();

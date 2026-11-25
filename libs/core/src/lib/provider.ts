@@ -68,7 +68,7 @@ export function provideCoreTheme(): EnvironmentProviders {
 
 export function provideCoreConfig(
   libraryConfig: LibraryConfig[] = [],
-  autoSave = true,
+  autoSave = false,
   overrides: Partial<
     Pick<CoreEditorConfig, 'editorType' | 'autoSaveDelay' | 'showSettings' | 'editableSettings'>
   > = {},
@@ -125,7 +125,7 @@ export function provideFormlyBuilder(config: FormlyBuilderConfig = {}): Environm
   return makeEnvironmentProviders([
     provideFormlyCore(),
     provideCore(config.styles),
-    provideCoreConfig(config.libraries, config.autoSave ?? true, {
+    provideCoreConfig(config.libraries, config.autoSave, {
       editorType: config.editorType,
       autoSaveDelay: config.autoSaveDelay,
       showSettings: config.showSettings,
