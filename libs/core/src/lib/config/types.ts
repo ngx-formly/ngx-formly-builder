@@ -105,7 +105,7 @@ export interface CoreEditorConfig {
   autoSave?: boolean;
   /** Delay in milliseconds before an active form mutation is persisted. */
   autoSaveDelay?: number;
-  /** Show the read-only builder settings panel. Defaults to true. */
+  /** Show the builder settings panel. Defaults to true. */
   showSettings?: boolean;
   /** Let users edit, save and share autosave settings. Defaults to false. */
   editableSettings?: boolean;
@@ -115,7 +115,7 @@ export interface CoreEditorConfig {
 export interface FormlyBuilderConfig {
   /** Replaces the default Tailwind styling catalogue. The host supplies matching CSS. */
   styles?: StylesConfig;
-  /** Show the read-only builder settings panel. Defaults to true. */
+  /** Show the builder settings panel. Defaults to true. */
   showSettings?: boolean;
   /** Let users edit, save and share autosave settings. Defaults to false. */
   editableSettings?: boolean;

@@ -186,9 +186,10 @@ Use your own profile for `myFormlyLibrary`. Toggle `.dark` on the document root 
 `provideFormlyBuilder` accepts an editor storage namespace, autosave settings, and a custom
 `FormStoreService` implementation. Pass `styles` to replace the Tailwind styling catalogue,
 using `tailwindConfig` as an optional starting point. Style options accept `variantLabels` and
-`description`; their saved class values stay unchanged. The read-only **Builder settings** panel
-shows the effective configuration, including before a form is opened. Set `showSettings: false`
-to hide it in your application. Host CSS determines the actual dimensions and available classes.
+`description`; their saved class values stay unchanged. The **Builder settings** panel shows
+the effective configuration, including before a form is opened. Set `editableSettings: true` to let
+users change and share autosave settings there, or `showSettings: false` to hide the panel in your
+application. Host CSS determines the actual dimensions and available classes.
 The API is experimental in `0.0.x`.
 
 Use `provideFormlyBuilder()` without profiles for native HTML controls. Leaving **UI Library**
