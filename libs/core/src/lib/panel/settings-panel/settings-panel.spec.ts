@@ -137,6 +137,21 @@ describe('SettingsPanel', () => {
           control('Autosave delay (ms)').dispatchEvent(new Event('input', { bubbles: true }));
           await settle();
         },
+        chooseFile: async (content: string) => {
+          const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+          // jsdom does not implement File.text().
+          const file = Object.assign(new File([content], 'settings.json'), {
+            text: () => Promise.resolve(content),
+          });
+          Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          fixture.detectChanges();
+          expect(button('Save settings').disabled).toBe(true);
+          await vi.waitFor(async () => {
+            await settle();
+            expect(button('Save settings').disabled).toBe(false);
+          });
+        },
         click: async (target: HTMLElement) => {
           target.click();
           await settle();
@@ -291,6 +306,88 @@ describe('SettingsPanel', () => {
 
       expect(text('alert')).toEqual([]);
       expect(delay().value).toBe('500');
+    });
+
+    it('exports the settings in effect', async () => {
+      const { forms, typeDelay, button } = await renderEditable({
+        editorType: 'customer-surveys',
+        autoSaveDelay: 750,
+      });
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:settings');
+      const blob = vi.spyOn(globalThis, 'Blob');
+      let fileName = '';
+      const download = vi
+        .spyOn(HTMLAnchorElement.prototype, 'dispatchEvent')
+        .mockImplementation(function (this: HTMLAnchorElement) {
+          fileName = this.download;
+          return true;
+        });
+      await typeDelay('900');
+      // Not settled: FileSaver keeps a timer running to release the download URL.
+      button('Export settings').click();
+      await vi.waitFor(() => expect(download).toHaveBeenCalled());
+
+      expect(fileName).toBe('formly-builder-settings-customer-surveys.json');
+      const [content] = blob.mock.calls[0][0] as string[];
+      expect(content).toBe(JSON.stringify({ autoSave: true, autoSaveDelay: 750 }, null, 2));
+      expect(JSON.parse(content)).toEqual(forms.settings());
+    });
+
+    it('opens the file chooser for JSON files', async () => {
+      const { element, click, button } = await renderEditable();
+      const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+      const open = vi.spyOn(input, 'click');
+      expect(input.accept).toBe('application/json,.json');
+      await click(button('Import settings'));
+
+      expect(open).toHaveBeenCalledOnce();
+    });
+
+    it('imports settings from a file', async () => {
+      const { forms, autosave, delay, chooseFile, text } = await renderEditable();
+      await chooseFile('{"autoSave":false,"autoSaveDelay":500,"styles":{}}');
+
+      expect(forms.settings()).toEqual({ autoSave: false, autoSaveDelay: 500 });
+      expect(JSON.parse(localStorage.getItem(storageKey)!)).toEqual(forms.settings());
+      expect(autosave().checked).toBe(false);
+      expect(delay().value).toBe('500');
+      expect(text('status')).toEqual(['Settings updated.']);
+    });
+
+    it.each(['{bad', '{"autoSave":"yes"}', '{"autoSave":true,"autoSaveDelay":-1}', 'null'])(
+      'rejects the file content %s',
+      async (content) => {
+        const { forms, store, chooseFile, text } = await renderEditable();
+        const save = vi.spyOn(store, 'saveSettings$');
+        await chooseFile(content);
+
+        expect(text('alert')).toEqual(['The file is not valid builder settings.']);
+        expect(text('status')).toEqual(['']);
+        expect(forms.settings()).toEqual({ autoSave: true, autoSaveDelay: 3000 });
+        expect(save).not.toHaveBeenCalled();
+
+        await chooseFile('{"autoSave":true,"autoSaveDelay":500}');
+        expect(text('alert')).toEqual([]);
+        expect(forms.settings().autoSaveDelay).toBe(500);
+      },
+    );
+
+    it('reports an import that could not be saved', async () => {
+      const { forms, store, chooseFile, text } = await renderEditable();
+      vi.spyOn(store, 'saveSettings$').mockReturnValue(throwError(() => new Error('500')));
+      await chooseFile('{"autoSave":true,"autoSaveDelay":500}');
+
+      expect(text('alert')).toEqual(['Settings could not be saved.']);
+      expect(forms.settings().autoSaveDelay).toBe(3000);
+    });
+
+    it('clears the chosen file so it can be imported again', async () => {
+      const { element, chooseFile } = await renderEditable();
+      const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+      const clear = vi.spyOn(input, 'value', 'set');
+      await chooseFile('{bad');
+
+      expect(clear).toHaveBeenCalledWith('');
     });
   });
 });
