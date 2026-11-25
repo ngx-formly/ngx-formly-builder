@@ -4,15 +4,20 @@ import { CORE_EDITOR_CONFIG, CORE_FORM_TEMPLATES, CORE_LIBRARY_CONFIGS } from '.
 import { CORE_FORM_STORE } from '../../persistence/types';
 import { PanelHeader } from '../../shared/panel-header';
 import { CORE_STYLES_CONFIG } from '../styling-panel/types';
+import { AutosaveSettings } from './autosave-settings';
 
 @Component({
   selector: 'core-settings-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PanelHeader, Panel],
+  imports: [AutosaveSettings, PanelHeader, Panel],
   template: `
     <core-panel-header
       header="Builder settings"
-      subHeader="Configured by the application that hosts this builder"
+      [subHeader]="
+        editor.editableSettings
+          ? 'Autosave can be changed here; other settings come from the host application'
+          : 'Configured by the application that hosts this builder'
+      "
     />
     <div class="panel-content flex flex-col gap-6 text-sm wrap-anywhere">
       <section aria-label="General settings">
@@ -22,23 +27,28 @@ import { CORE_STYLES_CONFIG } from '../styling-panel/types';
             <dt class="text-muted-color">Storage namespace</dt>
             <dd>{{ editor.editorType }}</dd>
           </div>
-          <div>
-            <dt class="text-muted-color">Autosave</dt>
-            <dd>{{ editor.autoSave === false ? 'Disabled' : 'Enabled' }}</dd>
-          </div>
-          <div>
-            <dt class="text-muted-color">Autosave delay</dt>
-            <dd>
-              {{ editor.autoSaveDelay ?? 3000 }} ms{{
-                editor.autoSave === false ? ' (inactive)' : ''
-              }}
-            </dd>
-          </div>
+          @if (!editor.editableSettings) {
+            <div>
+              <dt class="text-muted-color">Autosave</dt>
+              <dd>{{ editor.autoSave === false ? 'Disabled' : 'Enabled' }}</dd>
+            </div>
+            <div>
+              <dt class="text-muted-color">Autosave delay</dt>
+              <dd>
+                {{ editor.autoSaveDelay ?? 3000 }} ms{{
+                  editor.autoSave === false ? ' (inactive)' : ''
+                }}
+              </dd>
+            </div>
+          }
           <div>
             <dt class="text-muted-color">Storage</dt>
             <dd>{{ storageLabel }}</dd>
           </div>
         </dl>
+        @if (editor.editableSettings) {
+          <core-autosave-settings class="mt-3 block" />
+        }
       </section>
 
       <section aria-label="Registered libraries">
@@ -137,8 +147,8 @@ import { CORE_STYLES_CONFIG } from '../styling-panel/types';
       >
         <h3 class="mb-2 font-medium">Configure your builder</h3>
         <p class="mb-3 text-muted-color">
-          Settings are supplied at initialization. Changes belong in your application's builder
-          configuration.
+          {{ editor.editableSettings ? 'Other settings' : 'Settings' }} are supplied at
+          initialization. Changes belong in your application's builder configuration.
         </p>
         <ul class="flex flex-col gap-2">
           <li>
