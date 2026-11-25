@@ -8,6 +8,7 @@ import { formTemplates } from './form-templates';
 export function provideFormEditor(): EnvironmentProviders {
   return provideFormlyBuilder({
     formTemplates,
+    editableSettings: true,
     libraries: [
       materialFormEditorConfig,
       // Preserve the Studio Material storage ID for existing forms and presets.

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 
 for (const width of [1536, 1024, 390]) {
   test(`inspects settings without a form and restores navigation at ${width}px`, async ({
@@ -16,7 +17,7 @@ for (const width of [1536, 1024, 390]) {
       panel.getByRole('heading', { name: 'Builder settings', exact: true }),
     ).toBeVisible();
     await expect(panel).toContainText('form-editor');
-    await expect(panel).toContainText('3000 ms');
+    await expect(panel.getByLabel('Autosave delay (ms)', { exact: true })).toHaveValue('3000');
     await panel.getByRole('button', { name: 'Size', exact: true }).click();
     await expect(panel.getByText('48 · 12rem', { exact: false }).first()).toBeVisible();
     await expect(page.locator('body')).toHaveJSProperty('scrollWidth', width);
@@ -30,3 +31,41 @@ for (const width of [1536, 1024, 390]) {
     await expect(panel).toBeVisible();
   });
 }
+
+test('saves, exports, resets and imports the autosave settings', async ({ page }) => {
+  await page.goto('/workspaces/settings');
+  const panel = page.locator('core-settings-panel');
+  const delay = panel.getByLabel('Autosave delay (ms)', { exact: true });
+  const status = panel.getByRole('status');
+  await expect(delay).toHaveValue('3000');
+
+  await delay.fill('500');
+  await panel.getByRole('button', { name: 'Save settings', exact: true }).click();
+  await expect(status).toHaveText('Settings updated.');
+  await page.reload();
+  await expect(delay).toHaveValue('500');
+
+  const downloadPromise = page.waitForEvent('download');
+  await panel.getByRole('button', { name: 'Export settings', exact: true }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('formly-builder-settings-form-editor.json');
+  const exported = await readFile((await download.path())!);
+  expect(JSON.parse(exported.toString())).toEqual({ autoSave: true, autoSaveDelay: 500 });
+
+  await panel.getByRole('button', { name: 'Reset to host defaults', exact: true }).click();
+  await expect(delay).toHaveValue('3000');
+  await page.reload();
+  await expect(delay).toHaveValue('3000');
+
+  const chooserPromise = page.waitForEvent('filechooser');
+  await panel.getByRole('button', { name: 'Import settings', exact: true }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({
+    name: download.suggestedFilename(),
+    mimeType: 'application/json',
+    buffer: exported,
+  });
+  await expect(delay).toHaveValue('500');
+  await page.reload();
+  await expect(delay).toHaveValue('500');
+});
