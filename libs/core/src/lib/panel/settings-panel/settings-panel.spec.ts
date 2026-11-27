@@ -62,6 +62,22 @@ describe('SettingsPanel', () => {
     expect(element.textContent).toContain('750 ms (inactive)');
   });
 
+  it('lists the style values in effect', async () => {
+    const element = await render({ styleValues: { height: [{ value: '96', label: 'Tall' }] } });
+    const forms = TestBed.inject(CoreFormService);
+    forms
+      .updateSettings$({
+        ...forms.settings(),
+        styleValues: { margin: [{ value: '7', label: 'Custom' }] },
+      })
+      .subscribe();
+    TestBed.tick();
+
+    expect(element.textContent).toContain('Tall');
+    expect(element.textContent).toContain('Custom');
+    expect(element.textContent).toContain('24 · 6rem'); // Padding keeps the Tailwind values.
+  });
+
   it('shows overrides and empty catalogues without exposing store internals', async () => {
     const element = await render(
       {

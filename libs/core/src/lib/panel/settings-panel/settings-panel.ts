@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Panel } from '../../ui/panel';
 import { CORE_EDITOR_CONFIG, CORE_FORM_TEMPLATES, CORE_LIBRARY_CONFIGS } from '../../config/types';
 import { CoreFormService } from '../../editor/core-form.service';
@@ -95,7 +95,7 @@ import { AutosaveSettings } from './autosave-settings';
             <p>No breakpoints configured.</p>
           }
         </dl>
-        @for (group of styleGroups; track group.label) {
+        @for (group of styleGroups(); track group.label) {
           <h4 class="mt-4 mb-2 font-medium">{{ group.label }}</h4>
           @for (category of group.categories; track $index) {
             <core-property-panel
@@ -174,7 +174,8 @@ import { AutosaveSettings } from './autosave-settings';
 })
 export class SettingsPanel {
   protected readonly editor = inject(CORE_EDITOR_CONFIG);
-  protected readonly settings = inject(CoreFormService).settings;
+  private readonly forms = inject(CoreFormService);
+  protected readonly settings = this.forms.settings;
   protected readonly libraries = inject(CORE_LIBRARY_CONFIGS);
   protected readonly styles = inject(CORE_STYLES_CONFIG);
   protected readonly sharedTemplates = inject(CORE_FORM_TEMPLATES, { optional: true });
@@ -184,8 +185,9 @@ export class SettingsPanel {
       .filter((library) => !library.hidden)
       .flatMap((library) => library.formTemplates ?? []);
   protected readonly storageLabel = inject(CORE_FORM_STORE).label ?? 'Custom storage';
-  protected readonly styleGroups = [
-    { label: 'Self', categories: this.styles.className },
-    { label: 'Children', categories: this.styles.fieldGroupClassName },
-  ];
+  // The values offered follow the style value lists in the current settings.
+  protected readonly styleGroups = computed(() => [
+    { label: 'Self', categories: this.forms.styles().className },
+    { label: 'Children', categories: this.forms.styles().fieldGroupClassName },
+  ]);
 }

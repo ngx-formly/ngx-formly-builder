@@ -185,7 +185,7 @@ export class StylingPanel {
     activeField: EditorField,
     parentField: EditorField | null,
   ): Record<string, StyleOptionCategory[]> {
-    const categories = this.stylesConfig[classType];
+    const categories = this.formService.styles()[classType];
     const entries = this.stylesConfig.breakpoints.map((breakpoint) => {
       const breakpointCategories = categories.map((category) => ({
         ...category,

@@ -97,6 +97,7 @@ export class StylingOption {
       this.option(),
       this.breakpoint(),
       this.breakpointAffix,
+      this.stylesConfig.breakpoints,
     );
 
     if (
@@ -124,7 +125,7 @@ export class StylingOption {
         ...previous,
         [this.classType()]: [remaining, formattedVariant].filter((token) => !!token).join(' '),
       },
-      this.stylesConfig,
+      this.formService.styles(),
     );
 
     const changes: PropertyChange[] = [];
