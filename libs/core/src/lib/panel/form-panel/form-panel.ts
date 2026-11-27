@@ -104,7 +104,7 @@ import { FormToolbarComponent } from './toolbar';
       <div class="min-h-0 grow overflow-hidden">
         <div
           role="tabpanel"
-          class="block h-full overflow-y-auto px-4 pb-4"
+          class="block h-full overflow-y-auto px-4 pt-7 pb-4 pointer-coarse:pt-[44px]"
           [hidden]="activeFormDisplayMode() !== 'form'"
         >
           <core-form-builder-content class="min-h-full" />

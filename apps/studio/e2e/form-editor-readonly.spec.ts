@@ -1,3 +1,4 @@
+import { clickFormAction } from './helpers/form-toolbar';
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
@@ -49,7 +50,10 @@ for (const width of [1440, 390]) {
       await expect(dimmedFields).toHaveCount(2);
       await expect(dimmedFields.first()).toHaveCSS('opacity', '0.5');
       await expect(builder.getByText('Read only')).toHaveCount(0);
-      await expect(builder.locator('core-formly-field-header').first()).toHaveCSS('opacity', '1');
+      const field = builder.getByLabel('Field reference', { exact: true });
+      await field.hover();
+      await expect(field.locator('core-formly-field-header')).toBeVisible();
+      await expect(field.locator('core-formly-field-header')).toHaveCSS('opacity', '1');
       const reference = builder.getByRole('textbox', { name: 'Reference', exact: true });
       await expect(reference).not.toBeEditable();
       await expect(reference).toBeEnabled();
@@ -58,12 +62,11 @@ for (const width of [1440, 390]) {
       await page.screenshot({ path: testInfo.outputPath('builder.png'), animations: 'disabled' });
 
       for (const mode of ['inline', 'dialog']) {
-        await page
-          .getByRole('button', {
-            name: mode === 'inline' ? 'Preview' : 'Open preview',
-            exact: true,
-          })
-          .click();
+        if (mode === 'inline') {
+          await page.getByRole('button', { name: 'Preview', exact: true }).click();
+        } else {
+          await clickFormAction(page, 'Open preview');
+        }
         const preview =
           mode === 'dialog'
             ? page.getByRole('dialog', { name: 'Form Preview' })

@@ -289,6 +289,13 @@
   font-size: 1.25rem;
   font-weight: 600;
 }
+.core-dialog-close {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+}
 .core-dialog-content {
   min-height: 0;
   flex: 1;

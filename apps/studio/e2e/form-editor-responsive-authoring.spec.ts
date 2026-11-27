@@ -20,15 +20,7 @@ async function expectNoDocumentOverflow(page: Page) {
 
 async function expectWithinViewport(page: Page, selector: string) {
   const button = page.getByRole('button', { name: selector, exact: true });
-  await expect(button).toBeVisible();
-  const box = await button.boundingBox();
-  expect(box).not.toBeNull();
-  const viewport = page.viewportSize();
-  expect(viewport).not.toBeNull();
-  expect(box!.x).toBeGreaterThanOrEqual(0);
-  expect(box!.y).toBeGreaterThanOrEqual(0);
-  expect(box!.x + box!.width).toBeLessThanOrEqual(viewport!.width);
-  expect(box!.y + box!.height).toBeLessThanOrEqual(viewport!.height);
+  await expect(button).toBeInViewport({ ratio: 1 });
 }
 
 test.describe('Form Editor responsive authoring', () => {
@@ -43,31 +35,27 @@ test.describe('Form Editor responsive authoring', () => {
     await page.setViewportSize({ width: 1536, height: 900 });
     await page.getByRole('button', { name: 'Preview', exact: true }).click();
     const toolbar = page.locator('core-form-toolbar core-preview-device-toolbar');
-    await toolbar.getByRole('button', { name: 'SM', exact: true }).click();
+    const presets = toolbar.getByRole('group', { name: 'Preview device width' });
+    const width = toolbar.getByRole('combobox', { name: 'Preview device width' });
+    await expect(width).toBeHidden();
+    await presets.getByRole('button', { name: 'SM', exact: true }).click();
     await expect(page.locator('core-form-preview-content iframe')).toHaveCSS('width', '640px');
 
     await page.getByRole('button', { name: 'Builder', exact: true }).click();
     const builder = page.locator('core-form-builder-content');
     await expect(builder).toHaveCSS('width', '640px');
-    await expect(toolbar.getByRole('button', { name: 'SM', exact: true })).toHaveAttribute(
+    await expect(presets.getByRole('button', { name: 'SM', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
 
-    await toolbar.getByRole('button', { name: 'Custom', exact: true }).click();
+    await presets.getByRole('button', { name: 'Custom', exact: true }).click();
     await toolbar.getByRole('spinbutton').fill('480');
     await toolbar.getByRole('button', { name: 'Confirm width' }).click();
     await expect(builder).toHaveCSS('width', '480px');
     await expect(toolbar).toContainText('480px · 100%');
-    const field = builder
-      .locator('core-field-wrapper')
-      .filter({
-        has: page
-          .locator('core-formly-field-header > div > span')
-          .getByText('reference', { exact: true }),
-      })
-      .last();
-    await field.locator('core-formly-field-header').click();
+    const field = builder.getByLabel('Field reference', { exact: true });
+    await field.click();
     await expect(field).toHaveAttribute('aria-pressed', 'true');
     await page.screenshot({ path: testInfo.outputPath('builder-custom-desktop.png') });
 
@@ -78,17 +66,19 @@ test.describe('Form Editor responsive authoring', () => {
     await page.getByRole('button', { name: 'Builder', exact: true }).click();
     await expect(builder).toHaveCSS('width', '480px');
 
-    await toolbar.getByRole('button', { name: 'XL', exact: true }).click();
+    await presets.getByRole('button', { name: 'XL', exact: true }).click();
     await expect(builder).toHaveCSS('width', '1280px');
     await expect(toolbar).toContainText('1280px · 100%');
     await expectNoDocumentOverflow(page);
     await page.setViewportSize({ width: 375, height: 812 });
     await expect(page.locator('core-splitter')).toHaveCount(0);
     await expect(builder).toHaveCSS('width', '1280px');
-    await expectWithinViewport(page, 'Save Form');
+    await expectWithinViewport(page, 'More form actions');
     await expectNoDocumentOverflow(page);
 
-    await toolbar.getByRole('button', { name: 'Auto', exact: true }).click();
+    await expect(presets).toBeHidden();
+    await expect(width).toHaveValue('xl');
+    await width.selectOption('auto');
     await expect(builder).not.toHaveCSS('width', '1280px');
     const box = await builder.boundingBox();
     expect(box!.width).toBeLessThanOrEqual(375);
@@ -96,22 +86,37 @@ test.describe('Form Editor responsive authoring', () => {
     await page.screenshot({ path: testInfo.outputPath('builder-auto-phone.png') });
   });
 
-  test('keeps primary toolbar actions reachable at phone width', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
+  test('moves the toolbar actions into the overflow menu as the editor narrows', async ({
+    page,
+  }) => {
+    const more = page.getByRole('button', { name: 'More form actions' });
+    const menu = page.getByRole('menu', { name: 'Form actions' });
 
-    await expect(page.getByRole('button', { name: 'Open preview' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Export Form' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Save Form' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Builder', exact: true })).toBeVisible();
-    await expectWithinViewport(page, 'Open preview');
-    await expectWithinViewport(page, 'Export Form');
-    await expectWithinViewport(page, 'Save Form');
-    await expectNoDocumentOverflow(page);
+    for (const width of [1024, 765, 375]) {
+      await page.setViewportSize({ width, height: 812 });
+      await expect(page.locator('core-splitter .core-splitter-panel')).toHaveCount(
+        width === 1024 ? 2 : 0,
+      );
+      await expectWithinViewport(page, 'More form actions');
+      await expectWithinViewport(page, 'Builder');
+      for (const name of ['Open preview', 'Clear Model', 'Export Form', 'Save Form']) {
+        await expect(page.getByRole('button', { name, exact: true })).toBeHidden();
+      }
+      await more.press('Enter');
+      for (const name of ['Open preview', 'Clear Model', 'Export Form', 'Save Form']) {
+        await expect(menu.getByRole('menuitem', { name })).toBeVisible();
+      }
+      await page.keyboard.press('Escape');
+      await expect(more).toBeFocused();
+      await expect(menu).toBeHidden();
+      await expectNoDocumentOverflow(page);
+    }
   });
 
   test('keeps the Export dialog inside the phone viewport', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.getByRole('button', { name: 'Export Form' }).click();
+    await page.getByRole('button', { name: 'More form actions' }).click();
+    await page.getByRole('menuitem', { name: 'Export Form' }).click();
 
     const dialog = page.getByRole('dialog', { name: 'Export Form' });
     await expect(dialog).toBeVisible();
@@ -144,10 +149,14 @@ test.describe('Form Editor responsive authoring', () => {
 
   test('keeps the generated preview usable at phone width', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.getByRole('button', { name: 'Open preview' }).click();
+    await page.getByRole('button', { name: 'More form actions' }).click();
+    await page.getByRole('menuitem', { name: 'Open preview' }).click();
 
     const previewDialog = page.getByRole('dialog', { name: 'Form Preview' });
     await expect(previewDialog).toBeVisible();
+    await expect(
+      previewDialog.getByRole('combobox', { name: 'Preview device width' }),
+    ).toBeVisible();
     const previewFrame = previewDialog.frameLocator('iframe[title="Responsive form preview"]');
     await expect(previewFrame.locator('input, textarea, [role="combobox"]').first()).toBeVisible();
 
@@ -220,9 +229,8 @@ test.describe('Form Editor responsive authoring', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('complementary')).toBeHidden();
     await formContent
-      .locator('core-formly-field-header')
-      .filter({ hasText: 'supportRequest' })
-      .click();
+      .getByLabel('Field supportRequest', { exact: true })
+      .click({ position: { x: 3, y: 3 } });
     await openWorkspaceTab(page, 'Add Field');
     await inputSource.getByRole('button', { name: 'Add Field' }).click();
     await page.getByRole('menuitem', { name: 'Add after supportRequest' }).click();
@@ -232,9 +240,8 @@ test.describe('Form Editor responsive authoring', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('complementary')).toBeHidden();
     await formContent
-      .locator('core-formly-field-header')
-      .filter({ hasText: 'supportRequest' })
-      .click();
+      .getByLabel('Field supportRequest', { exact: true })
+      .click({ position: { x: 3, y: 3 } });
     await openWorkspaceTab(page, 'Add Field');
     const refreshedInputSource = page
       .locator('core-type-container')
@@ -293,11 +300,13 @@ test.describe('Form Editor responsive authoring', () => {
     await page.keyboard.press('Escape');
 
     const headers = page.locator('core-formly-field-header');
+    await page.locator('core-field-wrapper').nth(1).hover();
     await headers.nth(1).getByRole('button', { name: 'Options' }).click();
     const secondFieldMenu = page.locator('[role="menu"]:visible').last();
     await expect(secondFieldMenu.getByRole('menuitem', { name: 'Move up' })).toBeVisible();
     await secondFieldMenu.getByRole('menuitem', { name: 'Move up' }).click();
 
+    await page.locator('core-field-wrapper[aria-pressed="true"]').hover();
     await page
       .locator('core-form-builder-content [aria-pressed="true"] core-formly-field-header')
       .getByRole('button', { name: 'Options' })
@@ -333,12 +342,22 @@ test.describe('Form Editor responsive authoring', () => {
     await expect(page.locator('core-form-builder-content [aria-pressed="true"]')).toHaveCount(1);
   });
 
-  test('preserves toolbar and dialog actions at tablet and desktop widths', async ({ page }) => {
+  test('switches the width picker at xl while keeping toolbar actions inline', async ({ page }) => {
+    const toolbar = page.locator('core-form-toolbar');
+    const presets = toolbar.getByRole('group', { name: 'Preview device width' });
+    const width = toolbar.getByRole('combobox', { name: 'Preview device width' });
+    await page.setViewportSize({ width: 1279, height: 768 });
+    await expect(width).toBeVisible();
+    await expect(presets).toBeHidden();
+    await expect(toolbar.getByRole('button', { name: 'Save Form' })).toBeVisible();
+
     for (const viewport of [
-      { width: 1024, height: 768 },
+      { width: 1280, height: 768 },
       { width: 1536, height: 900 },
     ]) {
       await page.setViewportSize(viewport);
+      await expect(presets).toBeVisible();
+      await expect(width).toBeHidden();
       await expect(page.getByRole('button', { name: 'Open preview' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Export Form' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Save Form' })).toBeVisible();

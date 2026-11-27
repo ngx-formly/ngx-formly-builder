@@ -14,7 +14,7 @@ import { PreviewDevicePreset, PreviewViewportService } from './preview-viewport.
   },
   template: `
     <div
-      class="core-segmented"
+      class="core-segmented max-xl:hidden @max-[49rem]/form-toolbar:hidden"
       role="group"
       aria-label="Preview device width"
     >
@@ -30,6 +30,17 @@ import { PreviewDevicePreset, PreviewViewportService } from './preview-viewport.
         </button>
       }
     </div>
+    <select
+      coreInput
+      class="cursor-pointer xl:@min-[49rem]/form-toolbar:hidden pointer-coarse:min-h-11"
+      aria-label="Preview device width"
+      [ngModel]="viewport.preset()"
+      (ngModelChange)="selectPreset($event)"
+    >
+      @for (option of presetOptions; track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+      }
+    </select>
     @if (viewport.preset() === 'custom') {
       <span class="inline-flex items-center gap-1">
         <input
@@ -67,7 +78,10 @@ import { PreviewDevicePreset, PreviewViewportService } from './preview-viewport.
       class="text-sm whitespace-nowrap text-muted-color"
       aria-live="polite"
     >
-      {{ viewport.targetWidth() ? viewport.targetWidth() + 'px' : 'Auto' }} · {{ scalePercent() }}%
+      @if (viewport.targetWidth(); as width) {
+        {{ width }}px ·
+      }
+      {{ scalePercent() }}%
     </span>
   `,
 })
