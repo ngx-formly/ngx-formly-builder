@@ -15,7 +15,14 @@ export type {
 } from './model/types';
 
 export { isValidationRuleName } from './model/workspace-validation';
-export { isBuilderSettings, type BuilderSettings } from './model/builder-settings';
+export {
+  isBuilderSettings,
+  isStyleValues,
+  type BuilderSettings,
+  type StyleValue,
+  type StyleValueList,
+  type StyleValues,
+} from './model/builder-settings';
 
 export {
   addNodeToHierarchy,
