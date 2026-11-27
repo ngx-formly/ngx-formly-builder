@@ -97,6 +97,7 @@ export class BuilderEngineService {
   readonly formLoadError = this.formLoadErrorSrc.asReadonly();
   readonly persistenceError = this.persistenceErrorSrc.asReadonly();
   private readonly autosaveTrigger$ = new Subject<string | null>();
+  private saveLaterEdits = true;
 
   readonly hostSettings: Readonly<BuilderSettings>;
   private readonly settingsSrc: WritableSignal<Readonly<BuilderSettings>>;
@@ -497,10 +498,18 @@ export class BuilderEngineService {
     }).subscribe({ error: (error) => this.handlePersistenceError(action, error) });
   }
 
-  private requestSave(): void {
+  /** `saveLaterEdits: false` saves only the current edit; later ones wait for an explicit save. */
+  private requestSave(saveLaterEdits = true): void {
     const formId = this.activeFormId();
     const version = this.activeVersion;
-    if (!formId || this.queuedSaves.has(version) || this.isStorageMutationBlocked()) return;
+    if (!formId || this.isStorageMutationBlocked()) return;
+    if (this.queuedSaves.has(version)) {
+      // A save already running also takes the edits made since, when this request asks for them.
+      this.saveLaterEdits ||= saveLaterEdits;
+      return;
+    }
+
+    this.saveLaterEdits = saveLaterEdits;
     this.queuedSaves.add(version);
     this.saveStatusSrc.set('saving');
     this.enqueue$(() => {
@@ -533,7 +542,7 @@ export class BuilderEngineService {
       complete: () => {
         this.queuedSaves.delete(version);
         if (this.destroyRef.destroyed || version !== this.activeVersion) return;
-        if (this.saveStatus() === 'dirty') {
+        if (this.saveStatus() === 'dirty' && (this.saveLaterEdits || this.pendingFormId)) {
           this.requestSave();
         } else if (this.pendingFormId) {
           const target = this.pendingFormId;
@@ -564,6 +573,11 @@ export class BuilderEngineService {
     const { autoSave } = settings;
     const wasAutoSaving = this.settings().autoSave;
     this.settingsSrc.set(settings);
+    if (wasAutoSaving && !autoSave) {
+      // A save already running keeps the edits made so far, not the ones made from now on.
+      this.saveLaterEdits = false;
+    }
+
     if (this.saveStatus() !== 'dirty') {
       return;
     }
@@ -571,7 +585,7 @@ export class BuilderEngineService {
     if (autoSave) {
       this.autosaveTrigger$.next(this.activeFormId() ?? null); // Restart the timer so the pending edit follows the new delay.
     } else if (wasAutoSaving) {
-      this.saveActiveForm(); // The user expects the pending edit to be saved; its timer no longer will.
+      this.requestSave(false); // The user expects the pending edit to be saved; its timer no longer will.
     }
   }
 

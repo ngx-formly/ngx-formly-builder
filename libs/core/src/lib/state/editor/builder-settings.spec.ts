@@ -124,6 +124,68 @@ describe('builder settings', () => {
     expect(engine.saveStatus()).toBe('dirty');
   });
 
+  it('does not save edits made while the disable-triggered save is pending', () => {
+    const { engine, save, edit } = setup({ autoSave: true });
+    const pending = new Subject<void>();
+    edit(1);
+    save.mockReturnValueOnce(pending);
+    engine.updateSettings$({ autoSave: false, autoSaveDelay: 3000 }).subscribe();
+    edit(2);
+    expect(engine.saveStatus()).toBe('saving');
+
+    pending.next();
+    pending.complete();
+    vi.advanceTimersByTime(10000);
+
+    expect(save).toHaveBeenCalledOnce();
+    expect(engine.saveStatus()).toBe('dirty');
+  });
+
+  it('does not save edits made after disabling while an autosave is running', () => {
+    const { engine, save, edit } = setup({ autoSave: true, autoSaveDelay: 100 });
+    const first = new Subject<void>();
+    const second = new Subject<void>();
+    save.mockReturnValueOnce(first).mockReturnValueOnce(second);
+    edit(1);
+    vi.advanceTimersByTime(100);
+    edit(2);
+    engine.updateSettings$({ autoSave: false, autoSaveDelay: 100 }).subscribe();
+
+    first.next();
+    first.complete();
+    edit(3);
+    second.next();
+    second.complete();
+    vi.advanceTimersByTime(10000);
+
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(engine.saveStatus()).toBe('dirty');
+  });
+
+  it.each([
+    ['an explicit save', (engine: BuilderEngineService) => engine.saveActiveForm()],
+    [
+      'autosave enabled again',
+      (engine: BuilderEngineService) =>
+        engine.updateSettings$({ autoSave: true, autoSaveDelay: 3000 }).subscribe(),
+    ],
+  ])('saves later edits after %s during the disable-triggered save', (_, act) => {
+    const { engine, save, edit } = setup({ autoSave: true });
+    const pending = new Subject<void>();
+    edit(1);
+    save.mockReturnValueOnce(pending);
+    engine.updateSettings$({ autoSave: false, autoSaveDelay: 3000 }).subscribe();
+    edit(2);
+    act(engine);
+
+    pending.next();
+    pending.complete();
+    vi.advanceTimersByTime(10000);
+
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(engine.saveStatus()).toBe('saved');
+  });
+
   it('keeps manual edits unsaved when autosave was already off', () => {
     const { engine, save, edit } = setup({ autoSave: false });
     edit(1);
@@ -206,7 +268,7 @@ describe('builder settings', () => {
         providers: [
           provideBuilderEngine({
             editorType: 'settings-test',
-            libraries: [],
+            libraries: [{ id: 'test', fieldTypes: [] }],
             editableSettings: true,
           }),
           { provide: CORE_FORM_STORE, useValue: store },
@@ -352,6 +414,33 @@ describe('builder settings', () => {
       const engine = setupEditable();
       expect(engine.settings()).toEqual({ ...saved, styleValues: { margin: [{ value: '4' }] } });
       expect(Object.isFrozen(engine.settings().styleValues!.margin![0])).toBe(true);
+    });
+
+    it('reports a storage read that throws while the editor starts', () => {
+      getSettings().mockImplementation(() => {
+        throw new DOMException('Storage access denied.', 'SecurityError');
+      });
+      const engine = setupEditable();
+      expect(engine.settings()).toEqual(host);
+      expect(engine.settingsLoadError()).toBe('Saved settings could not be loaded.');
+      expect(engine.settingsLoading()).toBe(false);
+    });
+
+    it('reports a storage write that throws and keeps working', () => {
+      const engine = setupEditable();
+      engine.addForm$('Form', [{ key: 'name' }], {}, 'test').subscribe();
+      const form = engine.activeForm();
+      expect(form).not.toBeNull();
+      saveSettings().mockImplementationOnce(() => {
+        throw new DOMException('Quota exceeded.', 'QuotaExceededError');
+      });
+
+      expect(subscribe(engine.updateSettings$(saved)).error?.name).toBe('QuotaExceededError');
+      expect(engine.settings()).toEqual(host);
+      expect(engine.activeForm()).toBe(form);
+
+      expect(subscribe(engine.updateSettings$(saved)).emitted).toBe(true);
+      expect(engine.settings()).toEqual(saved);
     });
 
     it('keeps the previous settings when saving fails', () => {
