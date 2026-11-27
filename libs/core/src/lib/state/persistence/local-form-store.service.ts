@@ -9,7 +9,6 @@ import {
   WorkspaceValidation,
 } from '../model/types';
 import { isWorkspaceValidationList } from '../model/workspace-validation';
-import { BuilderSettings, isBuilderSettings } from '../model/builder-settings';
 import {
   FormStoreDataKind,
   FormStoreRecoveryIssue,
@@ -29,7 +28,6 @@ export class LocalFormStoreService implements FormStoreService {
   readonly storageKey = 'formly-studio-forms';
   readonly hierarchyStorageKey = 'formly-studio-hierarchy';
   readonly validationsStorageKey = 'formly-studio-validations';
-  readonly settingsStorageKey = 'formly-studio-settings';
   private readonly recoveryIssues = new Map<
     string,
     BehaviorSubject<readonly FormStoreRecoveryIssue[]>
@@ -161,30 +159,6 @@ export class LocalFormStoreService implements FormStoreService {
     localStorage.setItem(
       `${this.validationsStorageKey}-${editorType}`,
       JSON.stringify(validations),
-    );
-    return of(void 0);
-  }
-
-  getSettings$(editorType: string): Observable<BuilderSettings | undefined> {
-    const raw = localStorage.getItem(`${this.settingsStorageKey}-${editorType}`);
-    let value: unknown;
-    try {
-      value = JSON.parse(raw ?? 'null');
-    } catch {
-      // Corrupt JSON: host defaults apply.
-    }
-    return of(isBuilderSettings(value) ? value : undefined);
-  }
-
-  saveSettings$(editorType: string, settings: BuilderSettings): Observable<void> {
-    if (!isBuilderSettings(settings)) {
-      return throwError(() => new Error('Invalid builder settings.'));
-    }
-
-    const { autoSave, autoSaveDelay } = settings;
-    localStorage.setItem(
-      `${this.settingsStorageKey}-${editorType}`,
-      JSON.stringify({ autoSave, autoSaveDelay }),
     );
     return of(void 0);
   }

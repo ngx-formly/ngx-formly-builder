@@ -138,13 +138,29 @@ describe('provideFormlyBuilder', () => {
     },
   );
 
-  it('enables settings storage in the engine when the host makes settings editable', () => {
-    localStorage.clear();
+  it('keeps editable settings for the session with the default store', () => {
     TestBed.configureTestingModule({
       providers: [provideFormlyBuilder({ editableSettings: true })],
     });
 
     expect(TestBed.inject(CORE_EDITOR_CONFIG).editableSettings).toBe(true);
+    expect(TestBed.inject(BuilderEngineService).settingsStorageAvailable).toBe(false);
+  });
+
+  it('enables settings storage when the host store keeps settings', () => {
+    class SettingsStore extends LocalFormStoreService {
+      getSettings$() {
+        return of(undefined);
+      }
+
+      saveSettings$() {
+        return of(undefined);
+      }
+    }
+    TestBed.configureTestingModule({
+      providers: [provideFormlyBuilder({ editableSettings: true, formStore: SettingsStore })],
+    });
+
     expect(TestBed.inject(BuilderEngineService).settingsStorageAvailable).toBe(true);
   });
 

@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import { WorkspaceHierarchy } from '../model/types';
 import { LocalFormStoreService } from './local-form-store.service';
-import { FormStoreRecoveryRequiredError } from './types';
+import { FormStoreRecoveryRequiredError, FormStoreService } from './types';
 
 describe('LocalFormStoreService', () => {
   let service: LocalFormStoreService;
@@ -17,42 +17,11 @@ describe('LocalFormStoreService', () => {
     service = TestBed.inject(LocalFormStoreService);
   });
 
-  describe('settings', () => {
-    const settings = { autoSave: false, autoSaveDelay: 500 };
+  it('does not persist builder settings', () => {
+    const store: FormStoreService = service;
 
-    it('saves and reads settings per editor namespace', async () => {
-      await firstValueFrom(service.saveSettings$(editorId, settings));
-
-      expect(await firstValueFrom(service.getSettings$(editorId))).toEqual(settings);
-      expect(await firstValueFrom(service.getSettings$('other-editor'))).toBeUndefined();
-    });
-
-    it('stores only known settings fields', async () => {
-      await firstValueFrom(
-        service.saveSettings$(editorId, { ...settings, editorType: 'other' } as typeof settings),
-      );
-
-      expect(JSON.parse(localStorage.getItem(`formly-studio-settings-${editorId}`)!)).toEqual(
-        settings,
-      );
-    });
-
-    it('reads nothing when settings were never saved', async () => {
-      expect(await firstValueFrom(service.getSettings$(editorId))).toBeUndefined();
-    });
-
-    it('falls back to nothing when stored settings are corrupt', async () => {
-      localStorage.setItem(`formly-studio-settings-${editorId}`, '{bad');
-
-      expect(await firstValueFrom(service.getSettings$(editorId))).toBeUndefined();
-    });
-
-    it('rejects invalid settings without writing them', async () => {
-      await expect(
-        firstValueFrom(service.saveSettings$(editorId, { autoSave: true, autoSaveDelay: -1 })),
-      ).rejects.toThrow('Invalid builder settings.');
-      expect(localStorage.getItem(`formly-studio-settings-${editorId}`)).toBeNull();
-    });
+    expect(store.getSettings$).toBeUndefined();
+    expect(store.saveSettings$).toBeUndefined();
   });
 
   it('adds and retrieves a form', () => {

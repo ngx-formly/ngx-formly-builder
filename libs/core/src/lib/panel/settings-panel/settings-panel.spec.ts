@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Subject, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLibrary } from '../../config/library';
 import { FormlyBuilderConfig } from '../../config/types';
@@ -8,7 +8,22 @@ import { LocalFormStoreService } from '../../persistence/local-form-store.servic
 import { CORE_FORM_STORE } from '../../persistence/types';
 import { provideFormlyBuilder } from '../../provider';
 import { tailwindConfig } from '../styling-panel/config/tailwind';
+import type { BuilderSettings } from '@ngx-formly/builder';
 import { SettingsPanel } from './settings-panel';
+
+/** The library store does not keep settings; this one keeps them in memory. */
+class SettingsStore extends LocalFormStoreService {
+  saved?: BuilderSettings;
+
+  getSettings$(): Observable<BuilderSettings | undefined> {
+    return of(this.saved);
+  }
+
+  saveSettings$(_editorType: string, settings: BuilderSettings): Observable<void> {
+    this.saved = settings;
+    return of(undefined);
+  }
+}
 
 describe('SettingsPanel', () => {
   async function render(config: FormlyBuilderConfig = {}, customStore?: object) {
@@ -104,13 +119,11 @@ describe('SettingsPanel', () => {
   });
 
   describe('editable settings', () => {
-    const storageKey = 'formly-studio-settings-form-editor';
-
     async function renderEditable(
       config: FormlyBuilderConfig = {},
-      prepare: (store: LocalFormStoreService) => void = () => undefined,
+      prepare: (store: SettingsStore) => void = () => undefined,
     ) {
-      const store = new LocalFormStoreService();
+      const store = new SettingsStore();
       prepare(store);
       TestBed.configureTestingModule({
         imports: [SettingsPanel],
@@ -207,13 +220,13 @@ describe('SettingsPanel', () => {
     });
 
     it('saves and applies the edited settings', async () => {
-      const { forms, autosave, typeDelay, click, button, text } = await renderEditable();
+      const { forms, store, autosave, typeDelay, click, button, text } = await renderEditable();
       await click(autosave());
       await typeDelay('750');
       await click(button('Save settings'));
 
       expect(forms.settings()).toEqual({ autoSave: true, autoSaveDelay: 750 });
-      expect(JSON.parse(localStorage.getItem(storageKey)!)).toEqual(forms.settings());
+      expect(store.saved).toEqual(forms.settings());
       expect(text('status')).toEqual(['Settings updated.']);
 
       await typeDelay('800');
@@ -234,7 +247,7 @@ describe('SettingsPanel', () => {
     });
 
     it.each(['', '-1', '1.5', '2147483648'])('does not save the delay "%s"', async (value) => {
-      const { forms, delay, typeDelay, click, button, text } = await renderEditable({
+      const { forms, store, delay, typeDelay, click, button, text } = await renderEditable({
         autoSave: true,
       });
       await typeDelay(value);
@@ -242,16 +255,15 @@ describe('SettingsPanel', () => {
       await click(button('Save settings'));
 
       expect(forms.settings().autoSaveDelay).toBe(3000);
-      expect(localStorage.getItem(storageKey)).toBeNull();
+      expect(store.saved).toBeUndefined();
       expect(text('alert')).toEqual([]);
     });
 
     it('resets to the host settings and discards unsaved edits', async () => {
-      localStorage.setItem(storageKey, JSON.stringify({ autoSave: false, autoSaveDelay: 500 }));
-      const { forms, autosave, delay, typeDelay, click, button } = await renderEditable({
-        autoSave: true,
-        autoSaveDelay: 750,
-      });
+      const { forms, store, autosave, delay, typeDelay, click, button } = await renderEditable(
+        { autoSave: true, autoSaveDelay: 750 },
+        (store) => (store.saved = { autoSave: false, autoSaveDelay: 500 }),
+      );
       expect(autosave().checked).toBe(false);
       await click(button('Reset to host defaults'));
 
@@ -262,7 +274,7 @@ describe('SettingsPanel', () => {
       await typeDelay('900');
       await click(button('Reset to host defaults'));
       expect(delay().value).toBe('750');
-      expect(JSON.parse(localStorage.getItem(storageKey)!)).toEqual(forms.settings());
+      expect(store.saved).toEqual(forms.settings());
     });
 
     it('reports a failed save and keeps the current settings and the edit', async () => {
@@ -314,7 +326,7 @@ describe('SettingsPanel', () => {
     it('explains when the storage does not save settings', async () => {
       const note =
         'Changes apply to this session only; the configured storage does not save settings.';
-      const { element, forms, typeDelay, click, button } = await renderEditable(
+      const { element, forms, store, typeDelay, click, button } = await renderEditable(
         { autoSave: true },
         (store) => Object.assign(store, { getSettings$: undefined, saveSettings$: undefined }),
       );
@@ -323,14 +335,14 @@ describe('SettingsPanel', () => {
       await click(button('Save settings'));
 
       expect(forms.settings().autoSaveDelay).toBe(750);
-      expect(localStorage.getItem(storageKey)).toBeNull();
+      expect(store.saved).toBeUndefined();
     });
 
     it('offers to retry when saved settings cannot be loaded', async () => {
-      const { element, delay, click, button, text } = await renderEditable({}, (store) =>
+      const { element, store, delay, click, button, text } = await renderEditable({}, (store) =>
         vi.spyOn(store, 'getSettings$').mockReturnValueOnce(throwError(() => new Error('500'))),
       );
-      localStorage.setItem(storageKey, JSON.stringify({ autoSave: true, autoSaveDelay: 500 }));
+      store.saved = { autoSave: true, autoSaveDelay: 500 };
       expect(text('alert')[0]).toContain('Saved settings could not be loaded.');
       expect(element.textContent).not.toContain('this session only');
       await click(button('Try again'));
@@ -376,11 +388,11 @@ describe('SettingsPanel', () => {
     });
 
     it('imports settings from a file', async () => {
-      const { forms, autosave, delay, chooseFile, text } = await renderEditable();
+      const { forms, store, autosave, delay, chooseFile, text } = await renderEditable();
       await chooseFile('{"autoSave":false,"autoSaveDelay":500,"styles":{}}');
 
       expect(forms.settings()).toEqual({ autoSave: false, autoSaveDelay: 500 });
-      expect(JSON.parse(localStorage.getItem(storageKey)!)).toEqual(forms.settings());
+      expect(store.saved).toEqual(forms.settings());
       expect(autosave().checked).toBe(false);
       expect(delay().value).toBe('500');
       expect(text('status')).toEqual(['Settings updated.']);

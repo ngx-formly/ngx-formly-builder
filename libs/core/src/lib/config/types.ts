@@ -107,7 +107,7 @@ export interface CoreEditorConfig {
   autoSaveDelay?: number;
   /** Show the builder settings panel. Defaults to true. */
   showSettings?: boolean;
-  /** Let users edit, save and share autosave settings. Defaults to false. */
+  /** Let users edit and share autosave settings; the store must implement settings to save them. Defaults to false. */
   editableSettings?: boolean;
 }
 
@@ -117,7 +117,7 @@ export interface FormlyBuilderConfig {
   styles?: StylesConfig;
   /** Show the builder settings panel. Defaults to true. */
   showSettings?: boolean;
-  /** Let users edit, save and share autosave settings. Defaults to false. */
+  /** Let users edit and share autosave settings; the store must implement settings to save them. Defaults to false. */
   editableSettings?: boolean;
   /** Optional UI profiles. Native HTML controls are available without a UI library. */
   libraries?: LibraryConfig[];

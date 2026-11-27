@@ -10,17 +10,17 @@ scope to apply a new configuration. The **Builder settings** panel is read-only 
 
 ## Available settings
 
-| Option             | Default                          | Purpose                                                                         |
-| ------------------ | -------------------------------- | ------------------------------------------------------------------------------- |
-| `libraries`        | `[]`                             | Additional UI profiles. Native Vanilla fields are always registered.            |
-| `formTemplates`    | Templates from visible libraries | Shared templates that replace library-specific templates; `[]` offers none.     |
-| `editorType`       | `'form-editor'`                  | Namespace for persisted documents. Use distinct values for independent editors. |
-| `autoSave`         | `false`                          | Persist form changes automatically.                                             |
-| `autoSaveDelay`    | `3000`                           | Debounce delay in milliseconds; inactive when autosave is disabled.             |
-| `formStore`        | Browser local storage            | A class implementing `FormStoreService`.                                        |
-| `styles`           | `tailwindConfig`                 | The complete styling catalogue: breakpoints and Self/Children controls.         |
-| `showSettings`     | `true`                           | Show the Builder settings panel on every screen size.                           |
-| `editableSettings` | `false`                          | Let users change, save and share autosave settings.                             |
+| Option             | Default                          | Purpose                                                                              |
+| ------------------ | -------------------------------- | ------------------------------------------------------------------------------------ |
+| `libraries`        | `[]`                             | Additional UI profiles. Native Vanilla fields are always registered.                 |
+| `formTemplates`    | Templates from visible libraries | Shared templates that replace library-specific templates; `[]` offers none.          |
+| `editorType`       | `'form-editor'`                  | Namespace for persisted documents. Use distinct values for independent editors.      |
+| `autoSave`         | `false`                          | Persist form changes automatically.                                                  |
+| `autoSaveDelay`    | `3000`                           | Debounce delay in milliseconds; inactive when autosave is disabled.                  |
+| `formStore`        | Browser local storage            | A class implementing `FormStoreService`.                                             |
+| `styles`           | `tailwindConfig`                 | The complete styling catalogue: breakpoints and Self/Children controls.              |
+| `showSettings`     | `true`                           | Show the Builder settings panel on every screen size.                                |
+| `editableSettings` | `false`                          | Let users change and share autosave settings; saving needs a store that supports it. |
 
 The settings panel works without an open form. It shows effective settings, libraries, template
 names, and styling choices. It does not display stored form data or serialize services and components.
@@ -42,9 +42,9 @@ Set `editableSettings: true` to let users change autosave and its delay in the s
 can also export these settings as JSON, import them elsewhere, and reset them to your values. Other
 settings stay read-only.
 
-Saved changes take precedence over your `autoSave` and `autoSaveDelay` values. The default store keeps
-them in the browser for each `editorType`. A custom store must implement the optional `getSettings$`
-and `saveSettings$` methods; otherwise changes apply to the current session only. See the
+Saved changes take precedence over your `autoSave` and `autoSaveDelay` values. To save them, the store
+must implement the optional `getSettings$` and `saveSettings$` methods. The default browser store does
+not, so changes apply to the current session only; users can export them as JSON. See the
 [store guide](https://github.com/ngx-formly/ngx-formly-builder/blob/main/docs/asynchronous-stores.md#builder-settings).
 
 ## Custom persistence

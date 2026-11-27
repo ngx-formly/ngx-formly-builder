@@ -1,9 +1,18 @@
 import { TestBed } from '@angular/core/testing';
+import { BuilderEngineService, CORE_FORM_STORE } from '@ngx-formly/builder';
 import { CoreFieldService, CoreLibraryService } from '@ngx-formly/builder/ui';
 import { describe, expect, it } from 'vitest';
 import { provideFormEditor } from './form-editor.provider';
+import { StudioFormStore } from './studio-form-store';
 
 describe('provideFormEditor', () => {
+  it('keeps edited builder settings in local storage', () => {
+    TestBed.configureTestingModule({ providers: [provideFormEditor()] });
+
+    expect(TestBed.inject(CORE_FORM_STORE)).toBeInstanceOf(StudioFormStore);
+    expect(TestBed.inject(BuilderEngineService).settingsStorageAvailable).toBe(true);
+  });
+
   it('offers one complete Material library for new and existing forms', () => {
     TestBed.configureTestingModule({ providers: [provideFormEditor()] });
     const libraries = TestBed.inject(CoreLibraryService);

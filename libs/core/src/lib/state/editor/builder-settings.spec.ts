@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { EMPTY, of, Subject, throwError } from 'rxjs';
+import { EMPTY, Observable, of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BuilderSettings } from '../model/builder-settings';
 import { LocalFormStoreService } from '../persistence/local-form-store.service';
@@ -7,6 +7,17 @@ import { CORE_FORM_STORE } from '../persistence/types';
 import { BuilderEngineService } from './builder-engine.service';
 import { provideBuilderEngine } from './provider';
 import type { BuilderEngineConfig } from './types';
+
+/** The library store does not keep settings; this one stands in for a store that does. */
+class SettingsStore extends LocalFormStoreService {
+  getSettings$(): Observable<BuilderSettings | undefined> {
+    return of(undefined);
+  }
+
+  saveSettings$(): Observable<void> {
+    return of(undefined);
+  }
+}
 
 describe('builder settings', () => {
   function setup(config: Pick<BuilderEngineConfig, 'autoSave' | 'autoSaveDelay'> = {}) {
@@ -123,10 +134,10 @@ describe('builder settings', () => {
   describe('storage', () => {
     const saved = { autoSave: true, autoSaveDelay: 1000 };
     const host = { autoSave: false, autoSaveDelay: 3000 };
-    const getSettings = () => vi.spyOn(LocalFormStoreService.prototype, 'getSettings$');
-    const saveSettings = () => vi.spyOn(LocalFormStoreService.prototype, 'saveSettings$');
+    const getSettings = () => vi.spyOn(SettingsStore.prototype, 'getSettings$');
+    const saveSettings = () => vi.spyOn(SettingsStore.prototype, 'saveSettings$');
 
-    function setupEditable(store: LocalFormStoreService = new LocalFormStoreService()) {
+    function setupEditable(store: LocalFormStoreService = new SettingsStore()) {
       TestBed.configureTestingModule({
         providers: [
           provideBuilderEngine({
@@ -162,9 +173,9 @@ describe('builder settings', () => {
       expect(engine.settingsLoadError()).toBeNull();
     });
 
-    it('reports a local settings storage read failure', () => {
+    it('reports a settings read that throws', () => {
       const engine = setupEditable();
-      vi.spyOn(Storage.prototype, 'getItem').mockImplementationOnce(() => {
+      getSettings().mockImplementationOnce(() => {
         throw new DOMException('Storage access denied.', 'SecurityError');
       });
 
@@ -273,11 +284,7 @@ describe('builder settings', () => {
     });
 
     it('keeps updates for the session when the store has no settings support', () => {
-      const store = Object.assign(new LocalFormStoreService(), {
-        getSettings$: undefined,
-        saveSettings$: undefined,
-      }) as unknown as LocalFormStoreService;
-      const engine = setupEditable(store);
+      const engine = setupEditable(new LocalFormStoreService());
       expect(engine.settingsStorageAvailable).toBe(false);
       const result = subscribe(engine.updateSettings$(saved));
       expect(result.emitted).toBe(true);

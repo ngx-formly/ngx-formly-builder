@@ -87,8 +87,10 @@ A failed read, or an invalid value from the store, keeps the current settings an
 its save status. A new delay restarts the timer of a pending edit; disabling autosave saves it
 immediately.
 
-The local store uses `formly-studio-settings-${editorType}`. Corrupt or invalid data counts as not
-saved and does not report a recovery issue; an unreadable local storage is a read failure.
+`LocalFormStoreService` does not keep settings, so with the default store changes last for the
+session; users can export them as JSON. To keep them in the browser, extend it with the two methods,
+as Studio does in `apps/studio/src/app/form-editor/studio-form-store.ts`. That store treats corrupt
+or invalid saved data as nothing saved; an unreadable local storage is a read failure.
 
 ## Remote HTTP store
 
