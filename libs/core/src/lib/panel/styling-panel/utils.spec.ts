@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { BreakpointAffix, ClassType, StyleOptionConfig, StylesConfig } from './types';
 import {
-    findVariant,
-    formatVariant,
-    hasClass,
-    removeInvalidDependencies,
-    removeOptionClasses,
+  findVariant,
+  formatVariant,
+  hasClass,
+  removeInvalidDependencies,
+  removeOptionClasses,
 } from './utils';
 
 const option: StyleOptionConfig = {
