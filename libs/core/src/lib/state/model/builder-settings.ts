@@ -73,3 +73,26 @@ function isStyleValueList(entries: unknown): entries is StyleValue[] {
     return label === undefined || typeof label === 'string';
   });
 }
+
+/** Deep copy with only the fields this version knows, ready to store or keep across async steps. */
+export function copyBuilderSettings({
+  autoSave,
+  autoSaveDelay,
+  styleValues,
+}: BuilderSettings): BuilderSettings {
+  if (!styleValues) {
+    return { autoSave, autoSaveDelay };
+  }
+
+  const lists: StyleValues = {};
+  for (const list of STYLE_VALUE_LISTS) {
+    const entries = styleValues[list];
+    if (entries) {
+      lists[list] = entries.map(({ value, label }) =>
+        label === undefined ? { value } : { value, label },
+      );
+    }
+  }
+
+  return { autoSave, autoSaveDelay, styleValues: lists };
+}

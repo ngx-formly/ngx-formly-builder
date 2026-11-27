@@ -362,3 +362,29 @@ components:
           type: integer
           minimum: 0
           maximum: 2147483647
+        styleValues:
+          description: Values offered for each style category. A missing list keeps the builder defaults.
+          type: object
+          properties:
+            height:
+              $ref: '#/components/schemas/StyleValueList'
+            width:
+              $ref: '#/components/schemas/StyleValueList'
+            margin:
+              $ref: '#/components/schemas/StyleValueList'
+            padding:
+              $ref: '#/components/schemas/StyleValueList'
+    StyleValueList:
+      description: Values must be unique within the list.
+      type: array
+      items:
+        type: object
+        required: [value]
+        properties:
+          value:
+            description: One CSS class suffix, such as `4` in `m-4`.
+            type: string
+            pattern: '^[^\s:]+$'
+          label:
+            description: Shown instead of the value when set.
+            type: string

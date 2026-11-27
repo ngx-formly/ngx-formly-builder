@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBuilderSettings, isStyleValues } from './builder-settings';
+import { copyBuilderSettings, isBuilderSettings, isStyleValues } from './builder-settings';
 
 describe('isBuilderSettings', () => {
   it.each([
@@ -54,4 +54,45 @@ describe('isStyleValues', () => {
     { margin: [{ value: '4' }, { value: '4', label: 'Again' }] },
     { margin: [{ value: '4', label: 1 }] },
   ])('rejects %o', (value) => expect(isStyleValues(value)).toBe(false));
+});
+
+describe('copyBuilderSettings', () => {
+  it('keeps only known fields, lists and entry keys', () => {
+    const settings = {
+      autoSave: true,
+      autoSaveDelay: 1,
+      styles: {},
+      styleValues: {
+        margin: [{ value: '4', label: 'Small', note: 'x' }, { value: 'auto' }],
+        padding: [],
+        gap: [{ value: '4' }],
+      },
+    };
+
+    expect(copyBuilderSettings(settings)).toEqual({
+      autoSave: true,
+      autoSaveDelay: 1,
+      styleValues: { margin: [{ value: '4', label: 'Small' }, { value: 'auto' }], padding: [] },
+    });
+  });
+
+  it('omits missing style values', () => {
+    expect(copyBuilderSettings({ autoSave: false, autoSaveDelay: 0 })).toEqual({
+      autoSave: false,
+      autoSaveDelay: 0,
+    });
+  });
+
+  it('shares no object with the input', () => {
+    const settings = {
+      autoSave: true,
+      autoSaveDelay: 1,
+      styleValues: { margin: [{ value: '4' }] },
+    };
+    const copy = copyBuilderSettings(settings);
+    settings.styleValues.margin[0].value = '8';
+    settings.styleValues.margin.push({ value: '2' });
+
+    expect(copy.styleValues).toEqual({ margin: [{ value: '4' }] });
+  });
 });

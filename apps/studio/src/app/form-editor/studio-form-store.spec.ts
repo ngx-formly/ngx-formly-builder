@@ -29,6 +29,13 @@ describe('StudioFormStore settings', () => {
     expect(JSON.parse(localStorage.getItem(key)!)).toEqual(settings);
   });
 
+  it('saves and reads style values', async () => {
+    const withValues = { ...settings, styleValues: { margin: [{ value: '4', label: 'Small' }] } };
+    await firstValueFrom(store.saveSettings$(editorId, withValues));
+
+    expect(await firstValueFrom(store.getSettings$(editorId))).toEqual(withValues);
+  });
+
   it('reads nothing when settings were never saved', async () => {
     expect(await firstValueFrom(store.getSettings$(editorId))).toBeUndefined();
   });

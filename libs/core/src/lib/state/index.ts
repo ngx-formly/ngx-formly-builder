@@ -16,6 +16,7 @@ export type {
 
 export { isValidationRuleName } from './model/workspace-validation';
 export {
+  copyBuilderSettings,
   isBuilderSettings,
   isStyleValues,
   type BuilderSettings,

@@ -170,6 +170,15 @@ describe('HttpFormStoreService', () => {
     req.flush(null, noContent);
   });
 
+  it('sends style values', () => {
+    const { service, httpTesting } = setup();
+    const withValues = { ...settings, styleValues: { padding: [{ value: 'px' }] } };
+    collect(service.saveSettings$('ws', withValues));
+    const req = httpTesting.expectOne({ method: 'PUT', url: `${base}/settings` });
+    expect(req.request.body).toEqual(withValues);
+    req.flush(null, noContent);
+  });
+
   it('reads no settings when none were saved', () => {
     const { service, httpTesting } = setup();
     const result = collect(service.getSettings$('ws'));

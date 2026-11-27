@@ -1,12 +1,13 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import type {
-  BaseEditorForm,
-  BuilderSettings,
-  DefaultForm,
-  FormStoreService,
-  WorkspaceHierarchy,
-  WorkspaceValidation,
+import {
+  copyBuilderSettings,
+  type BaseEditorForm,
+  type BuilderSettings,
+  type DefaultForm,
+  type FormStoreService,
+  type WorkspaceHierarchy,
+  type WorkspaceValidation,
 } from '@ngx-formly/builder';
 import { catchError, map, Observable, of, OperatorFunction, throwError } from 'rxjs';
 import { HTTP_FORM_STORE_CONFIG } from './http-form-store.config';
@@ -73,12 +74,9 @@ export class HttpFormStoreService implements FormStoreService {
       .pipe(notFoundToUndefined());
   }
 
-  saveSettings$(
-    workspaceId: string,
-    { autoSave, autoSaveDelay }: BuilderSettings,
-  ): Observable<void> {
+  saveSettings$(workspaceId: string, settings: BuilderSettings): Observable<void> {
     return this.http
-      .put(this.url(workspaceId, 'settings'), { autoSave, autoSaveDelay })
+      .put(this.url(workspaceId, 'settings'), copyBuilderSettings(settings))
       .pipe(toUndefined());
   }
 

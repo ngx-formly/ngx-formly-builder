@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BuilderSettings, isBuilderSettings, LocalFormStoreService } from '@ngx-formly/builder';
+import {
+  BuilderSettings,
+  copyBuilderSettings,
+  isBuilderSettings,
+  LocalFormStoreService,
+} from '@ngx-formly/builder';
 import { Observable, of, throwError } from 'rxjs';
 
 /** Local store that also keeps the builder settings, so Studio users find them after a reload. */
@@ -24,10 +29,9 @@ export class StudioFormStore extends LocalFormStoreService {
       return throwError(() => new Error('Invalid builder settings.'));
     }
 
-    const { autoSave, autoSaveDelay } = settings;
     localStorage.setItem(
       `${this.settingsStorageKey}-${editorType}`,
-      JSON.stringify({ autoSave, autoSaveDelay }),
+      JSON.stringify(copyBuilderSettings(settings)),
     );
     return of(undefined);
   }
