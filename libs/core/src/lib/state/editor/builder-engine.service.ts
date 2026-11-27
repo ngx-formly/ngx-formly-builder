@@ -33,7 +33,12 @@ import {
   toArray,
 } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
-import { BuilderSettings, isBuilderSettings } from '../model/builder-settings';
+import {
+  BuilderSettings,
+  copyBuilderSettings,
+  isBuilderSettings,
+  isStyleValues,
+} from '../model/builder-settings';
 import {
   BaseEditorForm,
   DefaultForm,
@@ -229,10 +234,17 @@ export class BuilderEngineService {
       store.saveSettings$
     );
 
-    this.hostSettings = Object.freeze({
-      autoSave: config.autoSave ?? false,
-      autoSaveDelay: config.autoSaveDelay ?? 3000,
-    });
+    if (config.styleValues !== undefined && !isStyleValues(config.styleValues)) {
+      throw new Error('Invalid styleValues in the builder configuration.');
+    }
+
+    this.hostSettings = freezeSettings(
+      copyBuilderSettings({
+        autoSave: config.autoSave ?? false,
+        autoSaveDelay: config.autoSaveDelay ?? 3000,
+        styleValues: config.styleValues,
+      }),
+    );
     this.settingsSrc = signal(this.hostSettings);
     this.settings = this.settingsSrc.asReadonly();
 
@@ -350,7 +362,7 @@ export class BuilderEngineService {
             throw new Error('Invalid builder settings.');
           }
 
-          this.applySettings(saved ?? this.hostSettings);
+          this.applySettings(saved ? this.withHostLists(saved) : this.hostSettings);
           this.settingsLoadErrorSrc.set(null);
         }),
       ),
@@ -362,10 +374,20 @@ export class BuilderEngineService {
   }
 
   updateSettings$(settings: BuilderSettings): Observable<void> {
-    const snapshot = { autoSave: settings?.autoSave, autoSaveDelay: settings?.autoSaveDelay };
+    // Copied now: the caller may change the object while the write is queued or pending.
+    let snapshot: Readonly<BuilderSettings> | undefined;
+    let failure: unknown = new Error('Invalid builder settings.');
+    try {
+      if (isBuilderSettings(settings)) {
+        snapshot = this.withHostLists(settings);
+      }
+    } catch (error) {
+      failure = error; // Reported through the Observable, like every other failure.
+    }
+
     return this.enqueue$(() => {
-      if (!isBuilderSettings(snapshot)) {
-        throw new Error('Invalid builder settings.');
+      if (!snapshot) {
+        throw failure;
       }
 
       const save$ = this.settingsStorageAvailable
@@ -383,7 +405,7 @@ export class BuilderEngineService {
     });
   }
 
-  /** Saves the current host values: later changes to the host defaults need another reset. */
+  /** Saves the current host values and lists: later changes to the host defaults need another reset. */
   resetSettings$(): Observable<void> {
     return this.updateSettings$(this.hostSettings);
   }
@@ -531,9 +553,17 @@ export class BuilderEngineService {
     }
   }
 
-  private applySettings({ autoSave, autoSaveDelay }: Readonly<BuilderSettings>): void {
+  /** Known fields only, frozen, with the host lists the settings do not set. */
+  private withHostLists(settings: BuilderSettings): Readonly<BuilderSettings> {
+    const copy = copyBuilderSettings(settings);
+    const host = this.hostSettings.styleValues;
+    return freezeSettings(host ? { ...copy, styleValues: { ...host, ...copy.styleValues } } : copy);
+  }
+
+  private applySettings(settings: Readonly<BuilderSettings>): void {
+    const { autoSave } = settings;
     const wasAutoSaving = this.settings().autoSave;
-    this.settingsSrc.set(Object.freeze({ autoSave, autoSaveDelay }));
+    this.settingsSrc.set(settings);
     if (this.saveStatus() !== 'dirty') {
       return;
     }
@@ -1413,4 +1443,13 @@ export class BuilderEngineService {
     this.markFormDirty();
     this.activeFieldIdSrc.set(replacementId);
   }
+}
+
+function freezeSettings(settings: BuilderSettings): Readonly<BuilderSettings> {
+  for (const list of Object.values(settings.styleValues ?? {})) {
+    list.forEach((entry) => Object.freeze(entry));
+    Object.freeze(list);
+  }
+  Object.freeze(settings.styleValues);
+  return Object.freeze(settings);
 }

@@ -6,6 +6,7 @@ import { PropertyConfig } from '../properties/types';
 import type { FieldValidationConfig } from '../properties/validation-messages/validation.types';
 import type { FormStoreService } from '../persistence/types';
 import type { StylesConfig } from '../panel/styling-panel/types';
+import type { StyleValues } from '@ngx-formly/builder';
 
 /**
  * A category of field types shown in the UI.
@@ -109,6 +110,8 @@ export interface CoreEditorConfig {
   showSettings?: boolean;
   /** Let users edit and share autosave settings; the store must implement settings to save them. Defaults to false. */
   editableSettings?: boolean;
+  /** Values offered for Height, Width, Margin and Padding. Missing lists keep the `styles` values. */
+  styleValues?: StyleValues;
 }
 
 /** Public configuration for an embedded Formly Builder instance. */
@@ -119,6 +122,8 @@ export interface FormlyBuilderConfig {
   showSettings?: boolean;
   /** Let users edit and share autosave settings; the store must implement settings to save them. Defaults to false. */
   editableSettings?: boolean;
+  /** Values offered for Height, Width, Margin and Padding. Missing lists keep the `styles` values. */
+  styleValues?: StyleValues;
   /** Optional UI profiles. Native HTML controls are available without a UI library. */
   libraries?: LibraryConfig[];
   /** Shared templates rendered with the selected library, replacing profile-specific templates. */

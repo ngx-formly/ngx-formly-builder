@@ -233,6 +233,18 @@ describe('SettingsPanel', () => {
       expect(text('status')).toEqual(['']);
     });
 
+    it('keeps the current style lists when saving autosave', async () => {
+      const styleValues = { margin: [{ value: '4' }] };
+      const { forms, store, autosave, click, button, settle } = await renderEditable();
+      forms.updateSettings$({ autoSave: false, autoSaveDelay: 3000, styleValues }).subscribe();
+      await settle();
+
+      await click(autosave());
+      await click(button('Save settings'));
+
+      expect(store.saved).toEqual({ autoSave: true, autoSaveDelay: 3000, styleValues });
+    });
+
     it('disables the delay without autosave and keeps its saved value', async () => {
       const { forms, autosave, delay, typeDelay, click, button } = await renderEditable({
         autoSave: true,

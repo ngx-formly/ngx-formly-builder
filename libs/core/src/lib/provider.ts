@@ -70,7 +70,10 @@ export function provideCoreConfig(
   libraryConfig: LibraryConfig[] = [],
   autoSave = false,
   overrides: Partial<
-    Pick<CoreEditorConfig, 'editorType' | 'autoSaveDelay' | 'showSettings' | 'editableSettings'>
+    Pick<
+      CoreEditorConfig,
+      'editorType' | 'autoSaveDelay' | 'showSettings' | 'editableSettings' | 'styleValues'
+    >
   > = {},
 ): EnvironmentProviders {
   const editorConfig: CoreEditorConfig = {
@@ -80,6 +83,7 @@ export function provideCoreConfig(
     autoSaveDelay: overrides.autoSaveDelay,
     showSettings: overrides.showSettings ?? true,
     editableSettings: overrides.editableSettings ?? false,
+    styleValues: overrides.styleValues,
   };
   const formlyConfig: ConfigOption = {
     wrappers: [{ name: 'core-field', component: CoreFieldWrapper }],
@@ -130,6 +134,7 @@ export function provideFormlyBuilder(config: FormlyBuilderConfig = {}): Environm
       autoSaveDelay: config.autoSaveDelay,
       showSettings: config.showSettings,
       editableSettings: config.editableSettings,
+      styleValues: config.styleValues,
     }),
     { provide: CORE_FORM_TEMPLATES, useValue: config.formTemplates ?? null },
     {

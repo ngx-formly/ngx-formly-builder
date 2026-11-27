@@ -20,7 +20,9 @@ class SettingsStore extends LocalFormStoreService {
 }
 
 describe('builder settings', () => {
-  function setup(config: Pick<BuilderEngineConfig, 'autoSave' | 'autoSaveDelay'> = {}) {
+  function setup(
+    config: Pick<BuilderEngineConfig, 'autoSave' | 'autoSaveDelay' | 'styleValues'> = {},
+  ) {
     TestBed.configureTestingModule({
       providers: [
         provideBuilderEngine({
@@ -129,6 +131,68 @@ describe('builder settings', () => {
     vi.advanceTimersByTime(10000);
     expect(save).not.toHaveBeenCalled();
     expect(engine.saveStatus()).toBe('dirty');
+  });
+
+  describe('style values', () => {
+    const margin = [{ value: '4', label: 'Small' }];
+    const padding = [{ value: 'px' }];
+
+    it('starts from the host lists, frozen and copied', () => {
+      const styleValues = { margin: [{ value: '4', label: 'Small' }] };
+      const { engine } = setup({ styleValues });
+      styleValues.margin[0].value = '8';
+
+      expect(engine.settings().styleValues).toEqual({ margin });
+      expect(Object.isFrozen(engine.settings().styleValues)).toBe(true);
+      expect(Object.isFrozen(engine.settings().styleValues!.margin)).toBe(true);
+      expect(Object.isFrozen(engine.settings().styleValues!.margin![0])).toBe(true);
+    });
+
+    it('rejects invalid host lists', () => {
+      expect(() => setup({ styleValues: { margin: [{ value: 'a b' }] } })).toThrow(
+        'Invalid styleValues in the builder configuration.',
+      );
+    });
+
+    it('keeps the host lists missing from an update and resets to them', () => {
+      const { engine } = setup({ styleValues: { margin, padding } });
+      const own = [{ value: '2' }];
+
+      engine
+        .updateSettings$({ autoSave: true, autoSaveDelay: 10, styleValues: { margin: own } })
+        .subscribe();
+      expect(engine.settings().styleValues).toEqual({ margin: own, padding });
+
+      // Old exported files have no lists.
+      engine.updateSettings$({ autoSave: false, autoSaveDelay: 10 }).subscribe();
+      expect(engine.settings().styleValues).toEqual({ margin, padding });
+
+      engine
+        .updateSettings$({ autoSave: true, autoSaveDelay: 10, styleValues: { margin: own } })
+        .subscribe();
+      engine.resetSettings$().subscribe();
+      expect(engine.settings()).toEqual(engine.hostSettings);
+    });
+
+    it('keeps no lists when neither the host nor the update has them', () => {
+      const { engine } = setup();
+      engine.updateSettings$({ autoSave: true, autoSaveDelay: 10 }).subscribe();
+      expect(engine.settings()).toEqual({ autoSave: true, autoSaveDelay: 10 });
+    });
+
+    it('rejects an update with invalid lists', () => {
+      const { engine } = setup();
+      let error: Error | undefined;
+      engine
+        .updateSettings$({
+          autoSave: true,
+          autoSaveDelay: 10,
+          styleValues: { margin: 'x' },
+        } as never)
+        .subscribe({ error: (e) => (error = e) });
+      expect(error?.message).toBe('Invalid builder settings.');
+      expect(engine.settings()).toEqual(engine.hostSettings);
+    });
   });
 
   describe('storage', () => {
@@ -245,6 +309,49 @@ describe('builder settings', () => {
       response.next();
 
       expect(engine.settings()).toEqual(saved);
+    });
+
+    it('saves and applies the lists given at call time, even when queued', () => {
+      const first = new Subject<void>();
+      const save = saveSettings().mockReturnValueOnce(first).mockReturnValueOnce(of(undefined));
+      const engine = setupEditable();
+      subscribe(engine.updateSettings$(host));
+      const input = { ...saved, styleValues: { margin: [{ value: '4', label: 'Small' }] } };
+      const update$ = engine.updateSettings$(input);
+
+      input.styleValues.margin[0].value = '8';
+      input.styleValues.margin.push({ value: '2', label: 'Tiny' });
+      subscribe(update$);
+      first.next();
+
+      const expected = { ...saved, styleValues: { margin: [{ value: '4', label: 'Small' }] } };
+      expect(save).toHaveBeenLastCalledWith('settings-test', expected);
+      expect(engine.settings()).toEqual(expected);
+    });
+
+    it('reports an argument that cannot be read through the Observable', () => {
+      const engine = setupEditable();
+      const input = {
+        ...saved,
+        get styleValues(): never {
+          throw new Error('unreadable');
+        },
+      };
+      let update$: Observable<void> | undefined;
+      expect(() => (update$ = engine.updateSettings$(input))).not.toThrow();
+      expect(subscribe(update$!).error?.message).toBe('unreadable');
+    });
+
+    it('loads only the known fields of saved lists', () => {
+      getSettings().mockReturnValue(
+        of({
+          ...saved,
+          styleValues: { margin: [{ value: '4', note: 'x' }], gap: [{ value: '1' }] },
+        } as unknown as BuilderSettings),
+      );
+      const engine = setupEditable();
+      expect(engine.settings()).toEqual({ ...saved, styleValues: { margin: [{ value: '4' }] } });
+      expect(Object.isFrozen(engine.settings().styleValues!.margin![0])).toBe(true);
     });
 
     it('keeps the previous settings when saving fails', () => {

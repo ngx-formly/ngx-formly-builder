@@ -173,6 +173,7 @@ export class AutosaveSettings {
 
     this.run(
       this.forms.updateSettings$({
+        ...this.forms.settings(),
         autoSave,
         autoSaveDelay: delay ?? this.forms.settings().autoSaveDelay,
       }),
