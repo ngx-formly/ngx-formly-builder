@@ -6,6 +6,7 @@ import { CoreFormService } from '../../editor/core-form.service';
 import { PropertyChangeType } from '../../properties/types';
 import { modifyPropertyTarget } from '../../properties/utils';
 import { tailwindConfig } from './config/tailwind';
+import { applyStyleValues } from './style-values';
 import { StylingOption } from './styling-option';
 import { ClassType, CORE_STYLES_CONFIG, StylesConfig } from './types';
 
@@ -29,7 +30,7 @@ describe('StylingOption', () => {
     TestBed.configureTestingModule({
       imports: [StylingOption],
       providers: [
-        { provide: CoreFormService, useValue: { activeField } },
+        { provide: CoreFormService, useValue: { activeField, styles: signal(config) } },
         {
           provide: CoreFieldService,
           useValue: {
@@ -68,6 +69,32 @@ describe('StylingOption', () => {
     expect(changed).toHaveBeenCalledTimes(1);
   });
 
+  describe('with a value list', () => {
+    const margin = applyStyleValues(tailwindConfig, {
+      margin: [{ value: '7', label: 'Custom' }],
+    }).className.find((category) => category.name === 'Margin')!.options;
+
+    beforeEach(() => fixture.componentRef.setInput('option', margin[0]));
+
+    it('adds, shows and clears a list value', () => {
+      expect(component.variantOptions()).toEqual([{ value: '7', label: 'Custom' }]);
+      component.selectVariant('7');
+      expect(activeField().className).toBe('m-7');
+      expect(component.selectedVariant()).toBe('7');
+
+      component['clear']();
+      expect(activeField()).not.toHaveProperty('className');
+    });
+
+    it('replaces a value no longer in the list and keeps other options and breakpoints', () => {
+      activeField.set({ className: 'm-4 mx-4 sm:m-4 custom', fieldGroupClassName: '' });
+      expect(component.selectedVariant()).toBeUndefined();
+
+      component.selectVariant('7');
+      expect(activeField().className).toBe('mx-4 sm:m-4 custom m-7');
+    });
+  });
+
   it('clears only the selected option, preserving custom and responsive classes', () => {
     activeField.set({ className: 'w-4 w-8 mt-2 sm:w-4 custom', fieldGroupClassName: '' });
     component['clear']();
@@ -88,6 +115,8 @@ describe('StylingOption', () => {
   });
 
   it('replaces all conflicts and reflects the new selection', () => {
+    // Without a value list, only configured values count as this option's classes.
+    fixture.componentRef.setInput('option', { ...width, valueList: undefined });
     activeField.set({ className: 'w-4\tw-8\nw-1x5 custom', fieldGroupClassName: '' });
     component.selectVariant('1.5');
     expect(activeField().className).toBe('w-1x5 custom w-1.5');

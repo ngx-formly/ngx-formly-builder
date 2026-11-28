@@ -6,6 +6,7 @@ import { CoreFormService } from '../../editor/core-form.service';
 import { EditorField } from '../../model/types';
 import { PropertyChangeType } from '../../properties/types';
 import { tailwindConfig } from './config/tailwind';
+import { applyStyleValues } from './style-values';
 import { StylingPanel } from './styling-panel';
 import { CORE_STYLES_CONFIG } from './types';
 
@@ -34,6 +35,7 @@ describe('StylingPanel', () => {
   const activeField = signal<EditorField | null>(null);
   const activeFieldMap = signal<Record<string, EditorField>>({});
   const modifyActiveField = vi.fn();
+  const styles = signal(tailwindConfig);
   let fixture: ComponentFixture<StylingPanel>;
   let panel: StylingPanel;
 
@@ -41,11 +43,15 @@ describe('StylingPanel', () => {
     activeField.set(child);
     activeFieldMap.set({ parent, child });
     modifyActiveField.mockReset();
+    styles.set(tailwindConfig);
     TestBed.overrideComponent(StylingPanel, { set: { imports: [], template: '' } });
     TestBed.configureTestingModule({
       imports: [StylingPanel],
       providers: [
-        { provide: CoreFormService, useValue: { activeField, activeFieldMap, modifyActiveField } },
+        {
+          provide: CoreFormService,
+          useValue: { activeField, activeFieldMap, modifyActiveField, styles },
+        },
         {
           provide: CoreFieldService,
           useValue: {
@@ -99,6 +105,13 @@ describe('StylingPanel', () => {
     activeField.set(null);
     expect(panel.classNameMap()).toEqual({});
     expect(panel.fieldGroupClassNameMap()).toEqual({});
+  });
+
+  it('offers the values of the current style lists', () => {
+    styles.set(applyStyleValues(tailwindConfig, { margin: [{ value: '7', label: 'Custom' }] }));
+    const margin = panel.classNameMap()[''].find((category) => category.name === 'Margin')!;
+    expect(margin.options.map((option) => option.variants)).toEqual(Array(7).fill(['7']));
+    expect(margin.options[0].variantLabels).toEqual({ '7': 'Custom' });
   });
 
   it('forwards property changes through the existing immutable state gateway', () => {

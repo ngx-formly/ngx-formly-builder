@@ -6,6 +6,7 @@ import { PropertyConfig } from '../properties/types';
 import type { FieldValidationConfig } from '../properties/validation-messages/validation.types';
 import type { FormStoreService } from '../persistence/types';
 import type { StylesConfig } from '../panel/styling-panel/types';
+import type { StyleValues } from '@ngx-formly/builder';
 
 /**
  * A category of field types shown in the UI.
@@ -105,23 +106,31 @@ export interface CoreEditorConfig {
   autoSave?: boolean;
   /** Delay in milliseconds before an active form mutation is persisted. */
   autoSaveDelay?: number;
-  /** Show the read-only builder settings panel. Defaults to true. */
+  /** Show the builder settings panel. Defaults to true. */
   showSettings?: boolean;
+  /** Let users edit and share autosave settings; the store must implement settings to save them. Defaults to false. */
+  editableSettings?: boolean;
+  /** Values offered for Height, Width, Margin and Padding. Missing lists keep the `styles` values. */
+  styleValues?: StyleValues;
 }
 
 /** Public configuration for an embedded Formly Builder instance. */
 export interface FormlyBuilderConfig {
   /** Replaces the default Tailwind styling catalogue. The host supplies matching CSS. */
   styles?: StylesConfig;
-  /** Show the read-only builder settings panel. Defaults to true. */
+  /** Show the builder settings panel. Defaults to true. */
   showSettings?: boolean;
+  /** Let users edit and share autosave settings; the store must implement settings to save them. Defaults to false. */
+  editableSettings?: boolean;
+  /** Values offered for Height, Width, Margin and Padding. Missing lists keep the `styles` values. */
+  styleValues?: StyleValues;
   /** Optional UI profiles. Native HTML controls are available without a UI library. */
   libraries?: LibraryConfig[];
   /** Shared templates rendered with the selected library, replacing profile-specific templates. */
   formTemplates?: FormTemplate[];
   /** Storage namespace used to isolate this editor's documents. */
   editorType?: string;
-  /** Enable debounced persistence for active form mutations. Defaults to true. */
+  /** Enable debounced persistence for active form mutations. Defaults to false. */
   autoSave?: boolean;
   /** Delay in milliseconds before an active form mutation is persisted. */
   autoSaveDelay?: number;

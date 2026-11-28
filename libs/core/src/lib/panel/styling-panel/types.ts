@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+import type { StyleValueList } from '@ngx-formly/builder';
 
 export enum ClassType {
   CLASS_NAME = 'className',
@@ -22,6 +23,8 @@ export interface StyleOptionConfig {
   description?: string;
   value?: string;
   variants: string[];
+  /** Takes its variants and labels from this list of the builder settings when the list is set. */
+  valueList?: StyleValueList;
   /** Display labels keyed by variant; omitted labels fall back to the variant. */
   variantLabels?: Record<string, string>;
   hasBreakpoints?: boolean;

@@ -40,18 +40,50 @@ export const classTokens = (source: string): string[] =>
 export const hasClass = (source: string, value: string): boolean =>
   classTokens(source).includes(value);
 
+/**
+ * Removes the option's classes at this breakpoint. For an option linked to a value list, this
+ * includes values no longer in the list, so picking a new value replaces them; `breakpoints`
+ * keeps the classes of the other breakpoints.
+ */
 export const removeOptionClasses = (
   source: string,
   option: StyleOptionConfig,
   bp: Breakpoint,
   bpAffix: BreakpointAffix,
+  breakpoints: Breakpoint[] = [],
 ): string => {
   const classes = new Set(
     option.variants.map((variant) => formatVariant(variant, option, bp, bpAffix)),
   );
+  const builtFor = (token: string, breakpoint: Breakpoint) =>
+    isClassOf(token, option, breakpoint, bpAffix);
+  const isStale = (token: string) =>
+    !!option.valueList &&
+    !!option.value &&
+    builtFor(token, bp) &&
+    !breakpoints.some((other) => other.value !== bp.value && builtFor(token, other));
   const tokens = classTokens(source);
-  const remaining = tokens.filter((token) => !classes.has(token));
+  const remaining = tokens.filter((token) => !classes.has(token) && !isStale(token));
   return remaining.length === tokens.length ? source : remaining.join(' ');
+};
+
+/** Whether the token is this option's class at this breakpoint for a value without a dash. */
+const isClassOf = (
+  token: string,
+  option: StyleOptionConfig,
+  bp: Breakpoint,
+  bpAffix: BreakpointAffix,
+): boolean => {
+  const [before, after] = formatVariant('\0', option, bp, bpAffix).split('\0');
+  const value = token.slice(before.length, token.length - after.length);
+  return (
+    token.length > before.length + after.length &&
+    token.startsWith(before) &&
+    token.endsWith(after) &&
+    /^[^\s:]+$/.test(value) &&
+    // A dash outside brackets means another option with a longer prefix, such as `gap-x-4`.
+    !value.replace(/\[[^\]]*\]/g, '').includes('-')
+  );
 };
 
 export const removeInvalidDependencies = (
@@ -83,6 +115,7 @@ export const removeInvalidDependencies = (
               option,
               breakpoint,
               config.breakpointAffix,
+              config.breakpoints,
             );
             if (cleaned !== result[classType]) {
               result[classType] = cleaned;

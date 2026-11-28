@@ -1,4 +1,13 @@
-import { computed, DestroyRef, Inject, inject, Injectable, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Inject,
+  inject,
+  Injectable,
+  Signal,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { get, isEmpty, unset } from 'lodash-es';
@@ -6,11 +15,11 @@ import { create } from 'mutative';
 import {
   catchError,
   concatMap,
-  debounceTime,
+  debounce,
   defer,
   EMPTY,
-  first,
   finalize,
+  first,
   forkJoin,
   from,
   map,
@@ -20,9 +29,16 @@ import {
   switchMap,
   takeUntil,
   tap,
+  timer,
   toArray,
 } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  BuilderSettings,
+  copyBuilderSettings,
+  isBuilderSettings,
+  isStyleValues,
+} from '../model/builder-settings';
 import {
   BaseEditorForm,
   DefaultForm,
@@ -32,28 +48,6 @@ import {
   WorkspaceHierarchy,
   WorkspaceValidation,
 } from '../model/types';
-import { isWorkspaceValidationList } from '../model/workspace-validation';
-import {
-  BUILDER_ENGINE_CONFIG,
-  BuilderEngineConfig,
-  EngineFieldPreset,
-  FormLoadError,
-  PersistenceError,
-} from './types';
-import {
-  CORE_FORM_STORE,
-  FormStoreDataKind,
-  FormStoreRecoveryIssue,
-  FormStoreService,
-} from '../persistence/types';
-import { modifyPropertyTarget, PropertyChange } from './property-change';
-import { canDropField, FieldDropPosition, placeField, removeEmptyRows } from './field-layout';
-import {
-  clearFieldModelValue,
-  convertField,
-  generateFieldId,
-  generateFormId,
-} from './field-conversion';
 import {
   addNodeToHierarchy,
   createEmptyWorkspaceHierarchy,
@@ -62,6 +56,28 @@ import {
   renameNodeInHierarchy,
   toggleFolderExpansion,
 } from '../model/workspace-hierarchy.utils';
+import { isWorkspaceValidationList } from '../model/workspace-validation';
+import {
+  CORE_FORM_STORE,
+  FormStoreDataKind,
+  FormStoreRecoveryIssue,
+  FormStoreService,
+} from '../persistence/types';
+import {
+  clearFieldModelValue,
+  convertField,
+  generateFieldId,
+  generateFormId,
+} from './field-conversion';
+import { canDropField, FieldDropPosition, placeField, removeEmptyRows } from './field-layout';
+import { modifyPropertyTarget, PropertyChange } from './property-change';
+import {
+  BUILDER_ENGINE_CONFIG,
+  BuilderEngineConfig,
+  EngineFieldPreset,
+  FormLoadError,
+  PersistenceError,
+} from './types';
 
 @Injectable()
 export class BuilderEngineService {
@@ -81,8 +97,17 @@ export class BuilderEngineService {
   readonly formLoadError = this.formLoadErrorSrc.asReadonly();
   readonly persistenceError = this.persistenceErrorSrc.asReadonly();
   private readonly autosaveTrigger$ = new Subject<string | null>();
-  private readonly autosaveEnabled: boolean;
-  private readonly autosaveDelay: number;
+  private saveLaterEdits = true;
+
+  readonly hostSettings: Readonly<BuilderSettings>;
+  private readonly settingsSrc: WritableSignal<Readonly<BuilderSettings>>;
+  readonly settings: Signal<Readonly<BuilderSettings>>;
+
+  readonly settingsStorageAvailable: boolean;
+  private readonly pendingSettingsLoads = signal(0);
+  readonly settingsLoading = computed(() => this.pendingSettingsLoads() > 0);
+  private readonly settingsLoadErrorSrc = signal<string | null>(null);
+  readonly settingsLoadError = this.settingsLoadErrorSrc.asReadonly();
 
   readonly saveActiveFormTrigger$ = new Subject<void>();
   readonly saveStatusSrc = signal<'saved' | 'dirty' | 'saving' | 'error'>('saved');
@@ -203,8 +228,27 @@ export class BuilderEngineService {
     this.editorConfig = config;
     this.formStoreService = store;
     this.validationStorageAvailable = !!(store.getValidations$ && store.saveValidations$);
-    this.autosaveEnabled = config.autoSave ?? true;
-    this.autosaveDelay = config.autoSaveDelay ?? 3000;
+
+    this.settingsStorageAvailable = !!(
+      config.editableSettings &&
+      store.getSettings$ &&
+      store.saveSettings$
+    );
+
+    if (config.styleValues !== undefined && !isStyleValues(config.styleValues)) {
+      throw new Error('Invalid styleValues in the builder configuration.');
+    }
+
+    this.hostSettings = freezeSettings(
+      copyBuilderSettings({
+        autoSave: config.autoSave ?? false,
+        autoSaveDelay: config.autoSaveDelay ?? 3000,
+        styleValues: config.styleValues,
+      }),
+    );
+    this.settingsSrc = signal(this.hostSettings);
+    this.settings = this.settingsSrc.asReadonly();
+
     this.hierarchySrc.set(createEmptyWorkspaceHierarchy(config.editorType));
     this.operations$
       .pipe(
@@ -224,16 +268,24 @@ export class BuilderEngineService {
       });
 
     this.loadValidations();
+    this.loadSettings();
 
-    if (this.autosaveEnabled) {
-      this.autosaveTrigger$
-        .pipe(debounceTime(this.autosaveDelay), takeUntilDestroyed(this.destroyRef))
-        .subscribe((formId) => {
-          if (formId && formId === this.activeFormId() && this.saveStatus() === 'dirty') {
-            this.saveActiveForm();
-          }
-        });
-    }
+    this.autosaveTrigger$
+      .pipe(
+        debounce(() => timer(this.settings().autoSaveDelay)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((formId: string | null) => {
+        // Autosave may have been disabled while the timer was running.
+        if (
+          this.settings().autoSave &&
+          formId &&
+          formId === this.activeFormId() &&
+          this.saveStatus() === 'dirty'
+        ) {
+          this.saveActiveForm();
+        }
+      });
     this.saveActiveFormTrigger$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.requestSave());
@@ -295,6 +347,68 @@ export class BuilderEngineService {
             'Saved validations could not be loaded. Try again or recover the affected data.',
           ),
       });
+  }
+
+  loadSettings(): void {
+    if (!this.settingsStorageAvailable) {
+      return;
+    }
+
+    this.settingsLoadErrorSrc.set(null);
+    this.pendingSettingsLoads.update((count) => count + 1);
+    this.enqueue$(() =>
+      this.snapshot$(() => this.formStoreService.getSettings$!(this.editorConfig.editorType)).pipe(
+        tap((saved: BuilderSettings | undefined) => {
+          if (saved !== undefined && !isBuilderSettings(saved)) {
+            throw new Error('Invalid builder settings.');
+          }
+
+          this.applySettings(saved ? this.withHostLists(saved) : this.hostSettings);
+          this.settingsLoadErrorSrc.set(null);
+        }),
+      ),
+    )
+      .pipe(finalize(() => this.pendingSettingsLoads.update((count) => count - 1)))
+      .subscribe({
+        error: () => this.settingsLoadErrorSrc.set('Saved settings could not be loaded.'),
+      });
+  }
+
+  updateSettings$(settings: BuilderSettings): Observable<void> {
+    // Copied now: the caller may change the object while the write is queued or pending.
+    let snapshot: Readonly<BuilderSettings> | undefined;
+    let failure: unknown = new Error('Invalid builder settings.');
+    try {
+      if (isBuilderSettings(settings)) {
+        snapshot = this.withHostLists(settings);
+      }
+    } catch (error) {
+      failure = error; // Reported through the Observable, like every other failure.
+    }
+
+    return this.enqueue$(() => {
+      if (!snapshot) {
+        throw failure;
+      }
+
+      const save$ = this.settingsStorageAvailable
+        ? this.snapshot$(() =>
+            this.formStoreService.saveSettings$!(this.editorConfig.editorType, snapshot),
+          )
+        : of(undefined);
+
+      return save$.pipe(
+        tap(() => {
+          this.applySettings(snapshot);
+          this.settingsLoadErrorSrc.set(null);
+        }),
+      );
+    });
+  }
+
+  /** Saves the current host values and lists: later changes to the host defaults need another reset. */
+  resetSettings$(): Observable<void> {
+    return this.updateSettings$(this.hostSettings);
   }
 
   private readValidations$(): Observable<WorkspaceValidation[]> {
@@ -384,10 +498,18 @@ export class BuilderEngineService {
     }).subscribe({ error: (error) => this.handlePersistenceError(action, error) });
   }
 
-  private requestSave(): void {
+  /** `saveLaterEdits: false` saves only the current edit; later ones wait for an explicit save. */
+  private requestSave(saveLaterEdits = true): void {
     const formId = this.activeFormId();
     const version = this.activeVersion;
-    if (!formId || this.queuedSaves.has(version) || this.isStorageMutationBlocked()) return;
+    if (!formId || this.isStorageMutationBlocked()) return;
+    if (this.queuedSaves.has(version)) {
+      // A save already running also takes the edits made since, when this request asks for them.
+      this.saveLaterEdits ||= saveLaterEdits;
+      return;
+    }
+
+    this.saveLaterEdits = saveLaterEdits;
     this.queuedSaves.add(version);
     this.saveStatusSrc.set('saving');
     this.enqueue$(() => {
@@ -420,7 +542,7 @@ export class BuilderEngineService {
       complete: () => {
         this.queuedSaves.delete(version);
         if (this.destroyRef.destroyed || version !== this.activeVersion) return;
-        if (this.saveStatus() === 'dirty') {
+        if (this.saveStatus() === 'dirty' && (this.saveLaterEdits || this.pendingFormId)) {
           this.requestSave();
         } else if (this.pendingFormId) {
           const target = this.pendingFormId;
@@ -436,7 +558,34 @@ export class BuilderEngineService {
     // A failed save needs an explicit retry, even if editing continues.
     if (this.saveStatus() !== 'error') {
       this.saveStatusSrc.set(this.queuedSaves.has(this.activeVersion) ? 'saving' : 'dirty');
-      if (this.autosaveEnabled) this.autosaveTrigger$.next(this.activeFormId() ?? null);
+      if (this.settings().autoSave) this.autosaveTrigger$.next(this.activeFormId() ?? null);
+    }
+  }
+
+  /** Known fields only, frozen, with the host lists the settings do not set. */
+  private withHostLists(settings: BuilderSettings): Readonly<BuilderSettings> {
+    const copy = copyBuilderSettings(settings);
+    const host = this.hostSettings.styleValues;
+    return freezeSettings(host ? { ...copy, styleValues: { ...host, ...copy.styleValues } } : copy);
+  }
+
+  private applySettings(settings: Readonly<BuilderSettings>): void {
+    const { autoSave } = settings;
+    const wasAutoSaving = this.settings().autoSave;
+    this.settingsSrc.set(settings);
+    if (wasAutoSaving && !autoSave) {
+      // A save already running keeps the edits made so far, not the ones made from now on.
+      this.saveLaterEdits = false;
+    }
+
+    if (this.saveStatus() !== 'dirty') {
+      return;
+    }
+
+    if (autoSave) {
+      this.autosaveTrigger$.next(this.activeFormId() ?? null); // Restart the timer so the pending edit follows the new delay.
+    } else if (wasAutoSaving) {
+      this.requestSave(false); // The user expects the pending edit to be saved; its timer no longer will.
     }
   }
 
@@ -1308,4 +1457,13 @@ export class BuilderEngineService {
     this.markFormDirty();
     this.activeFieldIdSrc.set(replacementId);
   }
+}
+
+function freezeSettings(settings: BuilderSettings): Readonly<BuilderSettings> {
+  for (const list of Object.values(settings.styleValues ?? {})) {
+    list.forEach((entry) => Object.freeze(entry));
+    Object.freeze(list);
+  }
+  Object.freeze(settings.styleValues);
+  return Object.freeze(settings);
 }

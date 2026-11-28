@@ -428,9 +428,9 @@ describe('CoreFormService', () => {
       vi.advanceTimersByTime(3000);
 
       expect(getStoredForm(formId).model).toEqual({
-        value: autoSave !== false ? 'updated' : 'initial',
+        value: autoSave ? 'updated' : 'initial',
       });
-      expect(service.saveStatus()).toBe(autoSave !== false ? 'saved' : 'dirty');
+      expect(service.saveStatus()).toBe(autoSave ? 'saved' : 'dirty');
     });
 
     it('does not autosave when explicitly disabled', () => {

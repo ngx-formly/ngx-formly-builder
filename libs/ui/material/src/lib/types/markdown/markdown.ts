@@ -40,16 +40,17 @@ import { MarkdownProps } from './types';
         margin: 1.5em 0 0.5em;
       }
 
-      .markdown-type-content :where(h1) {
+      .markdown-type-content :where(h1, h2) {
         border-bottom: 1px solid var(--markdown-type-content-border-color);
-        font-size: 1.5rem;
         padding-bottom: 0.3em;
       }
 
+      .markdown-type-content :where(h1) {
+        font-size: 1.5rem;
+      }
+
       .markdown-type-content :where(h2) {
-        border-bottom: 1px solid var(--markdown-type-content-border-color);
         font-size: 1.25rem;
-        padding-bottom: 0.3em;
       }
 
       .markdown-type-content :where(h3) {

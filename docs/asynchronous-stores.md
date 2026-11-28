@@ -66,6 +66,33 @@ and reports a recovery issue with kind `validations`. `resetValidations$()` invo
 reset only the affected catalog. Omitting the optional kind retains the existing reset-all-affected-data
 behavior. Catalog load/write failures do not change the active form or its save status.
 
+## Builder settings
+
+With `editableSettings: true`, users can change autosave, its delay and the style values in the
+Builder settings panel. Stores can implement both `getSettings$(editorType)` and
+`saveSettings$(editorType, settings)` to keep these changes. `BuilderSettings` contains `autoSave`,
+`autoSaveDelay`, an integer from 0 to 2147483647 milliseconds, and optional `styleValues`: lists of
+`{ value, label? }` for `height`, `width`, `margin` and `padding`. Saved settings belong to an editor
+namespace and take precedence over the host's values; a list missing from them keeps the host list. `getSettings$` emits `undefined` when none are saved, so that
+the host values apply.
+
+`settings()` exposes the settings in effect and `settingsStorageAvailable` tells whether changes are
+stored. Without `editableSettings` or without both methods, saved settings are neither read nor
+written, and changes last until the engine is destroyed. The engine serializes settings operations
+with its other mutations. `updateSettings$(settings)` applies new values only after a successful
+write. `resetSettings$()` saves the current host values and lists, so later changes to the host
+configuration need another reset. Subscribe to these operations and handle errors in the host.
+
+A failed read, or an invalid value from the store, keeps the current settings and sets
+`settingsLoadError()`; retry with `loadSettings()`. Settings failures do not change the active form or
+its save status. A new delay restarts the timer of a pending edit; disabling autosave saves it
+immediately.
+
+`LocalFormStoreService` does not keep settings, so with the default store changes last for the
+session; users can export them as JSON. To keep them in the browser, extend it with the two methods,
+as Studio does in `apps/studio/src/app/form-editor/studio-form-store.ts`. That store treats corrupt
+or invalid saved data as nothing saved; an unreadable local storage is a read failure.
+
 ## Remote HTTP store
 
 `@ngx-formly/builder/http` provides `HttpFormStoreService`, a store for any backend that implements
@@ -85,6 +112,7 @@ providers: [
 
 Authentication, headers and retries belong to the host's `HttpClient` interceptors. A `404` from
 `GET /forms/{formId}` means a missing form; every other HTTP error reaches the engine as a store
-failure. The store supports the validation catalog but not local recovery
+failure, except a `404` from `GET /settings`, which means no saved settings. The store supports the
+validation catalog and builder settings but not local recovery
 (`getRecoveryIssues$`/`resetCorruptedStorage$`): the server owns its data integrity. The ordering
 guarantees above apply to one engine; the API has no concurrency control between clients.

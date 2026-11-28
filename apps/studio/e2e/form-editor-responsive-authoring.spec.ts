@@ -301,19 +301,25 @@ test.describe('Form Editor responsive authoring', () => {
 
     const headers = page.locator('core-formly-field-header');
     await page.locator('core-field-wrapper').nth(1).hover();
+    const movedHeader = await headers.nth(1).elementHandle();
     await headers.nth(1).getByRole('button', { name: 'Options' }).click();
     const secondFieldMenu = page.locator('[role="menu"]:visible').last();
     await expect(secondFieldMenu.getByRole('menuitem', { name: 'Move up' })).toBeVisible();
     await secondFieldMenu.getByRole('menuitem', { name: 'Move up' }).click();
 
-    await page.locator('core-field-wrapper[aria-pressed="true"]').hover();
+    // The moved field renders again; a menu opened on its old header would close with it.
+    const movedField = page.locator('core-field-wrapper[aria-pressed="true"]');
+    await movedField.hover();
+    await expect.poll(() => movedHeader.evaluate((header) => header.isConnected)).toBe(false);
+    await page.mouse.move(0, 0);
+    await movedField.hover();
     await page
       .locator('core-form-builder-content [aria-pressed="true"] core-formly-field-header')
       .getByRole('button', { name: 'Options' })
       .click();
     const firstFieldMenu = page.locator('[role="menu"]:visible').last();
-    await expect(firstFieldMenu.getByRole('menuitem', { name: 'Move up' })).toBeHidden();
     await expect(firstFieldMenu.getByRole('menuitem', { name: 'Move down' })).toBeVisible();
+    await expect(firstFieldMenu.getByRole('menuitem', { name: 'Move up' })).toBeHidden();
     await firstFieldMenu.getByRole('menuitem', { name: 'Move down' }).press('Enter');
     await expectNoDocumentOverflow(page);
   });

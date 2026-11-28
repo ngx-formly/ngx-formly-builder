@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import { WorkspaceHierarchy } from '../model/types';
 import { LocalFormStoreService } from './local-form-store.service';
-import { FormStoreRecoveryRequiredError } from './types';
+import { FormStoreRecoveryRequiredError, FormStoreService } from './types';
 
 describe('LocalFormStoreService', () => {
   let service: LocalFormStoreService;
@@ -15,6 +15,13 @@ describe('LocalFormStoreService', () => {
       providers: [LocalFormStoreService],
     });
     service = TestBed.inject(LocalFormStoreService);
+  });
+
+  it('does not persist builder settings', () => {
+    const store: FormStoreService = service;
+
+    expect(store.getSettings$).toBeUndefined();
+    expect(store.saveSettings$).toBeUndefined();
   });
 
   it('adds and retrieves a form', () => {

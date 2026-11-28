@@ -186,9 +186,11 @@ Use your own profile for `myFormlyLibrary`. Toggle `.dark` on the document root 
 `provideFormlyBuilder` accepts an editor storage namespace, autosave settings, and a custom
 `FormStoreService` implementation. Pass `styles` to replace the Tailwind styling catalogue,
 using `tailwindConfig` as an optional starting point. Style options accept `variantLabels` and
-`description`; their saved class values stay unchanged. The read-only **Builder settings** panel
-shows the effective configuration, including before a form is opened. Set `showSettings: false`
-to hide it in your application. Host CSS determines the actual dimensions and available classes.
+`description`; their saved class values stay unchanged. The **Builder settings** panel shows
+the effective configuration, including before a form is opened. Pass `styleValues` to set the
+values offered for Height, Width, Margin and Padding. Set `editableSettings: true` to let users
+change and share autosave settings and these values there, or `showSettings: false` to hide the
+panel in your application. Host CSS determines the actual dimensions and available classes.
 The API is experimental in `0.0.x`.
 
 Use `provideFormlyBuilder()` without profiles for native HTML controls. Leaving **UI Library**
@@ -243,7 +245,7 @@ inputs mounted across document edits. The shared `activePreviewFormFields` signa
 for a single renderer; do not bind the same mutable fields to multiple Formly forms. Use
 `activeFormFieldsJSON()` for clean exports, independently of rendered previews.
 
-Autosave defaults to `true`, with a 3000 ms delay; set `autoSave: false` for explicit saves.
+Autosave is off by default. Set `autoSave: true` to save automatically after 3000 ms without edits.
 The provider accepts an optional `formStore` class and `autoSaveDelay`. Creating a form writes to
 the store even with autosave disabled; use an in-memory store for transient demos. It does not register Formly
 runtime components. Headless hosts render their own controls and register their chosen Formly

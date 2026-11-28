@@ -1,5 +1,6 @@
 import { InjectionToken, Type } from '@angular/core';
 import { FormlyFieldConfig } from '@ngx-formly/core';
+import type { StyleValues } from '../model/builder-settings';
 import { FormStoreService } from '../persistence/types';
 
 /** Field metadata used by document operations, without rendering components. */
@@ -31,9 +32,13 @@ export interface EngineLibrary {
 export interface BuilderEngineConfig {
   editorType: string;
   libraries: EngineLibrary[];
-  /** Defaults to true. */
+  /** Defaults to false. */
   autoSave?: boolean;
   autoSaveDelay?: number;
+  /** Load and save user settings through the form store. Defaults to false. */
+  editableSettings?: boolean;
+  /** Values offered per style category. Missing lists keep the styles config values. */
+  styleValues?: StyleValues;
   formStore?: Type<FormStoreService>;
 }
 

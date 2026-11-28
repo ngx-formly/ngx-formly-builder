@@ -6,6 +6,7 @@ import {
   WorkspaceHierarchy,
   WorkspaceValidation,
 } from '../model/types';
+import type { BuilderSettings } from '../model/builder-settings';
 
 /**
  * Form store interface describing persistence operations.
@@ -34,6 +35,9 @@ export interface FormStoreService {
   getRecoveryIssues$?(editorType: string): Observable<readonly FormStoreRecoveryIssue[]>;
   /** Explicitly remove corrupted local data for an editor namespace. */
   resetCorruptedStorage$?(editorType: string, kind?: FormStoreDataKind): Observable<void>;
+  /** Settings support requires both methods. `undefined` means none saved: host defaults apply. */
+  getSettings$?(editorType: string): Observable<BuilderSettings | undefined>;
+  saveSettings$?(editorType: string, settings: BuilderSettings): Observable<void>;
 }
 
 export type FormStoreDataKind = 'forms' | 'hierarchy' | 'validations';

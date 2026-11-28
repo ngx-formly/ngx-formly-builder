@@ -17,8 +17,9 @@ info:
     - **Form writes keep the hierarchy in sync.** Creating, updating or deleting a form also
       inserts, renames/updates or removes the matching form node in the workspace hierarchy.
       The builder reads the form list and the hierarchy again right after each write.
-    - **No concurrency control.** `PUT /hierarchy` and `PUT /validations` replace the whole
-      resource; the last writer wins. Ordering is only guaranteed within one builder instance.
+    - **No concurrency control.** `PUT /hierarchy`, `PUT /validations` and `PUT /settings` replace
+      the whole resource; the last writer wins. Ordering is only guaranteed within one builder
+      instance.
     - **No atomicity across calls.** Some builder actions take several requests (renaming a form
       is a read, a form update and a hierarchy save; deleting a folder deletes each form). A
       failure part-way leaves the successful requests applied.
@@ -153,6 +154,35 @@ paths:
           description: |
             A rule is invalid, or two rules share the same `id` or `name`. Uniqueness cannot be
             expressed in JSON Schema, so the server must check it.
+  /workspaces/{workspaceId}/settings:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+    get:
+      operationId: getSettings
+      summary: Read the builder settings
+      responses:
+        '200':
+          description: The saved settings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuilderSettings'
+        '404':
+          description: No saved settings. The client applies the host defaults, not an error.
+    put:
+      operationId: saveSettings
+      summary: Replace the builder settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuilderSettings'
+      responses:
+        '204':
+          description: Saved.
+        '422':
+          description: A setting is missing or invalid.
 components:
   parameters:
     WorkspaceId:
@@ -320,3 +350,41 @@ components:
         message:
           type: string
           minLength: 1
+    BuilderSettings:
+      type: object
+      description: Servers store the known fields and ignore any others.
+      required: [autoSave, autoSaveDelay]
+      properties:
+        autoSave:
+          type: boolean
+        autoSaveDelay:
+          description: Milliseconds. The maximum is the longest timer a browser supports.
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        styleValues:
+          description: Values offered for each style category. A missing list keeps the builder defaults.
+          type: object
+          properties:
+            height:
+              $ref: '#/components/schemas/StyleValueList'
+            width:
+              $ref: '#/components/schemas/StyleValueList'
+            margin:
+              $ref: '#/components/schemas/StyleValueList'
+            padding:
+              $ref: '#/components/schemas/StyleValueList'
+    StyleValueList:
+      description: Values must be unique within the list.
+      type: array
+      items:
+        type: object
+        required: [value]
+        properties:
+          value:
+            description: One CSS class suffix, such as `4` in `m-4`.
+            type: string
+            pattern: '^[^\s:]+$'
+          label:
+            description: Shown instead of the value when set.
+            type: string

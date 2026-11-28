@@ -1,7 +1,12 @@
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import type { DefaultForm, WorkspaceHierarchy, WorkspaceValidation } from '@ngx-formly/builder';
+import type {
+  BuilderSettings,
+  DefaultForm,
+  WorkspaceHierarchy,
+  WorkspaceValidation,
+} from '@ngx-formly/builder';
 import { Observable } from 'rxjs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { HTTP_FORM_STORE_CONFIG } from './http-form-store.config';
@@ -48,6 +53,7 @@ describe('HttpFormStoreService', () => {
   const validations: WorkspaceValidation[] = [
     { id: 'v1', name: 'zip', expression: 'x', message: 'm' },
   ];
+  const settings: BuilderSettings = { autoSave: false, autoSaveDelay: 500 };
   const noContent = { status: 204, statusText: 'No Content' };
 
   afterEach(() => TestBed.inject(HttpTestingController).verify());
@@ -140,6 +146,60 @@ describe('HttpFormStoreService', () => {
     expect(req.request.body).toEqual(validations);
     req.flush(null, noContent);
     expect(write.values).toEqual([undefined]);
+  });
+
+  it('reads and saves settings', () => {
+    const { service, httpTesting } = setup();
+    const read = collect(service.getSettings$('ws'));
+    httpTesting.expectOne({ method: 'GET', url: `${base}/settings` }).flush(settings);
+    expect(read.values).toEqual([settings]);
+
+    const write = collect(service.saveSettings$('ws', settings));
+    const req = httpTesting.expectOne({ method: 'PUT', url: `${base}/settings` });
+    expect(req.request.body).toEqual(settings);
+    req.flush(null, noContent);
+    expect(write.values).toEqual([undefined]);
+    expect(write.completed).toBe(true);
+  });
+
+  it('sends only known settings fields', () => {
+    const { service, httpTesting } = setup();
+    collect(service.saveSettings$('ws', { ...settings, styles: {} } as BuilderSettings));
+    const req = httpTesting.expectOne({ method: 'PUT', url: `${base}/settings` });
+    expect(req.request.body).toEqual(settings);
+    req.flush(null, noContent);
+  });
+
+  it('sends style values', () => {
+    const { service, httpTesting } = setup();
+    const withValues = { ...settings, styleValues: { padding: [{ value: 'px' }] } };
+    collect(service.saveSettings$('ws', withValues));
+    const req = httpTesting.expectOne({ method: 'PUT', url: `${base}/settings` });
+    expect(req.request.body).toEqual(withValues);
+    req.flush(null, noContent);
+  });
+
+  it('reads no settings when none were saved', () => {
+    const { service, httpTesting } = setup();
+    const result = collect(service.getSettings$('ws'));
+    httpTesting
+      .expectOne({ method: 'GET', url: `${base}/settings` })
+      .flush(null, { status: 404, statusText: 'Not Found' });
+    expect(result.values).toEqual([undefined]);
+    expect(result.error).toBeUndefined();
+    expect(result.completed).toBe(true);
+  });
+
+  it.each(['GET', 'PUT'])('propagates %s settings errors', (method) => {
+    const { service, httpTesting } = setup();
+    const result = collect<unknown>(
+      method === 'GET' ? service.getSettings$('ws') : service.saveSettings$('ws', settings),
+    );
+    httpTesting
+      .expectOne({ method, url: `${base}/settings` })
+      .flush(null, { status: 500, statusText: 'Error' });
+    expect(result.values).toEqual([]);
+    expect((result.error as HttpErrorResponse).status).toBe(500);
   });
 
   it('ignores a trailing slash in baseUrl', () => {

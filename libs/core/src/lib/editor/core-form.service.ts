@@ -5,6 +5,9 @@ import { CoreFieldService } from '../config/core-field.service';
 import { CoreLibraryService } from '../config/core-library.service';
 import { CORE_EDITOR_CONFIG, CORE_LIBRARY_CONFIGS } from '../config/types';
 import { FieldInfo } from '../model/types';
+import { tailwindConfig } from '../panel/styling-panel/config/tailwind';
+import { applyStyleValues } from '../panel/styling-panel/style-values';
+import { CORE_STYLES_CONFIG } from '../panel/styling-panel/types';
 import { CoreAddFieldOption } from './types';
 import { PanelService } from './panel.service';
 
@@ -25,6 +28,13 @@ export class CoreFormService extends BuilderEngineService {
   });
 
   readonly activeSchema = computed(() => this.libraryService.activeLibrary()?.schema);
+
+  // Same default as provideCore, for setups that provide this service on its own.
+  private readonly stylesConfig = inject(CORE_STYLES_CONFIG, { optional: true }) ?? tailwindConfig;
+  /** The styles config with the style value lists of the current settings. */
+  readonly styles = computed(() =>
+    applyStyleValues(this.stylesConfig, this.settings().styleValues ?? {}),
+  );
 
   constructor() {
     const config = inject(CORE_EDITOR_CONFIG);

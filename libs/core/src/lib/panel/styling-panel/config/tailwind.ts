@@ -134,6 +134,7 @@ const fieldSizing: StyleOptionCategory = {
     {
       name: 'Height',
       value: 'h',
+      valueList: 'height',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, ...fractionVariants2, ...textVariants2],
@@ -141,6 +142,7 @@ const fieldSizing: StyleOptionCategory = {
     {
       name: 'Width',
       value: 'w',
+      valueList: 'width',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, ...fractionVariants2, ...textVariants2],
@@ -154,6 +156,7 @@ const fieldMargin: StyleOptionCategory = {
     {
       name: 'General',
       value: 'm',
+      valueList: 'margin',
       spanWidth: true,
       hasBreakpoints: true,
       variantLabels: spacingLabels,
@@ -162,6 +165,7 @@ const fieldMargin: StyleOptionCategory = {
     {
       name: 'Horizintal',
       value: 'mx',
+      valueList: 'margin',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, ...textVariants],
@@ -169,6 +173,7 @@ const fieldMargin: StyleOptionCategory = {
     {
       name: 'Vertical',
       value: 'my',
+      valueList: 'margin',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, ...textVariants],
@@ -176,6 +181,7 @@ const fieldMargin: StyleOptionCategory = {
     {
       name: 'Top',
       value: 'mt',
+      valueList: 'margin',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, ...textVariants],
@@ -183,6 +189,7 @@ const fieldMargin: StyleOptionCategory = {
     {
       name: 'Bottom',
       value: 'mb',
+      valueList: 'margin',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, ...textVariants],
@@ -190,6 +197,7 @@ const fieldMargin: StyleOptionCategory = {
     {
       name: 'Left',
       value: 'ml',
+      valueList: 'margin',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, ...textVariants],
@@ -197,6 +205,7 @@ const fieldMargin: StyleOptionCategory = {
     {
       name: 'Right',
       value: 'mr',
+      valueList: 'margin',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, ...textVariants],
@@ -287,6 +296,7 @@ const fieldGroupPadding: StyleOptionCategory = {
     {
       name: 'General',
       value: 'p',
+      valueList: 'padding',
       spanWidth: true,
       hasBreakpoints: true,
       variantLabels: spacingLabels,
@@ -295,6 +305,7 @@ const fieldGroupPadding: StyleOptionCategory = {
     {
       name: 'Horizintal',
       value: 'px',
+      valueList: 'padding',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, 'px'],
@@ -302,6 +313,7 @@ const fieldGroupPadding: StyleOptionCategory = {
     {
       name: 'Vertical',
       value: 'py',
+      valueList: 'padding',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, 'px'],
@@ -309,6 +321,7 @@ const fieldGroupPadding: StyleOptionCategory = {
     {
       name: 'Top',
       value: 'pt',
+      valueList: 'padding',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, 'px'],
@@ -316,6 +329,7 @@ const fieldGroupPadding: StyleOptionCategory = {
     {
       name: 'Bottom',
       value: 'pb',
+      valueList: 'padding',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, 'px'],
@@ -323,6 +337,7 @@ const fieldGroupPadding: StyleOptionCategory = {
     {
       name: 'Left',
       value: 'pl',
+      valueList: 'padding',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, 'px'],
@@ -330,6 +345,7 @@ const fieldGroupPadding: StyleOptionCategory = {
     {
       name: 'Right',
       value: 'pr',
+      valueList: 'padding',
       hasBreakpoints: true,
       variantLabels: spacingLabels,
       variants: [...numberVariants, 'px'],

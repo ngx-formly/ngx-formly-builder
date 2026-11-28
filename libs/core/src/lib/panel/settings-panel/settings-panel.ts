@@ -1,18 +1,24 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Panel } from '../../ui/panel';
 import { CORE_EDITOR_CONFIG, CORE_FORM_TEMPLATES, CORE_LIBRARY_CONFIGS } from '../../config/types';
+import { CoreFormService } from '../../editor/core-form.service';
 import { CORE_FORM_STORE } from '../../persistence/types';
 import { PanelHeader } from '../../shared/panel-header';
 import { CORE_STYLES_CONFIG } from '../styling-panel/types';
+import { AutosaveSettings } from './autosave-settings';
 
 @Component({
   selector: 'core-settings-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PanelHeader, Panel],
+  imports: [AutosaveSettings, PanelHeader, Panel],
   template: `
     <core-panel-header
       header="Builder settings"
-      subHeader="Configured by the application that hosts this builder"
+      [subHeader]="
+        editor.editableSettings
+          ? 'Autosave and style values can be changed here; other settings come from the host application'
+          : 'Configured by the application that hosts this builder'
+      "
     />
     <div class="panel-content flex flex-col gap-6 text-sm wrap-anywhere">
       <section aria-label="General settings">
@@ -22,23 +28,25 @@ import { CORE_STYLES_CONFIG } from '../styling-panel/types';
             <dt class="text-muted-color">Storage namespace</dt>
             <dd>{{ editor.editorType }}</dd>
           </div>
-          <div>
-            <dt class="text-muted-color">Autosave</dt>
-            <dd>{{ editor.autoSave === false ? 'Disabled' : 'Enabled' }}</dd>
-          </div>
-          <div>
-            <dt class="text-muted-color">Autosave delay</dt>
-            <dd>
-              {{ editor.autoSaveDelay ?? 3000 }} ms{{
-                editor.autoSave === false ? ' (inactive)' : ''
-              }}
-            </dd>
-          </div>
+          @if (!editor.editableSettings) {
+            @let autosave = settings();
+            <div>
+              <dt class="text-muted-color">Autosave</dt>
+              <dd>{{ autosave.autoSave ? 'Enabled' : 'Disabled' }}</dd>
+            </div>
+            <div>
+              <dt class="text-muted-color">Autosave delay</dt>
+              <dd>{{ autosave.autoSaveDelay }} ms{{ autosave.autoSave ? '' : ' (inactive)' }}</dd>
+            </div>
+          }
           <div>
             <dt class="text-muted-color">Storage</dt>
             <dd>{{ storageLabel }}</dd>
           </div>
         </dl>
+        @if (editor.editableSettings) {
+          <core-autosave-settings class="mt-3 block" />
+        }
       </section>
 
       <section aria-label="Registered libraries">
@@ -87,7 +95,7 @@ import { CORE_STYLES_CONFIG } from '../styling-panel/types';
             <p>No breakpoints configured.</p>
           }
         </dl>
-        @for (group of styleGroups; track group.label) {
+        @for (group of styleGroups(); track group.label) {
           <h4 class="mt-4 mb-2 font-medium">{{ group.label }}</h4>
           @for (category of group.categories; track $index) {
             <core-property-panel
@@ -137,8 +145,8 @@ import { CORE_STYLES_CONFIG } from '../styling-panel/types';
       >
         <h3 class="mb-2 font-medium">Configure your builder</h3>
         <p class="mb-3 text-muted-color">
-          Settings are supplied at initialization. Changes belong in your application's builder
-          configuration.
+          {{ editor.editableSettings ? 'Other settings' : 'Settings' }} are supplied at
+          initialization. Changes belong in your application's builder configuration.
         </p>
         <ul class="flex flex-col gap-2">
           <li>
@@ -166,6 +174,8 @@ import { CORE_STYLES_CONFIG } from '../styling-panel/types';
 })
 export class SettingsPanel {
   protected readonly editor = inject(CORE_EDITOR_CONFIG);
+  private readonly forms = inject(CoreFormService);
+  protected readonly settings = this.forms.settings;
   protected readonly libraries = inject(CORE_LIBRARY_CONFIGS);
   protected readonly styles = inject(CORE_STYLES_CONFIG);
   protected readonly sharedTemplates = inject(CORE_FORM_TEMPLATES, { optional: true });
@@ -175,8 +185,9 @@ export class SettingsPanel {
       .filter((library) => !library.hidden)
       .flatMap((library) => library.formTemplates ?? []);
   protected readonly storageLabel = inject(CORE_FORM_STORE).label ?? 'Custom storage';
-  protected readonly styleGroups = [
-    { label: 'Self', categories: this.styles.className },
-    { label: 'Children', categories: this.styles.fieldGroupClassName },
-  ];
+  // The values offered follow the style value lists in the current settings.
+  protected readonly styleGroups = computed(() => [
+    { label: 'Self', categories: this.forms.styles().className },
+    { label: 'Children', categories: this.forms.styles().fieldGroupClassName },
+  ]);
 }
