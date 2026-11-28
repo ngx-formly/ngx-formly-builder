@@ -187,9 +187,10 @@ Use your own profile for `myFormlyLibrary`. Toggle `.dark` on the document root 
 `FormStoreService` implementation. Pass `styles` to replace the Tailwind styling catalogue,
 using `tailwindConfig` as an optional starting point. Style options accept `variantLabels` and
 `description`; their saved class values stay unchanged. The **Builder settings** panel shows
-the effective configuration, including before a form is opened. Set `editableSettings: true` to let
-users change and share autosave settings there, or `showSettings: false` to hide the panel in your
-application. Host CSS determines the actual dimensions and available classes.
+the effective configuration, including before a form is opened. Pass `styleValues` to set the
+values offered for Height, Width, Margin and Padding. Set `editableSettings: true` to let users
+change and share autosave settings and these values there, or `showSettings: false` to hide the
+panel in your application. Host CSS determines the actual dimensions and available classes.
 The API is experimental in `0.0.x`.
 
 Use `provideFormlyBuilder()` without profiles for native HTML controls. Leaving **UI Library**

@@ -16,7 +16,7 @@ import { AutosaveSettings } from './autosave-settings';
       header="Builder settings"
       [subHeader]="
         editor.editableSettings
-          ? 'Autosave can be changed here; other settings come from the host application'
+          ? 'Autosave and style values can be changed here; other settings come from the host application'
           : 'Configured by the application that hosts this builder'
       "
     />

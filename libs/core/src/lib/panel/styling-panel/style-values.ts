@@ -1,4 +1,4 @@
-import type { StyleValue, StyleValues } from '@ngx-formly/builder';
+import type { StyleValue, StyleValueList, StyleValues } from '@ngx-formly/builder';
 import { StyleOptionCategory, StyleOptionConfig, StylesConfig } from './types';
 
 /** The styles config with the variants of tagged options replaced by the given lists. */
@@ -49,4 +49,41 @@ function withValues(option: StyleOptionConfig, list: StyleValue[]): StyleOptionC
       list.flatMap((entry) => (entry.label ? [[entry.value, entry.label]] : [])),
     ),
   };
+}
+
+export const STYLE_VALUE_LIST_NAMES: Record<StyleValueList, string> = {
+  height: 'Height',
+  width: 'Width',
+  margin: 'Margin',
+  padding: 'Padding',
+};
+
+/** Trimmed values without empty labels, or the first problem found, for users to fix. */
+export function cleanStyleValues(values: StyleValues): StyleValues | string {
+  const clean: StyleValues = {};
+  for (const [list, entries] of Object.entries(values) as [StyleValueList, StyleValue[]][]) {
+    const name = STYLE_VALUE_LIST_NAMES[list];
+    const seen = new Set<string>();
+    clean[list] = [];
+    for (const entry of entries) {
+      const value = entry.value.trim();
+      const label = entry.label?.trim();
+      if (!value) {
+        return `${name}: enter a value in every row.`;
+      }
+
+      if (!/^[^\s:]+$/.test(value)) {
+        return `${name}: "${value}" cannot contain spaces or ":".`;
+      }
+
+      if (seen.has(value)) {
+        return `${name}: "${value}" is listed twice.`;
+      }
+
+      seen.add(value);
+      clean[list].push(label ? { value, label } : { value });
+    }
+  }
+
+  return clean;
 }

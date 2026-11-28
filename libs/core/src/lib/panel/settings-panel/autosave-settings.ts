@@ -7,11 +7,13 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BuilderSettings, isBuilderSettings } from '@ngx-formly/builder';
+import { BuilderSettings, isBuilderSettings, StyleValueList } from '@ngx-formly/builder';
 import saveAs from 'file-saver';
 import { defer, Observable, switchMap } from 'rxjs';
 import { CORE_EDITOR_CONFIG } from '../../config/types';
 import { CoreFormService } from '../../editor/core-form.service';
+import { cleanStyleValues, defaultStyleValues } from '../styling-panel/style-values';
+import { StyleValuesSettings } from './style-values-settings';
 
 const INVALID_FILE = new Error('Invalid builder settings file.');
 
@@ -33,7 +35,7 @@ async function readSettings(file: File): Promise<BuilderSettings> {
 @Component({
   selector: 'core-autosave-settings',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule],
+  imports: [FormsModule, StyleValuesSettings],
   template: `
     @if (forms.settingsLoadError()) {
       <div
@@ -60,7 +62,7 @@ async function readSettings(file: File): Promise<BuilderSettings> {
     <form
       ngNativeValidate
       class="flex flex-col gap-3"
-      aria-label="Autosave settings"
+      aria-label="Editable settings"
       (input)="clearSaved()"
       (ngSubmit)="save()"
     >
@@ -87,16 +89,27 @@ async function readSettings(file: File): Promise<BuilderSettings> {
           [(ngModel)]="autoSaveDelay"
         />
       </label>
-      @if (state() === 'failed' || state() === 'invalid-file') {
+      <core-style-values-settings
+        [disabled]="busy()"
+        [(values)]="styleValues"
+        (valuesChange)="clearSaved()"
+      />
+      @if (state() === 'failed' || state() === 'invalid-file' || state() === 'invalid-values') {
         <p
           role="alert"
           class="text-red-700 dark:text-red-300"
         >
-          {{
-            state() === 'failed'
-              ? 'Settings could not be saved.'
-              : 'The file is not valid builder settings.'
-          }}
+          @switch (state()) {
+            @case ('failed') {
+              Settings could not be saved.
+            }
+            @case ('invalid-file') {
+              The file is not valid builder settings.
+            }
+            @default {
+              {{ valuesProblem() }}
+            }
+          }
         </p>
       }
       <div class="flex flex-wrap gap-2">
@@ -159,23 +172,48 @@ export class AutosaveSettings {
   protected readonly autoSaveDelay = linkedSignal<number | null>(
     () => this.forms.settings().autoSaveDelay,
   );
-  protected readonly state = signal<'idle' | 'saving' | 'saved' | 'failed' | 'invalid-file'>(
-    'idle',
-  );
+  private readonly effectiveStyleValues = computed(() => defaultStyleValues(this.forms.styles()));
+  protected readonly styleValues = linkedSignal(() => this.effectiveStyleValues());
+  protected readonly valuesProblem = signal('');
+  protected readonly state = signal<
+    'idle' | 'saving' | 'saved' | 'failed' | 'invalid-file' | 'invalid-values'
+  >('idle');
   protected readonly busy = computed(
     () => this.forms.settingsLoading() || this.state() === 'saving',
   );
 
   protected save(): void {
+    if (this.busy()) {
+      return;
+    }
+
+    // Lists users did not change keep following the styles config, so only edited ones are checked.
+    const edited = Object.fromEntries(
+      Object.entries(this.styleValues()).filter(
+        ([list, entries]) =>
+          JSON.stringify(entries) !==
+          JSON.stringify(this.effectiveStyleValues()[list as StyleValueList]),
+      ),
+    );
+    const changed = cleanStyleValues(edited);
+    if (typeof changed === 'string') {
+      this.valuesProblem.set(changed);
+      this.state.set('invalid-values');
+      return;
+    }
+
     const autoSave = this.autoSave();
     // Without autosave the delay input is disabled and skips native validation.
     const delay = autoSave ? this.autoSaveDelay() : null;
+    const { styleValues, ...settings } = this.forms.settings();
+    const saved = { ...styleValues, ...changed };
 
     this.run(
       this.forms.updateSettings$({
-        ...this.forms.settings(),
+        ...settings,
+        ...(Object.keys(saved).length ? { styleValues: saved } : {}),
         autoSave,
-        autoSaveDelay: delay ?? this.forms.settings().autoSaveDelay,
+        autoSaveDelay: delay ?? settings.autoSaveDelay,
       }),
     );
   }

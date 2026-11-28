@@ -68,19 +68,20 @@ behavior. Catalog load/write failures do not change the active form or its save 
 
 ## Builder settings
 
-With `editableSettings: true`, users can change autosave and its delay in the Builder settings panel.
-Stores can implement both `getSettings$(editorType)` and `saveSettings$(editorType, settings)` to keep
-these changes. `BuilderSettings` contains `autoSave` and `autoSaveDelay`, an integer from 0 to
-2147483647 milliseconds. Saved settings belong to an editor namespace and take precedence over the
-host's `autoSave` and `autoSaveDelay`. `getSettings$` emits `undefined` when none are saved, so that
+With `editableSettings: true`, users can change autosave, its delay and the style values in the
+Builder settings panel. Stores can implement both `getSettings$(editorType)` and
+`saveSettings$(editorType, settings)` to keep these changes. `BuilderSettings` contains `autoSave`,
+`autoSaveDelay`, an integer from 0 to 2147483647 milliseconds, and optional `styleValues`: lists of
+`{ value, label? }` for `height`, `width`, `margin` and `padding`. Saved settings belong to an editor
+namespace and take precedence over the host's values; a list missing from them keeps the host list. `getSettings$` emits `undefined` when none are saved, so that
 the host values apply.
 
 `settings()` exposes the settings in effect and `settingsStorageAvailable` tells whether changes are
 stored. Without `editableSettings` or without both methods, saved settings are neither read nor
 written, and changes last until the engine is destroyed. The engine serializes settings operations
 with its other mutations. `updateSettings$(settings)` applies new values only after a successful
-write. `resetSettings$()` saves the current host values, so later changes to the host configuration
-need another reset. Subscribe to these operations and handle errors in the host.
+write. `resetSettings$()` saves the current host values and lists, so later changes to the host
+configuration need another reset. Subscribe to these operations and handle errors in the host.
 
 A failed read, or an invalid value from the store, keeps the current settings and sets
 `settingsLoadError()`; retry with `loadSettings()`. Settings failures do not change the active form or

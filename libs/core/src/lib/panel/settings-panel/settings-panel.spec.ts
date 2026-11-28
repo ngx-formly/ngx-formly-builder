@@ -204,7 +204,7 @@ describe('SettingsPanel', () => {
     it('shows the effective autosave settings as controls', async () => {
       const { element, autosave, delay } = await renderEditable({ autoSaveDelay: 750 });
       expect(element.textContent).toContain(
-        'Autosave can be changed here; other settings come from the host application',
+        'Autosave and style values can be changed here; other settings come from the host application',
       );
       expect(element.textContent).toContain('form-editor');
       expect(element.textContent).toContain('Browser local storage');
@@ -349,6 +349,157 @@ describe('SettingsPanel', () => {
       earlier.next();
 
       expect(forms.settings().autoSaveDelay).toBe(750);
+    });
+
+    describe('style values', () => {
+      const host = {
+        styleValues: {
+          margin: [{ value: '4', label: 'Small' }, { value: '8' }],
+        },
+      };
+      async function renderLists(config: FormlyBuilderConfig = host) {
+        const view = await renderEditable(config);
+        const input = (label: string) =>
+          view.element.querySelector<HTMLInputElement>(`input[aria-label="${label}"]`);
+        const labelled = (label: string) =>
+          view.element.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!;
+        const type = async (label: string, value: string) => {
+          input(label)!.value = value;
+          input(label)!.dispatchEvent(new Event('input', { bubbles: true }));
+          await view.settle();
+        };
+        return { ...view, input, labelled, type };
+      }
+
+      it('shows the values in effect for each list', async () => {
+        const { input, element } = await renderLists();
+        expect(input('Margin value 1')!.value).toBe('4');
+        expect(input('Margin label 1')!.value).toBe('Small');
+        expect(input('Margin label 2')!.value).toBe('');
+        expect(input('Height value 1')!.value).toBe('0');
+        expect(input('Height label 1')!.value).toBe('0 · 0rem');
+        expect(element.querySelectorAll('input[aria-label^="Height value"]')).toHaveLength(
+          tailwindConfig.className[1].options[0].variants.length,
+        );
+      });
+
+      it('saves edited, added and removed values', async () => {
+        const { forms, store, type, labelled, click, button } = await renderLists();
+        await type('Margin label 2', ' Large ');
+        await click(labelled('Remove Margin value 1'));
+        await click(labelled('Add Margin value'));
+        await type('Margin value 2', '12');
+        await click(button('Save settings'));
+
+        const margin = [{ value: '8', label: 'Large' }, { value: '12' }];
+        expect(store.saved).toEqual({
+          autoSave: false,
+          autoSaveDelay: 3000,
+          styleValues: { margin },
+        });
+        expect(forms.settings().styleValues).toEqual({ margin });
+      });
+
+      it('saves an empty list', async () => {
+        const { store, labelled, click, button, element } = await renderLists();
+        await click(labelled('Remove Margin value 1'));
+        await click(labelled('Remove Margin value 1'));
+        expect(element.textContent).toContain('No Margin values: its options offer no choices.');
+        await click(button('Save settings'));
+
+        expect(store.saved?.styleValues).toEqual({ margin: [] });
+      });
+
+      it('keeps unchanged lists out of the saved settings', async () => {
+        const { store, type, click, button } = await renderLists({});
+        await type('Padding label 1', 'None');
+        await click(button('Save settings'));
+
+        expect(Object.keys(store.saved!.styleValues!)).toEqual(['padding']);
+        expect(store.saved!.styleValues!.padding![0]).toEqual({ value: '0', label: 'None' });
+      });
+
+      it.each([
+        ['', 'Margin: enter a value in every row.'],
+        ['a b', 'Margin: "a b" cannot contain spaces or ":".'],
+        ['md:4', 'Margin: "md:4" cannot contain spaces or ":".'],
+        ['8', 'Margin: "8" is listed twice.'],
+      ])('does not save the value "%s"', async (value, message) => {
+        const { forms, store, type, click, button, text } = await renderLists();
+        await type('Margin value 1', value);
+        await click(button('Save settings'));
+
+        expect(text('alert')).toEqual([message]);
+        expect(store.saved).toBeUndefined();
+        expect(forms.settings().styleValues).toEqual(host.styleValues);
+      });
+
+      it('saves when an unchanged catalogue list breaks the value rules', async () => {
+        const styles = {
+          ...tailwindConfig,
+          className: [
+            {
+              name: 'Margin',
+              options: [
+                { name: 'General', value: 'm', valueList: 'margin' as const, variants: ['4', '4'] },
+              ],
+            },
+          ],
+        };
+        const { store, autosave, click, button, text } = await renderLists({ styles });
+        await click(autosave());
+        await click(button('Save settings'));
+
+        expect(text('alert')).toEqual([]);
+        expect(store.saved).toEqual({ autoSave: true, autoSaveDelay: 3000 });
+      });
+
+      it('clears the saved status when a row is added or removed', async () => {
+        const { labelled, click, button, text } = await renderLists();
+        await click(button('Save settings'));
+        expect(text('status')).toEqual(['Settings updated.']);
+
+        await click(labelled('Remove Margin value 1'));
+        expect(text('status')).toEqual(['']);
+      });
+
+      it('shows imported and reset values', async () => {
+        const { input, chooseFile, click, button } = await renderLists();
+        await chooseFile(
+          '{"autoSave":false,"autoSaveDelay":500,"styleValues":{"margin":[{"value":"2"}]}}',
+        );
+        expect(input('Margin value 1')!.value).toBe('2');
+        expect(input('Margin value 2')).toBeNull();
+
+        await click(button('Reset to host defaults'));
+        expect(input('Margin value 2')!.value).toBe('8');
+      });
+
+      it('blocks the lists while saved settings load', async () => {
+        const saved = new Subject<BuilderSettings>();
+        const view = await renderEditable(host, (store) =>
+          vi.spyOn(store, 'getSettings$').mockReturnValue(saved),
+        );
+        const input = view.element.querySelector<HTMLInputElement>(
+          'input[aria-label="Margin value 1"]',
+        )!;
+        expect(input.disabled).toBe(true);
+        expect(
+          view.element.querySelector<HTMLButtonElement>('button[aria-label="Add Margin value"]')!
+            .disabled,
+        ).toBe(true);
+
+        saved.next({
+          autoSave: false,
+          autoSaveDelay: 3000,
+          styleValues: { margin: [{ value: '1' }] },
+        });
+        await view.settle();
+        expect(input.disabled).toBe(false);
+        expect(
+          view.element.querySelector<HTMLInputElement>('input[aria-label="Margin value 1"]')!.value,
+        ).toBe('1');
+      });
     });
 
     it('explains when the storage does not save settings', async () => {

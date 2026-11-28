@@ -10,17 +10,18 @@ scope to apply a new configuration. The **Builder settings** panel is read-only 
 
 ## Available settings
 
-| Option             | Default                          | Purpose                                                                              |
-| ------------------ | -------------------------------- | ------------------------------------------------------------------------------------ |
-| `libraries`        | `[]`                             | Additional UI profiles. Native Vanilla fields are always registered.                 |
-| `formTemplates`    | Templates from visible libraries | Shared templates that replace library-specific templates; `[]` offers none.          |
-| `editorType`       | `'form-editor'`                  | Namespace for persisted documents. Use distinct values for independent editors.      |
-| `autoSave`         | `false`                          | Persist form changes automatically.                                                  |
-| `autoSaveDelay`    | `3000`                           | Debounce delay in milliseconds; inactive when autosave is disabled.                  |
-| `formStore`        | Browser local storage            | A class implementing `FormStoreService`.                                             |
-| `styles`           | `tailwindConfig`                 | The complete styling catalogue: breakpoints and Self/Children controls.              |
-| `showSettings`     | `true`                           | Show the Builder settings panel on every screen size.                                |
-| `editableSettings` | `false`                          | Let users change and share autosave settings; saving needs a store that supports it. |
+| Option             | Default                          | Purpose                                                                           |
+| ------------------ | -------------------------------- | --------------------------------------------------------------------------------- |
+| `libraries`        | `[]`                             | Additional UI profiles. Native Vanilla fields are always registered.              |
+| `formTemplates`    | Templates from visible libraries | Shared templates that replace library-specific templates; `[]` offers none.       |
+| `editorType`       | `'form-editor'`                  | Namespace for persisted documents. Use distinct values for independent editors.   |
+| `autoSave`         | `false`                          | Persist form changes automatically.                                               |
+| `autoSaveDelay`    | `3000`                           | Debounce delay in milliseconds; inactive when autosave is disabled.               |
+| `formStore`        | Browser local storage            | A class implementing `FormStoreService`.                                          |
+| `styles`           | `tailwindConfig`                 | The complete styling catalogue: breakpoints and Self/Children controls.           |
+| `styleValues`      | Values in `styles`               | Values offered for Height, Width, Margin and Padding, with optional labels.       |
+| `showSettings`     | `true`                           | Show the Builder settings panel on every screen size.                             |
+| `editableSettings` | `false`                          | Let users change and share autosave and style values; saving needs store support. |
 
 The settings panel works without an open form. It shows effective settings, libraries, template
 names, and styling choices. It does not display stored form data or serialize services and components.
@@ -38,11 +39,13 @@ provideFormlyBuilder({
 
 ## Editable settings
 
-Set `editableSettings: true` to let users change autosave and its delay in the settings panel. Users
-can also export these settings as JSON, import them elsewhere, and reset them to your values. Other
-settings stay read-only.
+Set `editableSettings: true` to let users change autosave, its delay and the style values in the
+settings panel. Users can also export these settings as JSON, import them elsewhere, and reset them to
+your values. Other settings stay read-only.
 
-Saved changes take precedence over your `autoSave` and `autoSaveDelay` values. To save them, the store
+Saved changes take precedence over your `autoSave`, `autoSaveDelay` and `styleValues`. Once saved,
+they keep their values: after you change your defaults, users get them with **Reset to host
+defaults**. To save them, the store
 must implement the optional `getSettings$` and `saveSettings$` methods. The default browser store does
 not, so changes apply to the current session only; users can export them as JSON. See the
 [store guide](https://github.com/ngx-formly/ngx-formly-builder/blob/main/docs/asynchronous-stores.md#builder-settings).
@@ -52,6 +55,28 @@ not, so changes apply to the current session only; users can export them as JSON
 For custom persistence, supply `formStore: YourFormStore`. Implement the exported `FormStoreService`
 contract in your application and provide any dependencies its constructor needs. Turning off
 autosave leaves explicit Save available.
+
+## Style values
+
+`styleValues` sets the values offered for Height, Width, Margin and Padding. Each list holds entries
+with a `value`, the class suffix such as `4` in `m-4`, and an optional `label`. A value has no
+spaces or `:` and appears once per list. The Margin list applies to every margin option (`m`, `mx`,
+`my`, `mt`, `mb`, `ml`, `mr`), and Padding likewise. A list you omit keeps the values in `styles`.
+
+```ts
+provideFormlyBuilder({
+  styleValues: {
+    margin: [{ value: '0', label: 'None' }, { value: '4', label: 'Small' }, { value: 'auto' }],
+  },
+});
+```
+
+Hosts can change them later with `updateSettings$({ ...settings(), styleValues })`. Classes already
+saved in a form stay when their value leaves the list; picking another value replaces them.
+
+In a custom `styles` catalogue, tag an option with `valueList: 'height' | 'width' | 'margin' |
+'padding'` to link it to a list. Picking a value then also replaces that option's classes whose
+value is not in the list, if the option has a class prefix and the old value has no dash.
 
 ## Styling choices and labels
 
@@ -101,7 +126,7 @@ The package exports `StylesConfig`, `StyleOptionConfig`, `StyleOptionCategory`, 
 - `label` names the styling profile in Builder settings.
 - `className` defines the **Self** categories; `fieldGroupClassName` defines **Children** categories.
 - Each category has a `name` and `options`. Each option supplies a `name`, `variants`, and an
-  optional class prefix in `value`, plus optional `description` and `variantLabels`.
+  optional class prefix in `value`, plus optional `description`, `variantLabels` and `valueList`.
 - `hasBreakpoints` enables responsive choices. `spanWidth` gives a control the full panel width.
 - `dependsOn` and `dependsOnParent` restrict options to compatible layouts, using `ClassType` and
   the required class value.
